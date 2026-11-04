@@ -5,21 +5,21 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>transport_logistic_management_2026</RootNamespace>
-	<NoWarn>$(NoWarn);NU1903</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
 	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.4" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5"/>
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
 	  <PackageReference Include="Scalar.AspNetCore" Version="2.13.3" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
-	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-	  <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
   </ItemGroup>
-	
-	  <ItemGroup>
-    <ProjectReference Include="..\business_logic\business_logic.csproj" />
-		  <ProjectReference Include="..\data_access\data_access.csproj" />
-	  </ItemGroup>
-	
+
+  <ItemGroup>
+	  <ProjectReference Include="..\business_logic\business_logic.csproj" />
+	  <ProjectReference Include="..\data_access\data_access.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -21,6 +21,14 @@ namespace business_logic.Specifications
             }
         }
 
+        public class ByLicenseNumber : Specification<Driver>
+        {
+            public ByLicenseNumber(string licenseNumber)
+            {
+                Query.Where(d => d.LicenseNumber == licenseNumber);
+            }
+        }
+
         public class All : Specification<Driver>
         {
             public All()

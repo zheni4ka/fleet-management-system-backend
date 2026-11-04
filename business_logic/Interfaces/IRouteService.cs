@@ -4,10 +4,10 @@ namespace business_logic.Interfaces
 {
     public interface IRouteService
     {
-        public void Create(CreateRouteModel routeModel, string dispatcherId);
-        public Task<RouteDTO> Get(int id);
-        public IEnumerable<RouteDTO> GetAll();
-        public Task Delete(int id, string dispatcherId);
-        public Task Update(EditRouteModel model);
+        Task<IEnumerable<RouteDTO>> GetAllAsync();
+        Task<RouteDTO> GetAsync(int id);
+        Task<RouteDTO> CreateAsync(CreateRouteModel model);
+        Task UpdateAsync(EditRouteModel model);
+        Task DeleteAsync(int id);
     }
 }

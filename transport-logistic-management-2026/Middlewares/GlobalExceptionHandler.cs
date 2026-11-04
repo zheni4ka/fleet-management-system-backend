@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using business_logic.Exceptions;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace transport_logistic_management_2026.Middlewares
 {
@@ -17,37 +19,50 @@ namespace transport_logistic_management_2026.Middlewares
             Exception exception,
             CancellationToken cancellationToken)
         {
-            _logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
-
-            var statusCode = exception switch
+            var problemDetails = exception switch
             {
-                KeyNotFoundException => StatusCodes.Status404NotFound,
-                InvalidOperationException => StatusCodes.Status400BadRequest,
-                ArgumentException => StatusCodes.Status400BadRequest,
-                UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
-                _ => StatusCodes.Status500InternalServerError
+                ValidationException validationException => CreateValidationProblem(validationException),
+                NotFoundException => CreateProblem(StatusCodes.Status404NotFound, "Not Found", exception.Message),
+                BusinessRuleException => CreateProblem(StatusCodes.Status400BadRequest, "Bad Request", exception.Message),
+                UnauthorizedAccessException => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized", exception.Message),
+                _ => CreateProblem(StatusCodes.Status500InternalServerError, "Internal Server Error", "An unexpected error occurred.")
             };
 
-            var problemDetails = new ProblemDetails
+            if (problemDetails.Status == StatusCodes.Status500InternalServerError)
             {
-                Status = statusCode,
-                Title = GetTitle(statusCode),
-                Detail = exception.Message, 
-                Instance = httpContext.Request.Path
-            };
+                _logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
+            }
+            else
+            {
+                _logger.LogWarning("Request failed with {Status}: {Message}", problemDetails.Status, exception.Message);
+            }
 
-            httpContext.Response.StatusCode = statusCode;
-            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+            problemDetails.Instance = httpContext.Request.Path;
+            httpContext.Response.StatusCode = problemDetails.Status!.Value;
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, problemDetails.GetType(), cancellationToken);
 
-            return true; 
+            return true;
         }
 
-        private static string GetTitle(int statusCode) => statusCode switch
+        private static ProblemDetails CreateProblem(int status, string title, string detail) => new()
         {
-            400 => "Bad Request",
-            401 => "Unauthorized",
-            404 => "Not Found",
-            _ => "Internal Server Error"
+            Status = status,
+            Title = title,
+            Detail = detail
         };
+
+        private static ValidationProblemDetails CreateValidationProblem(ValidationException exception)
+        {
+            var errors = exception.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+
+            return new ValidationProblemDetails(errors)
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Validation Failed",
+                Detail = "One or more validation errors occurred."
+            };
+        }
     }
 }

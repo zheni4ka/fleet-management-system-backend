@@ -1,9 +1,6 @@
 ﻿using business_logic.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace data_access.Configs
 {
@@ -13,6 +10,19 @@ namespace data_access.Configs
         {
             builder.HasKey(x => x.Id);
             builder.ToTable("AuditLogs");
+
+            builder.Property(x => x.Action)
+                .HasConversion<string>()
+                .HasMaxLength(50)
+                .IsRequired();
+
+            builder.Property(x => x.EntityId)
+                .HasMaxLength(450);
+
+            builder.HasOne(x => x.Dispatcher)
+                .WithMany()
+                .HasForeignKey(x => x.DispatcherId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

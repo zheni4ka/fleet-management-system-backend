@@ -4,17 +4,14 @@ namespace business_logic.Interfaces
 {
     public interface IRepository<TEntity> where TEntity : class
     {
-        IEnumerable<TEntity> GetAll();
-        TEntity GetById(object id);
-        void Insert(TEntity entity);
-        void Delete(object id);
-        void Delete(TEntity entityToDelete);
-        void Update(TEntity entityToUpdate);
-            
+        Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<TEntity?> GetByIdAsync(object id);
+        Task InsertAsync(TEntity entity);
+        void Update(TEntity entity);
+        void Delete(TEntity entity);
 
-        public Task<TEntity?> GetItemBySpec(ISpecification<TEntity> specification);
-        public Task<IEnumerable<TEntity>> GetListBySpec(ISpecification<TEntity> specification);
-
-        void Save();
+        Task<TEntity?> GetItemBySpecAsync(ISpecification<TEntity> specification);
+        Task<IEnumerable<TEntity>> GetListBySpecAsync(ISpecification<TEntity> specification);
+        Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification);
     }
 }

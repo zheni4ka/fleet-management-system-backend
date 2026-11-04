@@ -1,98 +1,63 @@
-﻿using Ardalis.Specification;
+﻿using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
-using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace transport_logistic_management_2026.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
-    public class RouteController : Controller
+    [Route("api/[controller]")]
+    public class RouteController : ControllerBase
     {
         private readonly IRouteService _routeService;
-        private readonly IValidator<CreateRouteModel> _createValidator;
-        private readonly IValidator<EditRouteModel> _editValidator;
-        private readonly UserManager<IdentityUser> _userManager;
 
-        public RouteController(IRouteService routeService, IValidator<CreateRouteModel> createValidator, IValidator<EditRouteModel> editValidator, UserManager<IdentityUser> userManager)
+        public RouteController(IRouteService routeService)
         {
-            this._routeService = routeService;
-            this._createValidator = createValidator;
-            this._editValidator = editValidator;
-            this._userManager = userManager;
+            _routeService = routeService;
         }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin,Dispatcher")]
-        public IActionResult Create([FromBody] CreateRouteModel model)
-        {
-            var dispatcherId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var validationResult = _createValidator.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                var errors = new ValidationProblemDetails(validationResult.ToDictionary())
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred."
-                };
-
-                return BadRequest(errors);
-            }
-
-            _routeService.Create(model, dispatcherId);
-            return Ok();
-        }
-
-        [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin,Dispatcher")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
-        {
-            var dispatcherId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            await _routeService.Delete(id, dispatcherId);
-            return Ok();
-        }
-
-        [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin,Dispatcher")]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] EditRouteModel model)
-        {
-            var validationResult = _editValidator.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                var errors = new ValidationProblemDetails(validationResult.ToDictionary())
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred."
-                };
-
-                return BadRequest(errors);
-            }
-
-            await _routeService.Update(model);
-            return Ok();
-        }
-
 
         [HttpGet("all")]
         [AllowAnonymous]
-        public IActionResult GetAll()
+        public async Task<ActionResult<IEnumerable<RouteDTO>>> GetAll()
         {
-            return Ok(_routeService.GetAll());
+            return Ok(await _routeService.GetAllAsync());
         }
 
         [HttpGet("{id:int}")]
         [AllowAnonymous]
-        public IActionResult Get(int id)
+        public async Task<ActionResult<RouteDTO>> GetById([FromRoute] int id)
         {
-            return Ok(_routeService.Get(id));
+            return Ok(await _routeService.GetAsync(id));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<RouteDTO>> Create([FromBody] CreateRouteModel model)
+        {
+            var route = await _routeService.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = route.Id }, route);
+        }
+
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] EditRouteModel model)
+        {
+            if (id != model.Id)
+            {
+                return BadRequest(new ProblemDetails { Title = "Bad Request", Detail = "Route id in URL and body do not match." });
+            }
+
+            await _routeService.UpdateAsync(model);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            await _routeService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }

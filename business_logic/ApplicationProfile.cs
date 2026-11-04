@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using business_logic.Entities;
 using business_logic.DTOs;
-using business_logic.DTOs.AuditLogs;
+using business_logic.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace business_logic
 {
@@ -9,26 +9,31 @@ namespace business_logic
     {
         public ApplicationProfile()
         {
-            CreateMap<Driver, DriverDTO>().ReverseMap();
-            CreateMap<Driver, CreateDriverModel>().ReverseMap();
-            CreateMap<Driver, EditDriverModel>().ReverseMap();
+            CreateMap<Driver, DriverDTO>();
+            CreateMap<CreateDriverModel, Driver>();
+            CreateMap<EditDriverModel, Driver>();
 
             CreateMap<Auto, AutoDTO>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
-            CreateMap<Auto, CreateAutoModel>().ReverseMap();
-            CreateMap<Auto, EditAutoModel>().ReverseMap();
+            CreateMap<CreateAutoModel, Auto>();
+            CreateMap<EditAutoModel, Auto>();
 
-            CreateMap<Route, RouteDTO>().ReverseMap();
-            CreateMap<Route, CreateRouteModel>().ReverseMap();
-            CreateMap<Route, EditRouteModel>().ReverseMap();
+            CreateMap<Route, RouteDTO>();
+            CreateMap<CreateRouteModel, Route>();
+            CreateMap<EditRouteModel, Route>();
 
-            CreateMap<Location, LocationDTO>().ReverseMap();
-            CreateMap<Location, CreateLocationModel>().ReverseMap();
-            CreateMap<AutoMaintenance, AutoMaintenanceDTO>().ReverseMap();
-            CreateMap<AutoMaintenance, CreateAutoMaintenanceModel>().ReverseMap();
+            CreateMap<Location, LocationDTO>();
+            CreateMap<CreateLocationModel, Location>();
 
-            CreateMap<AuditLog, AuditLogDTO>().ReverseMap();
-            CreateMap<AuditLog, CreateAuditLogModel>().ReverseMap();
+            CreateMap<AutoMaintenance, AutoMaintenanceDTO>();
+            CreateMap<CreateAutoMaintenanceModel, AutoMaintenance>();
+            CreateMap<EditAutoMaintenanceModel, AutoMaintenance>();
+
+            CreateMap<AuditLog, AuditLogDTO>();
+
+            CreateMap<IdentityUser, UserDTO>()
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
         }
     }
 }

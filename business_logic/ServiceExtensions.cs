@@ -2,7 +2,6 @@
 using business_logic.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace business_logic
 {
@@ -15,13 +14,14 @@ namespace business_logic
                 cfg.AddMaps(typeof(ApplicationProfile).Assembly);
             });
 
-            services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddValidatorsFromAssembly(typeof(ServiceExtensions).Assembly);
 
             services.AddCustomServices();
         }
 
-        public static void AddCustomServices(this IServiceCollection services)
+        private static void AddCustomServices(this IServiceCollection services)
         {
+            services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IDriverService, DriverService>();
             services.AddScoped<IAutoService, AutoService>();
             services.AddScoped<IRouteService, RouteService>();

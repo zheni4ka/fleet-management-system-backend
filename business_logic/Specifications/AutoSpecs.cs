@@ -21,6 +21,14 @@ namespace business_logic.Specifications
             }
         }
 
+        public class ByNumber : Specification<Auto>
+        {
+            public ByNumber(string number)
+            {
+                Query.Where(a => a.Number == number);
+            }
+        }
+
         public class All : Specification<Auto>
         {
             public All()

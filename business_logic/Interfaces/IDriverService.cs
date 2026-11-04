@@ -4,10 +4,10 @@ namespace business_logic.Interfaces
 {
     public interface IDriverService
     {
-        public void Create(CreateDriverModel driverModel);
-        public Task<DriverDTO> Get(int id);
-        public IEnumerable<DriverDTO> GetAll();
-        public Task Delete(int id);
-        public Task Edit(EditDriverModel model);
+        Task<IEnumerable<DriverDTO>> GetAllAsync();
+        Task<DriverDTO> GetAsync(int id);
+        Task<DriverDTO> CreateAsync(CreateDriverModel model);
+        Task EditAsync(EditDriverModel model);
+        Task DeleteAsync(int id);
     }
 }

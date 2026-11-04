@@ -1,6 +1,6 @@
+using business_logic.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
 
 namespace data_access.Identity
 {
@@ -12,9 +12,7 @@ namespace data_access.Identity
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-            string[] roles = new[] { "Admin", "Dispatcher" };
-
-            foreach (var role in roles)
+            foreach (var role in UserRoles.All)
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
@@ -29,7 +27,7 @@ namespace data_access.Identity
             {
                 admin = new IdentityUser { UserName = "admin", Email = adminEmail, EmailConfirmed = true };
                 await userManager.CreateAsync(admin, "Admin123!");
-                await userManager.AddToRoleAsync(admin, "Admin");
+                await userManager.AddToRoleAsync(admin, UserRoles.Admin);
             }
         }
     }

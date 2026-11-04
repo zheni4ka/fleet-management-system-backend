@@ -1,10 +1,10 @@
-﻿using business_logic.Interfaces;
-using data_access.Repository;
-using Microsoft.Extensions.DependencyInjection;
+﻿using business_logic.Constants;
+using business_logic.Interfaces;
 using data_access.data;
-using Microsoft.EntityFrameworkCore;
+using data_access.Repository;
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace data_access
 {
@@ -14,29 +14,31 @@ namespace data_access
         {
             services.AddDbContext(connectionString);
             services.AddRepositories();
+            services.AddIdentity();
         }
-        public static void AddDbContext(this IServiceCollection services, string connectionString)
+
+        private static void AddDbContext(this IServiceCollection services, string connectionString)
         {
             services.AddDbContext<FMS_DbContext>(opts => opts.UseSqlServer(connectionString));
         }
 
-        public static void AddRepositories(this IServiceCollection services)
+        private static void AddRepositories(this IServiceCollection services)
         {
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
 
-        public static void AddIdentity(this IServiceCollection services)
+        private static void AddIdentity(this IServiceCollection services)
         {
-            services.AddIdentity<IdentityUser, IdentityRole>(opts =>
+            services.AddIdentityCore<IdentityUser>(opts =>
             {
                 opts.Password.RequireDigit = false;
-                opts.Password.RequiredLength = 6;
+                opts.Password.RequiredLength = AccountConstraints.PasswordMinLength;
                 opts.Password.RequireNonAlphanumeric = false;
                 opts.Password.RequireUppercase = false;
             })
-            .AddEntityFrameworkStores<FMS_DbContext>()
-            .AddDefaultTokenProviders();
-
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<FMS_DbContext>();
         }
     }
 }

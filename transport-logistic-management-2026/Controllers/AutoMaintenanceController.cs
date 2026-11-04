@@ -1,91 +1,62 @@
-﻿using business_logic.DTOs;
+﻿using business_logic.Constants;
+using business_logic.DTOs;
 using business_logic.Interfaces;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace transport_logistic_management_2026.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    public class AutoMaintenanceController : Controller
+    [Route("api/[controller]")]
+    public class AutoMaintenanceController : ControllerBase
     {
-        private readonly IAutoMaintenanceService _amservice;
-        private readonly IValidator<CreateAutoMaintenanceModel> _createValidator;
-        private readonly IValidator<EditAutoMaintenanceModel> _editValidator;
-        public AutoMaintenanceController(IAutoMaintenanceService amservice, IValidator<CreateAutoMaintenanceModel> createValidator, IValidator<EditAutoMaintenanceModel> editValidator)
+        private readonly IAutoMaintenanceService _maintenanceService;
+
+        public AutoMaintenanceController(IAutoMaintenanceService maintenanceService)
         {
-            _amservice = amservice;
-            _createValidator = createValidator;
-            _editValidator = editValidator;
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public IActionResult Create([FromBody] CreateAutoMaintenanceModel model)
-        {
-            var validationResult = _createValidator.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                var errors = new ValidationProblemDetails(validationResult.ToDictionary())
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred."
-                };
-
-                return BadRequest(errors);
-            }
-
-            _amservice.Create(model);
-            return Ok();
-        }
-
-        [HttpPut]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit([FromBody] EditAutoMaintenanceModel model)
-        {
-            var validationResult = _editValidator.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                var errors = new ValidationProblemDetails(validationResult.ToDictionary())
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred."
-                };
-
-                return BadRequest(errors);
-            }
-
-            await _amservice.Update(model);
-            return Ok();
-        }
-
-        [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
-        {
-            await _amservice.Delete(id);
-            return Ok();
-        }
-
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById([FromRoute] int id)
-        {
-            return Ok(await _amservice.Get(id));
+            _maintenanceService = maintenanceService;
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<AutoMaintenanceDTO>>> GetAll()
         {
-            return Ok(_amservice.GetAll());
+            return Ok(await _maintenanceService.GetAllAsync());
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<AutoMaintenanceDTO>> GetById([FromRoute] int id)
+        {
+            return Ok(await _maintenanceService.GetAsync(id));
         }
 
         [HttpGet("auto/{id:int}")]
-        public async Task<IActionResult> GetByAutoId([FromRoute] int id)
+        public async Task<ActionResult<IEnumerable<AutoMaintenanceDTO>>> GetByAutoId([FromRoute] int id)
         {
-            return Ok(await _amservice.GetByAutoId(id));
+            return Ok(await _maintenanceService.GetByAutoIdAsync(id));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<ActionResult<AutoMaintenanceDTO>> Create([FromBody] CreateAutoMaintenanceModel model)
+        {
+            var maintenance = await _maintenanceService.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = maintenance.Id }, maintenance);
+        }
+
+        [HttpPut]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Edit([FromBody] EditAutoMaintenanceModel model)
+        {
+            await _maintenanceService.UpdateAsync(model);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            await _maintenanceService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }

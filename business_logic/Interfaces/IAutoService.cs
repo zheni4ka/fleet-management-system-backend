@@ -5,12 +5,11 @@ namespace business_logic.Interfaces
 {
     public interface IAutoService
     {
-        public IEnumerable<AutoDTO> GetAll();
-        public Task<AutoDTO> Get(int id);
-        public void Create(CreateAutoModel driverModel);
-        public Task Delete(int id);
-        public Task Edit(EditAutoModel model);
-
-        public Task UpdateStatus(int autoId, AutoStatus newStatus);
+        Task<IEnumerable<AutoDTO>> GetAllAsync();
+        Task<AutoDTO> GetAsync(int id);
+        Task<AutoDTO> CreateAsync(CreateAutoModel model);
+        Task EditAsync(EditAutoModel model);
+        Task DeleteAsync(int id);
+        Task UpdateStatusAsync(int autoId, AutoStatus newStatus);
     }
 }

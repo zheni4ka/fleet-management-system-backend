@@ -1,17 +1,14 @@
 ﻿using business_logic.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace business_logic.Interfaces
 {
     public interface IAutoMaintenanceService
     {
-        public void Create(CreateAutoMaintenanceModel driverModel);
-        public Task Update(EditAutoMaintenanceModel model);
-        public Task Delete(int id);
-        public Task<AutoMaintenanceDTO> Get(int id);
-        public IEnumerable<AutoMaintenanceDTO> GetAll();
-        public Task<IEnumerable<AutoMaintenanceDTO>> GetByAutoId(int id);
+        Task<IEnumerable<AutoMaintenanceDTO>> GetAllAsync();
+        Task<AutoMaintenanceDTO> GetAsync(int id);
+        Task<IEnumerable<AutoMaintenanceDTO>> GetByAutoIdAsync(int autoId);
+        Task<AutoMaintenanceDTO> CreateAsync(CreateAutoMaintenanceModel model);
+        Task UpdateAsync(EditAutoMaintenanceModel model);
+        Task DeleteAsync(int id);
     }
 }

@@ -1,105 +1,65 @@
-﻿using business_logic.DTOs;
+﻿using business_logic.Constants;
+using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Interfaces;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace transport_logistic_management_2026.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AutoController : Controller
+    public class AutoController : ControllerBase
     {
         private readonly IAutoService _autoService;
-        private readonly IAuditLogService _auditLogService;
-        private readonly IValidator<CreateAutoModel> _createValidator;
-        private readonly IValidator<EditAutoModel> _editValidator;
 
-        public AutoController(IAutoService autoService, IValidator<CreateAutoModel> createValidator, IValidator<EditAutoModel> editValidator)
+        public AutoController(IAutoService autoService)
         {
             _autoService = autoService;
-            _createValidator = createValidator;
-            _editValidator = editValidator;
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public IActionResult Create([FromBody] CreateAutoModel auto)
-        {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var validationResult = _createValidator.Validate(auto);
-            if (!validationResult.IsValid)
-            {
-                var errors = new ValidationProblemDetails(validationResult.ToDictionary())
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred."
-                };
-                return BadRequest(errors);
-            }
-            _autoService.Create(auto);
-            _auditLogService.LogAction(currentUserId, "Created Auto");
-
-            return Ok();
-        }
-
-        [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
-        {
-            await _autoService.Delete(id);
-            return Ok();
-        }
-
-        [HttpPut]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit([FromBody] EditAutoModel model)
-        {
-            var validationResult = _editValidator.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                var errors = new ValidationProblemDetails(validationResult.ToDictionary())
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred."
-                };
-                return BadRequest(errors);
-            }
-
-            await _autoService.Edit(model);
-            return Ok();
         }
 
         [HttpGet("all")]
-        public IActionResult GetAll()
+        public async Task<ActionResult<IEnumerable<AutoDTO>>> GetAll()
         {
-            return Ok(_autoService.GetAll());
+            return Ok(await _autoService.GetAllAsync());
         }
 
         [HttpGet("{id:int}")]
-        public IActionResult Get(int id)
+        public async Task<ActionResult<AutoDTO>> GetById([FromRoute] int id)
         {
-            return Ok(_autoService.Get(id));
+            return Ok(await _autoService.GetAsync(id));
         }
 
-        [HttpPatch("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] AutoStatus newStatus)
+        [HttpPost]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<ActionResult<AutoDTO>> Create([FromBody] CreateAutoModel model)
         {
-            try
-            {
-                await _autoService.UpdateStatus(id, newStatus);
-                return Ok(new { message = "Status updated successfully." });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            var auto = await _autoService.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = auto.Id }, auto);
         }
 
+        [HttpPut]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Edit([FromBody] EditAutoModel model)
+        {
+            await _autoService.EditAsync(model);
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}/status")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<IActionResult> UpdateStatus([FromRoute] int id, [FromBody] AutoStatus newStatus)
+        {
+            await _autoService.UpdateStatusAsync(id, newStatus);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            await _autoService.DeleteAsync(id);
+            return NoContent();
+        }
     }
 }

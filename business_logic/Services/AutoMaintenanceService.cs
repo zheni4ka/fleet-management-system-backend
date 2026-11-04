@@ -1,125 +1,132 @@
 ﻿using AutoMapper;
 using business_logic.DTOs;
 using business_logic.Entities;
+using business_logic.Exceptions;
 using business_logic.Interfaces;
 using business_logic.Specifications;
+using FluentValidation;
 
 namespace business_logic.Services
 {
     public class AutoMaintenanceService : IAutoMaintenanceService
     {
-        private readonly IRepository<AutoMaintenance> _amR;
-        private readonly IRepository<Auto> _autoR;
-        private readonly IRepository<Route> _routeR;
+        private readonly IRepository<AutoMaintenance> _maintenanceRepository;
+        private readonly IRepository<Auto> _autoRepository;
+        private readonly IRepository<Route> _routeRepository;
+        private readonly IAuditLogService _auditLogService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IValidator<CreateAutoMaintenanceModel> _createValidator;
+        private readonly IValidator<EditAutoMaintenanceModel> _editValidator;
 
-        public AutoMaintenanceService(IRepository<AutoMaintenance> amR, IRepository<Auto> autoR, IMapper mapper, IRepository<Route> rs)
+        public AutoMaintenanceService(
+            IRepository<AutoMaintenance> maintenanceRepository,
+            IRepository<Auto> autoRepository,
+            IRepository<Route> routeRepository,
+            IAuditLogService auditLogService,
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IValidator<CreateAutoMaintenanceModel> createValidator,
+            IValidator<EditAutoMaintenanceModel> editValidator)
         {
-            _amR = amR;
-            _autoR = autoR;
+            _maintenanceRepository = maintenanceRepository;
+            _autoRepository = autoRepository;
+            _routeRepository = routeRepository;
+            _auditLogService = auditLogService;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _routeR = rs;
+            _createValidator = createValidator;
+            _editValidator = editValidator;
         }
 
-        public async Task Update(EditAutoMaintenanceModel model)
+        public async Task<IEnumerable<AutoMaintenanceDTO>> GetAllAsync()
         {
-            var service = _amR.GetById(model.Id);
-            if (service == null)
-            {
-                throw new KeyNotFoundException("Record not found");
-            }
-
-            _mapper.Map(model, service);
-            _amR.Update(service);
-            _amR.Save();
-
-            if (model.IsCompleted)
-            {
-                var auto = _autoR.GetById(service.AutoId);
-                if (auto != null && auto.Status == AutoStatus.UnderMaintenance)
-                {
-                    auto.Status = AutoStatus.Available;
-                    _autoR.Update(auto);
-                    _autoR.Save();
-                }
-            }
+            var items = await _maintenanceRepository.GetListBySpecAsync(new AutoMaintenanceSpecs.All());
+            return _mapper.Map<IEnumerable<AutoMaintenanceDTO>>(items);
         }
 
-        public void Create(CreateAutoMaintenanceModel model)
+        public async Task<AutoMaintenanceDTO> GetAsync(int id)
         {
-            var auto = _autoR.GetById(model.AutoId);
-            if (auto == null)
-            {
-                throw new KeyNotFoundException("Автомобіль не знайдено");
-            }
-            var affectedRoutes = _routeR.GetAll()
-                .Where(r => r.AutoId == model.AutoId &&
-                           (r.Status == RouteStatus.Planned || r.Status == RouteStatus.InProgress) &&
-                           r.DepartureTime >= model.ServiceDate)
-                .ToList();
-
-            foreach (var route in affectedRoutes)
-            {
-                route.Status = RouteStatus.Cancelled;
-                _routeR.Update(route);
-            }
-
-            if (affectedRoutes.Any())
-            {
-                _routeR.Save();
-            }
-            var service = _mapper.Map<AutoMaintenance>(model);
-            _amR.Insert(service);
-            _amR.Save();
-
-            auto.Status = AutoStatus.UnderMaintenance;
-            _autoR.Update(auto);
-            _autoR.Save();
-
-            _mapper.Map<AutoMaintenanceDTO>(service);
-        }
-
-        public async Task Delete(int id)
-        {
-            var service = _amR.GetById(id);
-            if (service == null)
-            {
-                throw new KeyNotFoundException("Record not found");
-            }
-
-            var auto = _autoR.GetById(service.AutoId);
-            if (auto != null)
-            {
-                auto.Status = AutoStatus.Available;
-                _autoR.Update(auto);
-                _autoR.Save();
-            }
-
-            _amR.Delete(id);
-            _amR.Save();
-        }
-
-        public async Task<IEnumerable<AutoMaintenanceDTO>> GetByAutoId(int id)
-        {
-            var items = await _amR.GetListBySpec(new AutoMaintenanceSpecs.ByAutoId(id));
-
-            if (items == null) { throw new Exception("item not found"); }
-
-            return _mapper.Map<List<AutoMaintenanceDTO>>(items);
-        }
-
-        public async Task<AutoMaintenanceDTO> Get(int id)
-        {
-            var item = await _amR.GetItemBySpec(new AutoMaintenanceSpecs.ById(id));
-
-            if (item == null) { throw new Exception("item not found"); }
-
+            var item = await GetMaintenanceOrThrowAsync(id);
             return _mapper.Map<AutoMaintenanceDTO>(item);
         }
 
-        public IEnumerable<AutoMaintenanceDTO> GetAll() { return _mapper.Map<IEnumerable<AutoMaintenanceDTO>>(_amR.GetAll()); }
+        public async Task<IEnumerable<AutoMaintenanceDTO>> GetByAutoIdAsync(int autoId)
+        {
+            var items = await _maintenanceRepository.GetListBySpecAsync(new AutoMaintenanceSpecs.ByAutoId(autoId));
+            return _mapper.Map<IEnumerable<AutoMaintenanceDTO>>(items);
+        }
 
-    
+        public async Task<AutoMaintenanceDTO> CreateAsync(CreateAutoMaintenanceModel model)
+        {
+            await _createValidator.ValidateAndThrowAsync(model);
 
+            var auto = await _autoRepository.GetByIdAsync(model.AutoId) ?? throw new NotFoundException("Автомобіль не знайдено");
+
+            // Заплановані та активні рейси авто, що відправляються з дати обслуговування, скасовуються
+            // в тій самій транзакції, що й створення запису про ремонт.
+            var affectedRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.ActiveByAutoFrom(model.AutoId, model.ServiceDate));
+            foreach (var route in affectedRoutes)
+            {
+                route.Status = RouteStatus.Cancelled;
+            }
+
+            var maintenance = _mapper.Map<AutoMaintenance>(model);
+            await _maintenanceRepository.InsertAsync(maintenance);
+            auto.Status = AutoStatus.UnderMaintenance;
+
+            // Перше збереження потрібне, щоб БД згенерувала maintenance.Id для запису в аудит.
+            await _unitOfWork.SaveChangesAsync();
+            await _auditLogService.LogActionAsync(AuditAction.MaintenanceCreated, maintenance.Id);
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<AutoMaintenanceDTO>(maintenance);
+        }
+
+        public async Task UpdateAsync(EditAutoMaintenanceModel model)
+        {
+            await _editValidator.ValidateAndThrowAsync(model);
+
+            var maintenance = await GetMaintenanceOrThrowAsync(model.Id);
+            _mapper.Map(model, maintenance);
+
+            if (maintenance.IsCompleted)
+            {
+                await ReleaseAutoAsync(maintenance.AutoId);
+            }
+
+            await _auditLogService.LogActionAsync(AuditAction.MaintenanceUpdated, maintenance.Id);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var maintenance = await GetMaintenanceOrThrowAsync(id);
+
+            // Авто ще тримає незавершене обслуговування, тож при його видаленні авто повертається в роботу.
+            if (!maintenance.IsCompleted)
+            {
+                await ReleaseAutoAsync(maintenance.AutoId);
+            }
+
+            _maintenanceRepository.Delete(maintenance);
+            await _auditLogService.LogActionAsync(AuditAction.MaintenanceDeleted, id);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        // Скидає лише статус UnderMaintenance, щоб не звільнити авто, яке тим часом поставили на рейс (InService).
+        private async Task ReleaseAutoAsync(int autoId)
+        {
+            var auto = await _autoRepository.GetByIdAsync(autoId);
+            if (auto is { Status: AutoStatus.UnderMaintenance })
+            {
+                auto.Status = AutoStatus.Available;
+            }
+        }
+
+        private async Task<AutoMaintenance> GetMaintenanceOrThrowAsync(int id)
+        {
+            return await _maintenanceRepository.GetByIdAsync(id) ?? throw NotFoundException.For<AutoMaintenance>(id);
+        }
     }
 }

@@ -1,44 +1,48 @@
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
-using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace transport_logistic_management_2026.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    public class LocationController : Controller
+    [Route("api/[controller]")]
+    public class LocationController : ControllerBase
     {
-        private readonly ILocationService _service;
-        private readonly IValidator<CreateLocationModel> _validator;
+        private readonly ILocationService _locationService;
 
-        public LocationController(ILocationService service, IValidator<CreateLocationModel> validator)
+        public LocationController(ILocationService locationService)
         {
-            _service = service;
-            _validator = validator;
-        }
-
-        [HttpPost]
-        public IActionResult Create([FromBody] CreateLocationModel model)
-        {
-            var v = _validator.Validate(model);
-            if (!v.IsValid) return BadRequest(v.ToDictionary());
-            _service.Create(model);
-            return Ok();
+            _locationService = locationService;
         }
 
         [HttpGet("all")]
-        public IActionResult GetAll() => Ok(_service.GetAll());
+        public async Task<ActionResult<IEnumerable<LocationDTO>>> GetAll()
+        {
+            return Ok(await _locationService.GetAllAsync());
+        }
 
         [HttpGet("{id:int}")]
-        public IActionResult Get(int id) => Ok(_service.Get(id));
+        public async Task<ActionResult<LocationDTO>> GetById([FromRoute] int id)
+        {
+            return Ok(await _locationService.GetAsync(id));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<ActionResult<LocationDTO>> Create([FromBody] CreateLocationModel model)
+        {
+            var location = await _locationService.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = location.Id }, location);
+        }
 
         [HttpDelete("{id:int}")]
-        
-        public async Task<IActionResult> Delete(int id)
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            await _service.Delete(id);
-            return Ok();
+            await _locationService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }

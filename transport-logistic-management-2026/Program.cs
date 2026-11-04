@@ -1,38 +1,46 @@
 using business_logic;
+using business_logic.Interfaces;
 using data_access;
 using data_access.Identity;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 using transport_logistic_management_2026.Helpers;
+using transport_logistic_management_2026.Services;
 
 namespace transport_logistic_management_2026
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var connectionString = builder.Configuration.GetConnectionString("connectionString");
+            var connectionString = builder.Configuration.GetConnectionString("connectionString")
+                ?? throw new InvalidOperationException("Connection string 'connectionString' is not configured.");
 
-
-            builder.Services.AddControllers().AddJsonOptions(options =>
+            builder.Services.AddControllers(options =>
+            {
+                options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+            })
+            .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
 
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddOpenApi();
+
             builder.Services.AddBusinessLogicServices();
             builder.Services.AddDataAccessServices(connectionString);
-            builder.Services.AddIdentity();
-            builder.Services.AddOpenApi();
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             builder.Services.AddJwtAuthentication(builder.Configuration);
-            
 
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowNextJS", policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000") 
+                    policy.WithOrigins("http://localhost:3000")
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -41,8 +49,9 @@ namespace transport_logistic_management_2026
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<Middlewares.GlobalExceptionHandler>();
 
-
             var app = builder.Build();
+
+            app.UseExceptionHandler();
 
             if (app.Environment.IsDevelopment())
             {
@@ -52,8 +61,6 @@ namespace transport_logistic_management_2026
 
             app.UseHttpsRedirection();
 
-            app.UseExceptionHandler();
-
             app.UseCors("AllowNextJS");
 
             app.UseAuthentication();
@@ -61,9 +68,9 @@ namespace transport_logistic_management_2026
 
             app.MapControllers();
 
-            IdentitySeeder.SeedAsync(app.Services);
+            await IdentitySeeder.SeedAsync(app.Services);
 
-            app.Run();
+            await app.RunAsync();
         }
     }
 }

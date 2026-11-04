@@ -1,6 +1,6 @@
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,78 +8,49 @@ namespace transport_logistic_management_2026.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class DriverController : Controller
+    public class DriverController : ControllerBase
     {
         private readonly IDriverService _driverService;
-        private readonly IValidator<CreateDriverModel> _createValidator;
-        private readonly IValidator<EditDriverModel> _editValidator;
 
-        public DriverController(IDriverService driverService, IValidator<CreateDriverModel> createValidator, IValidator<EditDriverModel> editValidator)
+        public DriverController(IDriverService driverService)
         {
             _driverService = driverService;
-            _createValidator = createValidator;
-            _editValidator = editValidator;
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public IActionResult Create([FromBody] CreateDriverModel model)
-        {
-            var validationResult = _createValidator.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                var errors = new ValidationProblemDetails(validationResult.ToDictionary())
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred."
-                };
-
-                return BadRequest(errors);
-            }
-
-            _driverService.Create(model);
-            return Ok();
-        }
-        [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
-        {
-            await _driverService.Delete(id);
-            return Ok();
-        }
-        [HttpPut]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit([FromBody] EditDriverModel model)
-        {
-            var validationResult = _editValidator.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                var errors = new ValidationProblemDetails(validationResult.ToDictionary())
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred."
-                };
-
-                return BadRequest(errors);
-            }
-
-            await _driverService.Edit(model);
-            return Ok();
         }
 
         [HttpGet("all")]
-        public IActionResult GetAll()
+        public async Task<ActionResult<IEnumerable<DriverDTO>>> GetAll()
         {
-            return Ok(_driverService.GetAll());
+            return Ok(await _driverService.GetAllAsync());
         }
 
-
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById([FromRoute] int id)
+        public async Task<ActionResult<DriverDTO>> GetById([FromRoute] int id)
         {
-            return Ok(await _driverService.Get(id));
+            return Ok(await _driverService.GetAsync(id));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<ActionResult<DriverDTO>> Create([FromBody] CreateDriverModel model)
+        {
+            var driver = await _driverService.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = driver.Id }, driver);
+        }
+
+        [HttpPut]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Edit([FromBody] EditDriverModel model)
+        {
+            await _driverService.EditAsync(model);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            await _driverService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }

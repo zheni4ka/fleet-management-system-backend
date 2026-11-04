@@ -230,10 +230,14 @@ namespace data_access.Migrations
 
                     b.Property<string>("Action")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("DispatcherId")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("EntityId")
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Time")
@@ -715,8 +719,7 @@ namespace data_access.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Dispatcher")
                         .WithMany()
                         .HasForeignKey("DispatcherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Dispatcher");
                 });
