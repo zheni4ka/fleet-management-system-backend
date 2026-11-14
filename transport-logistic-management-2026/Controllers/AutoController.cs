@@ -26,9 +26,11 @@ namespace transport_logistic_management_2026.Controllers
         }
 
         [HttpGet("pagedList")]
-        public async Task<ActionResult<GetPagedListResponseModel<AutoDTO>>> GetAutosPagedList([FromQuery] GetPagedListRequestModel<AutoSortField> pagedListRequest)
+        public async Task<ActionResult<GetPagedListResponseModel<AutoDTO>>> GetAutosPagedList(
+            [FromQuery] GetAutosBySearchFilterRequestModel searchFilter,
+            [FromQuery] GetPagedListRequestModel<AutoSortField> pagedListRequest)
         {
-            return Ok(await _autoService.GetPagedListAsync(pagedListRequest));
+            return Ok(await _autoService.GetPagedListAsync(searchFilter, pagedListRequest));
         }
 
         [HttpGet("{id:int}")]

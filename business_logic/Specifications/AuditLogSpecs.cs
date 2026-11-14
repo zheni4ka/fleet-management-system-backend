@@ -26,12 +26,26 @@ namespace business_logic.Specifications
 
         public class PagedList : Specification<AuditLog, AuditLogDTO>
         {
-            public PagedList(GetPagedListRequestModel<AuditLogSortField> pagedListRequest, AuditAction? action)
+            public PagedList(
+                GetAuditLogsBySearchFilterRequestModel searchFilter,
+                GetPagedListRequestModel<AuditLogSortField> pagedListRequest)
             {
-                if (action.HasValue)
+                if (searchFilter.Action.HasValue)
                 {
-                    var searchedAuditAction = action.Value;
+                    var searchedAuditAction = searchFilter.Action.Value;
                     Query.Where(x => x.Action == searchedAuditAction);
+                }
+
+                if (searchFilter.TimeFromDate.HasValue)
+                {
+                    var timeFromDateTime = searchFilter.TimeFromDate.Value.ToDateTime(TimeOnly.MinValue);
+                    Query.Where(x => x.Time >= timeFromDateTime);
+                }
+
+                if (searchFilter.TimeToDate.HasValue)
+                {
+                    var timeToExclusiveDateTime = searchFilter.TimeToDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue);
+                    Query.Where(x => x.Time < timeToExclusiveDateTime);
                 }
 
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))

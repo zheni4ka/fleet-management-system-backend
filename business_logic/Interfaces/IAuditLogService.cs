@@ -9,6 +9,8 @@ namespace business_logic.Interfaces
 
         Task<IEnumerable<AuditLogDTO>> GetLogsAsync();
 
-        Task<GetPagedListResponseModel<AuditLogDTO>> GetPagedListAsync(GetPagedListRequestModel<AuditLogSortField> pagedListRequest, AuditAction? action);
+        Task<GetPagedListResponseModel<AuditLogDTO>> GetPagedListAsync(
+            GetAuditLogsBySearchFilterRequestModel searchFilter,
+            GetPagedListRequestModel<AuditLogSortField> pagedListRequest);
     }
 }

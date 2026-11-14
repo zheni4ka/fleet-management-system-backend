@@ -65,8 +65,22 @@ namespace business_logic.Specifications
 
         public class PagedList : Specification<Auto>
         {
-            public PagedList(GetPagedListRequestModel<AutoSortField> pagedListRequest)
+            public PagedList(
+                GetAutosBySearchFilterRequestModel searchFilter,
+                GetPagedListRequestModel<AutoSortField> pagedListRequest)
             {
+                if (searchFilter.Status.HasValue)
+                {
+                    var searchedAutoStatus = searchFilter.Status.Value;
+                    Query.Where(a => a.Status == searchedAutoStatus);
+                }
+
+                if (!string.IsNullOrWhiteSpace(searchFilter.Color))
+                {
+                    var trimmedColor = searchFilter.Color.Trim();
+                    Query.Where(a => a.Color == trimmedColor);
+                }
+
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
                 {
                     var trimmedSearch = pagedListRequest.Search.Trim();

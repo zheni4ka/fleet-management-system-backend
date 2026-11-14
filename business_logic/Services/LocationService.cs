@@ -17,6 +17,7 @@ namespace business_logic.Services
         private readonly IMapper _mapper;
         private readonly IValidator<CreateLocationModel> _createValidator;
         private readonly IValidator<GetPagedListRequestModel<LocationSortField>> _pagedListRequestValidator;
+        private readonly IValidator<GetLocationsBySearchFilterRequestModel> _searchFilterValidator;
 
         public LocationService(
             IRepository<Location> locationRepository,
@@ -25,7 +26,8 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateLocationModel> createValidator,
-            IValidator<GetPagedListRequestModel<LocationSortField>> pagedListRequestValidator)
+            IValidator<GetPagedListRequestModel<LocationSortField>> pagedListRequestValidator,
+            IValidator<GetLocationsBySearchFilterRequestModel> searchFilterValidator)
         {
             _locationRepository = locationRepository;
             _routeRepository = routeRepository;
@@ -34,6 +36,7 @@ namespace business_logic.Services
             _mapper = mapper;
             _createValidator = createValidator;
             _pagedListRequestValidator = pagedListRequestValidator;
+            _searchFilterValidator = searchFilterValidator;
         }
 
         public async Task<IEnumerable<LocationDTO>> GetAllAsync()
@@ -41,11 +44,14 @@ namespace business_logic.Services
             return _mapper.Map<IEnumerable<LocationDTO>>(await _locationRepository.GetAllAsync());
         }
 
-        public async Task<GetPagedListResponseModel<LocationDTO>> GetPagedListAsync(GetPagedListRequestModel<LocationSortField> pagedListRequest)
+        public async Task<GetPagedListResponseModel<LocationDTO>> GetPagedListAsync(
+            GetLocationsBySearchFilterRequestModel searchFilter,
+            GetPagedListRequestModel<LocationSortField> pagedListRequest)
         {
+            await _searchFilterValidator.ValidateAndThrowAsync(searchFilter);
             await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
-            var locationsPagedListSpecification = new LocationSpecs.PagedList(pagedListRequest);
+            var locationsPagedListSpecification = new LocationSpecs.PagedList(searchFilter, pagedListRequest);
             var locationsPage = await _locationRepository.GetListBySpecAsync(locationsPagedListSpecification);
             var locationsTotalCount = await _locationRepository.CountBySpecAsync(locationsPagedListSpecification);
 

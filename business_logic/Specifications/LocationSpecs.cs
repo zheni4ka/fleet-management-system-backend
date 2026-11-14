@@ -9,8 +9,16 @@ namespace business_logic.Specifications
     {
         public class PagedList : Specification<Location>
         {
-            public PagedList(GetPagedListRequestModel<LocationSortField> pagedListRequest)
+            public PagedList(
+                GetLocationsBySearchFilterRequestModel searchFilter,
+                GetPagedListRequestModel<LocationSortField> pagedListRequest)
             {
+                if (!string.IsNullOrWhiteSpace(searchFilter.Country))
+                {
+                    var trimmedCountry = searchFilter.Country.Trim();
+                    Query.Where(l => l.Country.Contains(trimmedCountry));
+                }
+
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
                 {
                     var trimmedSearch = pagedListRequest.Search.Trim();

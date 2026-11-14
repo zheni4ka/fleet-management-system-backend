@@ -21,8 +21,10 @@ namespace business_logic_tests
             await _testHost.SeedAsync(seededAutos);
 
             var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<AutoDTO>>(
-                autoService => autoService.GetPagedListAsync(new GetPagedListRequestModel<AutoSortField>(
-                    Page: 2, PageSize: 10, Sort: AutoSortField.Number, SortDirection: SortDirection.Descending, Search: null)));
+                autoService => autoService.GetPagedListAsync(
+                    new GetAutosBySearchFilterRequestModel(Status: null, Color: null),
+                    new GetPagedListRequestModel<AutoSortField>(
+                        Page: 2, PageSize: 10, Sort: AutoSortField.Number, SortDirection: SortDirection.Descending, Search: null)));
 
             Assert.Equal(25, autosPage.TotalCount);
             Assert.Equal(10, autosPage.Items.Count);
@@ -39,12 +41,32 @@ namespace business_logic_tests
                 BusinessLogicTestHost.CreateAuto("АА0003АА", mark: "Scania"));
 
             var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<AutoDTO>>(
-                autoService => autoService.GetPagedListAsync(new GetPagedListRequestModel<AutoSortField>(
-                    Page: 1, PageSize: 1, Sort: null, SortDirection: null, Search: " Scania ")));
+                autoService => autoService.GetPagedListAsync(
+                    new GetAutosBySearchFilterRequestModel(Status: null, Color: null),
+                    new GetPagedListRequestModel<AutoSortField>(
+                        Page: 1, PageSize: 1, Sort: null, SortDirection: null, Search: " Scania ")));
 
             Assert.Equal(2, autosPage.TotalCount);
             Assert.Single(autosPage.Items);
             Assert.Equal("Scania", autosPage.Items[0].Mark);
+        }
+
+        [Fact]
+        public async Task AutoGetPagedListAsync_StatusFilter_ReturnsOnlyAutosWithStatus()
+        {
+            await _testHost.SeedAsync(
+                BusinessLogicTestHost.CreateAuto("АА0001АА", AutoStatus.Available),
+                BusinessLogicTestHost.CreateAuto("АА0002АА", AutoStatus.UnderMaintenance),
+                BusinessLogicTestHost.CreateAuto("АА0003АА", AutoStatus.UnderMaintenance));
+
+            var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<AutoDTO>>(
+                autoService => autoService.GetPagedListAsync(
+                    new GetAutosBySearchFilterRequestModel(Status: AutoStatus.UnderMaintenance, Color: null),
+                    new GetPagedListRequestModel<AutoSortField>(
+                        Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: null)));
+
+            Assert.Equal(2, autosPage.TotalCount);
+            Assert.All(autosPage.Items, auto => Assert.Equal(AutoStatus.UnderMaintenance.ToString(), auto.Status));
         }
 
         [Theory]
@@ -92,11 +114,41 @@ namespace business_logic_tests
                 new AuditLog { Action = AuditAction.RouteCreated, EntityId = "3", Time = new DateTime(2030, 1, 3, 10, 0, 0) });
 
             var auditLogsPage = await _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<AuditLogDTO>>(
-                auditLogService => auditLogService.GetPagedListAsync(new GetPagedListRequestModel<AuditLogSortField>(
-                    Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: null), AuditAction.AutoCreated));
+                auditLogService => auditLogService.GetPagedListAsync(
+                    new GetAuditLogsBySearchFilterRequestModel(Action: AuditAction.AutoCreated, TimeFromDate: null, TimeToDate: null),
+                    new GetPagedListRequestModel<AuditLogSortField>(
+                        Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: null)));
 
             Assert.Equal(2, auditLogsPage.TotalCount);
             Assert.Equal(new[] { "2", "1" }, auditLogsPage.Items.Select(auditLog => auditLog.EntityId));
+        }
+
+        [Fact]
+        public async Task AuditLogGetPagedListAsync_DateRangeFilter_IncludesWholeEndDay()
+        {
+            await _testHost.SeedAsync(
+                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "1", Time = new DateTime(2030, 1, 1, 23, 59, 0) },
+                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "2", Time = new DateTime(2030, 1, 2, 0, 0, 0) },
+                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "3", Time = new DateTime(2030, 1, 3, 23, 59, 0) },
+                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "4", Time = new DateTime(2030, 1, 4, 0, 0, 0) });
+
+            var auditLogsPage = await _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<AuditLogDTO>>(
+                auditLogService => auditLogService.GetPagedListAsync(
+                    new GetAuditLogsBySearchFilterRequestModel(Action: null, TimeFromDate: new DateOnly(2030, 1, 2), TimeToDate: new DateOnly(2030, 1, 3)),
+                    new GetPagedListRequestModel<AuditLogSortField>(
+                        Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: null)));
+
+            Assert.Equal(new[] { "3", "2" }, auditLogsPage.Items.Select(auditLog => auditLog.EntityId));
+        }
+
+        [Fact]
+        public async Task AuditLogGetPagedListAsync_ReversedDateRange_ThrowsValidationException()
+        {
+            await Assert.ThrowsAsync<ValidationException>(() => _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<AuditLogDTO>>(
+                auditLogService => auditLogService.GetPagedListAsync(
+                    new GetAuditLogsBySearchFilterRequestModel(Action: null, TimeFromDate: new DateOnly(2030, 1, 5), TimeToDate: new DateOnly(2030, 1, 3)),
+                    new GetPagedListRequestModel<AuditLogSortField>(
+                        Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: null))));
         }
 
         [Fact]

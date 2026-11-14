@@ -18,6 +18,7 @@ namespace business_logic.Services
         private readonly IValidator<CreateAutoModel> _createValidator;
         private readonly IValidator<EditAutoModel> _editValidator;
         private readonly IValidator<GetPagedListRequestModel<AutoSortField>> _pagedListRequestValidator;
+        private readonly IValidator<GetAutosBySearchFilterRequestModel> _searchFilterValidator;
 
         public AutoService(
             IRepository<Auto> autoRepository,
@@ -27,7 +28,8 @@ namespace business_logic.Services
             IMapper mapper,
             IValidator<CreateAutoModel> createValidator,
             IValidator<EditAutoModel> editValidator,
-            IValidator<GetPagedListRequestModel<AutoSortField>> pagedListRequestValidator)
+            IValidator<GetPagedListRequestModel<AutoSortField>> pagedListRequestValidator,
+            IValidator<GetAutosBySearchFilterRequestModel> searchFilterValidator)
         {
             _autoRepository = autoRepository;
             _routeRepository = routeRepository;
@@ -37,6 +39,7 @@ namespace business_logic.Services
             _createValidator = createValidator;
             _editValidator = editValidator;
             _pagedListRequestValidator = pagedListRequestValidator;
+            _searchFilterValidator = searchFilterValidator;
         }
 
         public async Task<IEnumerable<AutoDTO>> GetAllAsync()
@@ -45,11 +48,14 @@ namespace business_logic.Services
             return _mapper.Map<IEnumerable<AutoDTO>>(autos);
         }
 
-        public async Task<GetPagedListResponseModel<AutoDTO>> GetPagedListAsync(GetPagedListRequestModel<AutoSortField> pagedListRequest)
+        public async Task<GetPagedListResponseModel<AutoDTO>> GetPagedListAsync(
+            GetAutosBySearchFilterRequestModel searchFilter,
+            GetPagedListRequestModel<AutoSortField> pagedListRequest)
         {
+            await _searchFilterValidator.ValidateAndThrowAsync(searchFilter);
             await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
-            var autosPagedListSpecification = new AutoSpecs.PagedList(pagedListRequest);
+            var autosPagedListSpecification = new AutoSpecs.PagedList(searchFilter, pagedListRequest);
             var autosPage = await _autoRepository.GetListBySpecAsync(autosPagedListSpecification);
             var autosTotalCount = await _autoRepository.CountBySpecAsync(autosPagedListSpecification);
 
