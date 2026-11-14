@@ -14,7 +14,6 @@ namespace business_logic.Validators.AM
             RuleFor(x => x.AutoId).GreaterThan(0);
             RuleFor(x => x.Name).NotEmpty().WithMessage("Maintenance name is required.");
             RuleFor(x => x.Description).NotEmpty().MaximumLength(500);
-            RuleFor(x => x.ServiceDate).LessThanOrEqualTo(DateTime.Now);
         }
     }
 }

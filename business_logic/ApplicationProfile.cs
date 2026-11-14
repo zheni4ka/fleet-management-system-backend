@@ -29,7 +29,8 @@ namespace business_logic
             CreateMap<CreateAutoMaintenanceModel, AutoMaintenance>();
             CreateMap<EditAutoMaintenanceModel, AutoMaintenance>();
 
-            CreateMap<AuditLog, AuditLogDTO>();
+            CreateMap<AuditLog, AuditLogDTO>()
+                .ForMember(dest => dest.DispatcherUsername, opt => opt.MapFrom(src => src.Dispatcher != null ? src.Dispatcher.UserName : null));
 
             CreateMap<IdentityUser, UserDTO>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))

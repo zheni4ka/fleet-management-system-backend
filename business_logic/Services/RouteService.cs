@@ -19,6 +19,8 @@ namespace business_logic.Services
         private readonly IMapper _mapper;
         private readonly IValidator<CreateRouteModel> _createValidator;
         private readonly IValidator<EditRouteModel> _editValidator;
+        private readonly IValidator<GetRoutesBySearchFilterRequestModel> _searchFilterValidator;
+        private readonly IValidator<GetRoutesPeriodReportRequestModel> _periodReportValidator;
 
         public RouteService(
             IRepository<Route> routeRepository,
@@ -29,7 +31,9 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateRouteModel> createValidator,
-            IValidator<EditRouteModel> editValidator)
+            IValidator<EditRouteModel> editValidator,
+            IValidator<GetRoutesBySearchFilterRequestModel> searchFilterValidator,
+            IValidator<GetRoutesPeriodReportRequestModel> periodReportValidator)
         {
             _routeRepository = routeRepository;
             _autoRepository = autoRepository;
@@ -40,6 +44,8 @@ namespace business_logic.Services
             _mapper = mapper;
             _createValidator = createValidator;
             _editValidator = editValidator;
+            _searchFilterValidator = searchFilterValidator;
+            _periodReportValidator = periodReportValidator;
         }
 
         public async Task<IEnumerable<RouteDTO>> GetAllAsync()
@@ -52,6 +58,48 @@ namespace business_logic.Services
         {
             var route = await GetRouteOrThrowAsync(id);
             return _mapper.Map<RouteDTO>(route);
+        }
+
+        public async Task<IEnumerable<RouteDTO>> GetRoutesBySearchFilterAsync(GetRoutesBySearchFilterRequestModel searchFilter)
+        {
+            await _searchFilterValidator.ValidateAndThrowAsync(searchFilter);
+
+            var filteredRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.BySearchFilter(searchFilter));
+            return _mapper.Map<IEnumerable<RouteDTO>>(filteredRoutes);
+        }
+
+        public async Task<GetRoutesPeriodReportResponseModel> GetRoutesPeriodReportAsync(GetRoutesPeriodReportRequestModel periodReportRequest)
+        {
+            await _periodReportValidator.ValidateAndThrowAsync(periodReportRequest);
+
+            var periodStartDateTime = periodReportRequest.PeriodStartDate.ToDateTime(TimeOnly.MinValue);
+            var periodEndExclusiveDateTime = periodReportRequest.PeriodEndDate.AddDays(1).ToDateTime(TimeOnly.MinValue);
+            var periodRoutes = (await _routeRepository.GetListBySpecAsync(
+                new RouteSpecs.ByDeparturePeriod(periodStartDateTime, periodEndExclusiveDateTime))).ToList();
+
+            var driverSummaries = periodRoutes
+                .GroupBy(route => route.DriverId)
+                .Select(driverRoutes => new GetRoutesPeriodReportDriverSummaryResponseModel(
+                    DriverId: driverRoutes.Key,
+                    RoutesCount: driverRoutes.Count(),
+                    CompletedRoutesCount: driverRoutes.Count(route => route.Status == RouteStatus.Completed),
+                    CompletedRoutesDrivingHours: GetCompletedRoutesDrivingHours(driverRoutes)))
+                .OrderByDescending(driverSummary => driverSummary.RoutesCount)
+                .ToList();
+
+            return new GetRoutesPeriodReportResponseModel(
+                PeriodStartDate: periodReportRequest.PeriodStartDate,
+                PeriodEndDate: periodReportRequest.PeriodEndDate,
+                TotalRoutesCount: periodRoutes.Count,
+                PlannedRoutesCount: periodRoutes.Count(route => route.Status == RouteStatus.Planned),
+                InProgressRoutesCount: periodRoutes.Count(route => route.Status == RouteStatus.InProgress),
+                CompletedRoutesCount: periodRoutes.Count(route => route.Status == RouteStatus.Completed),
+                CancelledRoutesCount: periodRoutes.Count(route => route.Status == RouteStatus.Cancelled),
+                CompletedRoutesDrivingHours: GetCompletedRoutesDrivingHours(periodRoutes),
+                InvolvedAutosCount: periodRoutes.Select(route => route.AutoId).Distinct().Count(),
+                InvolvedDriversCount: driverSummaries.Count,
+                DriverSummaries: driverSummaries,
+                Routes: _mapper.Map<List<RouteDTO>>(periodRoutes));
         }
 
         public async Task<RouteDTO> CreateAsync(CreateRouteModel model)
@@ -141,6 +189,14 @@ namespace business_logic.Services
             _routeRepository.Delete(route);
             await _auditLogService.LogActionAsync(AuditAction.RouteDeleted, id);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        private static double GetCompletedRoutesDrivingHours(IEnumerable<Route> routes)
+        {
+            var completedRoutesDrivingHours = routes
+                .Where(route => route.Status == RouteStatus.Completed)
+                .Sum(route => (route.ArrivalTime - route.DepartureTime).TotalHours);
+            return Math.Round(completedRoutesDrivingHours, 1);
         }
 
         private async Task<Route> GetRouteOrThrowAsync(int id)

@@ -11,17 +11,17 @@ namespace business_logic.Validators
 
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")
-                .Matches(@"^[А-ЩЬЮЯҐЄІЇ][а-щьюяґєії]{0,16}$")
+                .Matches(DriverNameFormat.Pattern).WithMessage(DriverNameFormat.InvalidFormatMessage)
                 .MaximumLength(100).WithMessage("Name cannot exceed 100 characters.");
 
             RuleFor(x => x.Surname)
                 .NotEmpty().WithMessage("Surname is required.")
-                .Matches(@"^[А-ЩЬЮЯҐЄІЇ][а-щьюяґєії]{0,16}$")
+                .Matches(DriverNameFormat.Pattern).WithMessage(DriverNameFormat.InvalidFormatMessage)
                 .MaximumLength(100).WithMessage("Surname cannot exceed 100 characters.");
 
             RuleFor(x => x.Patronymic)
                 .NotEmpty().WithMessage("Patronymic is required.")
-                .Matches(@"^[А-ЩЬЮЯҐЄІЇ][а-щьюяґєії]{0,16}$")
+                .Matches(DriverNameFormat.Pattern).WithMessage(DriverNameFormat.InvalidFormatMessage)
                 .MaximumLength(100).WithMessage("Patronymic cannot exceed 100 characters.");
 
             RuleFor(x => x.LicenseNumber)

@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>transport_logistic_management_2026</RootNamespace>
+    <UserSecretsId>089b6904-6c7a-4b81-a57c-4f038ffd7b0c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

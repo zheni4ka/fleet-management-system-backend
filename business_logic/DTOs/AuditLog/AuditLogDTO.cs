@@ -6,6 +6,7 @@ namespace business_logic.DTOs
     {
         public int Id { get; set; }
         public string? DispatcherId { get; set; }
+        public string? DispatcherUsername { get; set; }
         public DateTime Time { get; set; }
         public AuditAction Action { get; set; }
         public string? EntityId { get; set; }

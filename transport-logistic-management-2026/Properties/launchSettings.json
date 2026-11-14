@@ -13,8 +13,8 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "launchUrl": "scalar/v1", // Browser will open here
-      "applicationUrl": "http://localhost:5196", // Server listens here
+      "launchUrl": "scalar/v1",
+      "applicationUrl": "http://localhost:5196",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -27,12 +27,11 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    }
-},
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchUrl": "scalar/v1",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

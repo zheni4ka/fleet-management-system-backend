@@ -14,6 +14,11 @@ namespace transport_logistic_management_2026
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            if (!builder.Environment.IsDevelopment())
+            {
+                builder.Configuration.AddUserSecrets<Program>(optional: true);
+            }
+
             var connectionString = builder.Configuration.GetConnectionString("connectionString")
                 ?? throw new InvalidOperationException("Connection string 'connectionString' is not configured.");
 
@@ -68,7 +73,9 @@ namespace transport_logistic_management_2026
 
             app.MapControllers();
 
-            await IdentitySeeder.SeedAsync(app.Services);
+            await IdentitySeeder.SeedAsync(
+                app.Services,
+                app.Configuration.GetSection(SeedAdminSettings.SectionName).Get<SeedAdminSettings>());
 
             await app.RunAsync();
         }

@@ -1,4 +1,5 @@
 ﻿using Ardalis.Specification;
+using business_logic.DTOs;
 using business_logic.Entities;
 
 namespace business_logic.Specifications
@@ -84,6 +85,65 @@ namespace business_logic.Specifications
                 Query.Where(r => r.AutoId == autoId
                     && (r.Status == RouteStatus.Planned || r.Status == RouteStatus.InProgress)
                     && r.DepartureTime >= from);
+            }
+        }
+
+        public class BySearchFilter : Specification<Route>
+        {
+            public BySearchFilter(GetRoutesBySearchFilterRequestModel searchFilter)
+            {
+                if (!string.IsNullOrWhiteSpace(searchFilter.StartCity))
+                {
+                    var trimmedStartCity = searchFilter.StartCity.Trim();
+                    Query.Where(r => r.StartLocation != null && r.StartLocation.City.Contains(trimmedStartCity));
+                }
+
+                if (!string.IsNullOrWhiteSpace(searchFilter.DestinationCity))
+                {
+                    var trimmedDestinationCity = searchFilter.DestinationCity.Trim();
+                    Query.Where(r => r.DestinationLocation != null && r.DestinationLocation.City.Contains(trimmedDestinationCity));
+                }
+
+                if (searchFilter.DepartureFromDate.HasValue)
+                {
+                    var departureFromDateTime = searchFilter.DepartureFromDate.Value.ToDateTime(TimeOnly.MinValue);
+                    Query.Where(r => r.DepartureTime >= departureFromDateTime);
+                }
+
+                if (searchFilter.DepartureToDate.HasValue)
+                {
+                    var departureToExclusiveDateTime = searchFilter.DepartureToDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue);
+                    Query.Where(r => r.DepartureTime < departureToExclusiveDateTime);
+                }
+
+                if (searchFilter.Status.HasValue)
+                {
+                    var searchedRouteStatus = searchFilter.Status.Value;
+                    Query.Where(r => r.Status == searchedRouteStatus);
+                }
+
+                if (searchFilter.DriverId.HasValue)
+                {
+                    var searchedDriverId = searchFilter.DriverId.Value;
+                    Query.Where(r => r.DriverId == searchedDriverId);
+                }
+
+                if (searchFilter.AutoId.HasValue)
+                {
+                    var searchedAutoId = searchFilter.AutoId.Value;
+                    Query.Where(r => r.AutoId == searchedAutoId);
+                }
+
+                Query.OrderBy(r => r.DepartureTime);
+            }
+        }
+
+        public class ByDeparturePeriod : Specification<Route>
+        {
+            public ByDeparturePeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
+            {
+                Query.Where(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime)
+                    .OrderBy(r => r.DepartureTime);
             }
         }
 

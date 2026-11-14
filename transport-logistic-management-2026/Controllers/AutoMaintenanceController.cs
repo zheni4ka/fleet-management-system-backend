@@ -8,6 +8,7 @@ namespace transport_logistic_management_2026.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AutoMaintenanceController : ControllerBase
     {
         private readonly IAutoMaintenanceService _maintenanceService;

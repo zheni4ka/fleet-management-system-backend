@@ -17,7 +17,8 @@ namespace business_logic.Specifications
         {
             public All()
             {
-                Query.OrderByDescending(x => x.Time);
+                Query.Include(x => x.Dispatcher)
+                    .OrderByDescending(x => x.Time);
             }
         }
     }

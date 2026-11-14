@@ -8,6 +8,7 @@ namespace transport_logistic_management_2026.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class RouteController : ControllerBase
     {
         private readonly IRouteService _routeService;
@@ -18,17 +19,29 @@ namespace transport_logistic_management_2026.Controllers
         }
 
         [HttpGet("all")]
-        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<RouteDTO>>> GetAll()
         {
             return Ok(await _routeService.GetAllAsync());
         }
 
         [HttpGet("{id:int}")]
-        [AllowAnonymous]
         public async Task<ActionResult<RouteDTO>> GetById([FromRoute] int id)
         {
             return Ok(await _routeService.GetAsync(id));
+        }
+
+        [HttpGet("search")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<IEnumerable<RouteDTO>>> GetRoutesBySearchFilter([FromQuery] GetRoutesBySearchFilterRequestModel searchFilter)
+        {
+            return Ok(await _routeService.GetRoutesBySearchFilterAsync(searchFilter));
+        }
+
+        [HttpGet("periodReport")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<GetRoutesPeriodReportResponseModel>> GetRoutesPeriodReport([FromQuery] GetRoutesPeriodReportRequestModel periodReportRequest)
+        {
+            return Ok(await _routeService.GetRoutesPeriodReportAsync(periodReportRequest));
         }
 
         [HttpPost]
