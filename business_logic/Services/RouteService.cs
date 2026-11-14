@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
@@ -14,38 +15,47 @@ namespace business_logic.Services
         private readonly IRepository<Auto> _autoRepository;
         private readonly IRepository<Driver> _driverRepository;
         private readonly IRepository<Location> _locationRepository;
+        private readonly IRepository<AutoMaintenance> _maintenanceRepository;
         private readonly IAuditLogService _auditLogService;
+        private readonly IAutoStatusSyncService _autoStatusSyncService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateRouteModel> _createValidator;
         private readonly IValidator<EditRouteModel> _editValidator;
         private readonly IValidator<GetRoutesBySearchFilterRequestModel> _searchFilterValidator;
         private readonly IValidator<GetRoutesPeriodReportRequestModel> _periodReportValidator;
+        private readonly IValidator<GetPagedListRequestModel<RouteSortField>> _pagedListRequestValidator;
 
         public RouteService(
             IRepository<Route> routeRepository,
             IRepository<Auto> autoRepository,
             IRepository<Driver> driverRepository,
             IRepository<Location> locationRepository,
+            IRepository<AutoMaintenance> maintenanceRepository,
             IAuditLogService auditLogService,
+            IAutoStatusSyncService autoStatusSyncService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateRouteModel> createValidator,
             IValidator<EditRouteModel> editValidator,
             IValidator<GetRoutesBySearchFilterRequestModel> searchFilterValidator,
-            IValidator<GetRoutesPeriodReportRequestModel> periodReportValidator)
+            IValidator<GetRoutesPeriodReportRequestModel> periodReportValidator,
+            IValidator<GetPagedListRequestModel<RouteSortField>> pagedListRequestValidator)
         {
             _routeRepository = routeRepository;
             _autoRepository = autoRepository;
             _driverRepository = driverRepository;
             _locationRepository = locationRepository;
+            _maintenanceRepository = maintenanceRepository;
             _auditLogService = auditLogService;
+            _autoStatusSyncService = autoStatusSyncService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
             _editValidator = editValidator;
             _searchFilterValidator = searchFilterValidator;
             _periodReportValidator = periodReportValidator;
+            _pagedListRequestValidator = pagedListRequestValidator;
         }
 
         public async Task<IEnumerable<RouteDTO>> GetAllAsync()
@@ -66,6 +76,22 @@ namespace business_logic.Services
 
             var filteredRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.BySearchFilter(searchFilter));
             return _mapper.Map<IEnumerable<RouteDTO>>(filteredRoutes);
+        }
+
+        public async Task<GetPagedListResponseModel<RouteDTO>> GetRoutesPagedListBySearchFilterAsync(
+            GetRoutesBySearchFilterRequestModel searchFilter,
+            GetPagedListRequestModel<RouteSortField> pagedListRequest)
+        {
+            await _searchFilterValidator.ValidateAndThrowAsync(searchFilter);
+            await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
+
+            var routesPagedListSpecification = new RouteSpecs.PagedListBySearchFilter(searchFilter, pagedListRequest);
+            var routesPage = await _routeRepository.GetListBySpecAsync(routesPagedListSpecification);
+            var routesTotalCount = await _routeRepository.CountBySpecAsync(routesPagedListSpecification);
+
+            return new GetPagedListResponseModel<RouteDTO>(
+                Items: _mapper.Map<List<RouteDTO>>(routesPage),
+                TotalCount: routesTotalCount);
         }
 
         public async Task<GetRoutesPeriodReportResponseModel> GetRoutesPeriodReportAsync(GetRoutesPeriodReportRequestModel periodReportRequest)
@@ -109,20 +135,18 @@ namespace business_logic.Services
             var auto = await GetUsableAutoAsync(model.AutoId);
             await EnsureDriverExistsAsync(model.DriverId);
             await EnsureLocationsExistAsync(model.StartLocationId, model.DestinationLocationId);
-            await EnsureResourcesAreFreeAsync(model.AutoId, model.DriverId, model.DepartureTime, model.ArrivalTime);
+
+            if (RouteStatusGroups.Active.Contains(model.Status))
+            {
+                await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, model.DepartureTime, model.ArrivalTime);
+            }
 
             var route = _mapper.Map<Route>(model);
             await _routeRepository.InsertAsync(route);
 
-            // Маршрут, створений одразу в статусі InProgress, займає автомобіль.
-            if (route.Status == RouteStatus.InProgress)
-            {
-                auto.Status = AutoStatus.InService;
-            }
-
-            // Перше збереження потрібне, щоб БД згенерувала route.Id для запису в аудит.
             await _unitOfWork.SaveChangesAsync();
             await _auditLogService.LogActionAsync(AuditAction.RouteCreated, route.Id);
+            await _autoStatusSyncService.SyncAutoStatusAsync(auto);
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<RouteDTO>(route);
@@ -133,61 +157,41 @@ namespace business_logic.Services
             await _editValidator.ValidateAndThrowAsync(model);
 
             var route = await GetRouteOrThrowAsync(model.Id);
+            var previousAutoId = route.AutoId;
 
-            // Старі значення запам'ятовуються до мапінгу: за ними визначається, чи треба звільнити попереднє авто.
-            int oldAutoId = route.AutoId;
-            var oldStatus = route.Status;
-
-            // Заборона на авто в ремонті діє лише при заміні авто; поточне авто маршруту можна лишити,
-            // щоб диспетчер міг, наприклад, скасувати рейс авто, яке вже потрапило на ремонт.
-            var newAuto = oldAutoId == model.AutoId
-                ? await _autoRepository.GetByIdAsync(model.AutoId) ?? throw NotFoundException.For<Auto>(model.AutoId)
+            var assignedAuto = previousAutoId == model.AutoId
+                ? await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(model.AutoId)) ?? throw NotFoundException.For<Auto>(model.AutoId)
                 : await GetUsableAutoAsync(model.AutoId);
             await EnsureDriverExistsAsync(model.DriverId);
             await EnsureLocationsExistAsync(model.StartLocationId!.Value, model.DestinationLocationId!.Value);
 
-            // Час рейсу при редагуванні не змінюється, тому зайнятість перевіряється за поточним інтервалом,
-            // а сам маршрут виключається, щоб не конфліктувати з собою.
-            await EnsureResourcesAreFreeAsync(model.AutoId, model.DriverId, route.DepartureTime, route.ArrivalTime, route.Id);
+            if (RouteStatusGroups.Active.Contains(model.Status))
+            {
+                await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, route.DepartureTime, route.ArrivalTime, route.Id);
+            }
 
             _mapper.Map(model, route);
-
-            // Попереднє авто звільняється, якщо рейс був активним і тепер воно його більше не обслуговує:
-            // авто замінили або маршрут перейшов зі статусу InProgress.
-            if (oldStatus == RouteStatus.InProgress && (oldAutoId != route.AutoId || route.Status != RouteStatus.InProgress))
-            {
-                var oldAuto = await _autoRepository.GetByIdAsync(oldAutoId);
-                if (oldAuto is { Status: AutoStatus.InService })
-                {
-                    oldAuto.Status = AutoStatus.Available;
-                }
-            }
-
-            if (route.Status == RouteStatus.InProgress)
-            {
-                newAuto.Status = AutoStatus.InService;
-            }
-
             await _auditLogService.LogActionAsync(AuditAction.RouteUpdated, route.Id);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _autoStatusSyncService.SyncAutoStatusAsync(assignedAuto);
+            if (previousAutoId != assignedAuto.Id)
+            {
+                await _autoStatusSyncService.SyncAutoStatusAsync(previousAutoId);
+            }
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
             var route = await GetRouteOrThrowAsync(id);
-
-            // Видалення активного рейсу звільняє авто; статус InService перевіряється, щоб не скинути UnderMaintenance.
-            if (route.Status == RouteStatus.InProgress)
-            {
-                var auto = await _autoRepository.GetByIdAsync(route.AutoId);
-                if (auto is { Status: AutoStatus.InService })
-                {
-                    auto.Status = AutoStatus.Available;
-                }
-            }
+            var routeAutoId = route.AutoId;
 
             _routeRepository.Delete(route);
             await _auditLogService.LogActionAsync(AuditAction.RouteDeleted, id);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _autoStatusSyncService.SyncAutoStatusAsync(routeAutoId);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -233,18 +237,32 @@ namespace business_logic.Services
             }
         }
 
-        // Перевірка перетину інтервалів виконується в БД через специфікації. Скасовані й завершені рейси
-        // ресурс не займають; excludeRouteId виключає маршрут, що редагується.
-        private async Task EnsureResourcesAreFreeAsync(int autoId, int driverId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
+        private async Task EnsureAssignmentHasNoConflictsAsync(int autoId, int driverId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
         {
-            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.OverlappingForAuto(autoId, departure, arrival, excludeRouteId)))
+            var routeIntervalText = $"{departure.ToString(DisplayFormats.DateTime)}–{arrival.ToString(DisplayFormats.DateTime)}";
+
+            var conflictingAutoRouteId = await _routeRepository.GetProjectedItemBySpecAsync(
+                new RouteSpecs.ActiveIdOverlappingForAuto(autoId, departure, arrival, excludeRouteId));
+            if (conflictingAutoRouteId.HasValue)
             {
-                throw new BusinessRuleException("Автомобіль вже зайнятий на іншому рейсі у цей час.");
+                throw new AssignmentConflictException(
+                    $"Автомобіль (ID {autoId}) вже призначено на маршрут #{conflictingAutoRouteId.Value}, який перетинається з інтервалом {routeIntervalText}.");
             }
 
-            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.OverlappingForDriver(driverId, departure, arrival, excludeRouteId)))
+            var conflictingDriverRouteId = await _routeRepository.GetProjectedItemBySpecAsync(
+                new RouteSpecs.ActiveIdOverlappingForDriver(driverId, departure, arrival, excludeRouteId));
+            if (conflictingDriverRouteId.HasValue)
             {
-                throw new BusinessRuleException("Водій вже зайнятий на іншому рейсі у цей час.");
+                throw new AssignmentConflictException(
+                    $"Водія (ID {driverId}) вже призначено на маршрут #{conflictingDriverRouteId.Value}, який перетинається з інтервалом {routeIntervalText}.");
+            }
+
+            var conflictingMaintenanceId = await _maintenanceRepository.GetProjectedItemBySpecAsync(
+                new AutoMaintenanceSpecs.IncompleteIdOverlappingRouteIntervalForAuto(autoId, departure, arrival));
+            if (conflictingMaintenanceId.HasValue)
+            {
+                throw new AssignmentConflictException(
+                    $"Для автомобіля (ID {autoId}) заплановано техобслуговування #{conflictingMaintenanceId.Value}, яке припадає на інтервал {routeIntervalText}.");
             }
         }
     }

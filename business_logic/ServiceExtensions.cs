@@ -1,5 +1,7 @@
-﻿using business_logic.Interfaces;
+﻿using business_logic.DTOs;
+using business_logic.Interfaces;
 using business_logic.Services;
+using business_logic.Validators.Common;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,8 +17,19 @@ namespace business_logic
             });
 
             services.AddValidatorsFromAssembly(typeof(ServiceExtensions).Assembly);
+            services.AddPagedListRequestValidators();
 
             services.AddCustomServices();
+        }
+
+        private static void AddPagedListRequestValidators(this IServiceCollection services)
+        {
+            services.AddScoped<IValidator<GetPagedListRequestModel<AutoSortField>>, GetPagedListRequestModelValidator<AutoSortField>>();
+            services.AddScoped<IValidator<GetPagedListRequestModel<DriverSortField>>, GetPagedListRequestModelValidator<DriverSortField>>();
+            services.AddScoped<IValidator<GetPagedListRequestModel<LocationSortField>>, GetPagedListRequestModelValidator<LocationSortField>>();
+            services.AddScoped<IValidator<GetPagedListRequestModel<DispatcherSortField>>, GetPagedListRequestModelValidator<DispatcherSortField>>();
+            services.AddScoped<IValidator<GetPagedListRequestModel<RouteSortField>>, GetPagedListRequestModelValidator<RouteSortField>>();
+            services.AddScoped<IValidator<GetPagedListRequestModel<AuditLogSortField>>, GetPagedListRequestModelValidator<AuditLogSortField>>();
         }
 
         private static void AddCustomServices(this IServiceCollection services)
@@ -28,6 +41,7 @@ namespace business_logic
             services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<IAutoMaintenanceService, AutoMaintenanceService>();
             services.AddScoped<IAuditLogService, AuditLogService>();
+            services.AddScoped<IAutoStatusSyncService, AutoStatusSyncService>();
         }
     }
 }

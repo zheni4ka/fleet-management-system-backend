@@ -13,5 +13,8 @@ namespace business_logic.Interfaces
         Task<TEntity?> GetItemBySpecAsync(ISpecification<TEntity> specification);
         Task<IEnumerable<TEntity>> GetListBySpecAsync(ISpecification<TEntity> specification);
         Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification);
+        Task<int> CountBySpecAsync(ISpecification<TEntity> specification);
+        Task<IReadOnlyList<TResult>> GetProjectedListBySpecAsync<TResult>(ISpecification<TEntity, TResult> specification);
+        Task<TResult?> GetProjectedItemBySpecAsync<TResult>(ISpecification<TEntity, TResult> specification);
     }
 }

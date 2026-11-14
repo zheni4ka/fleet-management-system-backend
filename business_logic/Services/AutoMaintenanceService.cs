@@ -14,6 +14,7 @@ namespace business_logic.Services
         private readonly IRepository<Auto> _autoRepository;
         private readonly IRepository<Route> _routeRepository;
         private readonly IAuditLogService _auditLogService;
+        private readonly IAutoStatusSyncService _autoStatusSyncService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateAutoMaintenanceModel> _createValidator;
@@ -24,6 +25,7 @@ namespace business_logic.Services
             IRepository<Auto> autoRepository,
             IRepository<Route> routeRepository,
             IAuditLogService auditLogService,
+            IAutoStatusSyncService autoStatusSyncService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateAutoMaintenanceModel> createValidator,
@@ -33,6 +35,7 @@ namespace business_logic.Services
             _autoRepository = autoRepository;
             _routeRepository = routeRepository;
             _auditLogService = auditLogService;
+            _autoStatusSyncService = autoStatusSyncService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
@@ -63,8 +66,6 @@ namespace business_logic.Services
 
             var auto = await _autoRepository.GetByIdAsync(model.AutoId) ?? throw new NotFoundException("Автомобіль не знайдено");
 
-            // Заплановані та активні рейси авто, що відправляються з дати обслуговування, скасовуються
-            // в тій самій транзакції, що й створення запису про ремонт.
             var affectedRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.ActiveByAutoFrom(model.AutoId, model.ServiceDate));
             foreach (var route in affectedRoutes)
             {
@@ -73,11 +74,10 @@ namespace business_logic.Services
 
             var maintenance = _mapper.Map<AutoMaintenance>(model);
             await _maintenanceRepository.InsertAsync(maintenance);
-            auto.Status = AutoStatus.UnderMaintenance;
 
-            // Перше збереження потрібне, щоб БД згенерувала maintenance.Id для запису в аудит.
             await _unitOfWork.SaveChangesAsync();
             await _auditLogService.LogActionAsync(AuditAction.MaintenanceCreated, maintenance.Id);
+            await _autoStatusSyncService.SyncAutoStatusAsync(auto);
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<AutoMaintenanceDTO>(maintenance);
@@ -88,40 +88,31 @@ namespace business_logic.Services
             await _editValidator.ValidateAndThrowAsync(model);
 
             var maintenance = await GetMaintenanceOrThrowAsync(model.Id);
+            var previousAutoId = maintenance.AutoId;
+
             _mapper.Map(model, maintenance);
-
-            if (maintenance.IsCompleted)
-            {
-                await ReleaseAutoAsync(maintenance.AutoId);
-            }
-
             await _auditLogService.LogActionAsync(AuditAction.MaintenanceUpdated, maintenance.Id);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _autoStatusSyncService.SyncAutoStatusAsync(maintenance.AutoId);
+            if (previousAutoId != maintenance.AutoId)
+            {
+                await _autoStatusSyncService.SyncAutoStatusAsync(previousAutoId);
+            }
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
             var maintenance = await GetMaintenanceOrThrowAsync(id);
-
-            // Авто ще тримає незавершене обслуговування, тож при його видаленні авто повертається в роботу.
-            if (!maintenance.IsCompleted)
-            {
-                await ReleaseAutoAsync(maintenance.AutoId);
-            }
+            var maintenanceAutoId = maintenance.AutoId;
 
             _maintenanceRepository.Delete(maintenance);
             await _auditLogService.LogActionAsync(AuditAction.MaintenanceDeleted, id);
             await _unitOfWork.SaveChangesAsync();
-        }
 
-        // Скидає лише статус UnderMaintenance, щоб не звільнити авто, яке тим часом поставили на рейс (InService).
-        private async Task ReleaseAutoAsync(int autoId)
-        {
-            var auto = await _autoRepository.GetByIdAsync(autoId);
-            if (auto is { Status: AutoStatus.UnderMaintenance })
-            {
-                auto.Status = AutoStatus.Available;
-            }
+            await _autoStatusSyncService.SyncAutoStatusAsync(maintenanceAutoId);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         private async Task<AutoMaintenance> GetMaintenanceOrThrowAsync(int id)

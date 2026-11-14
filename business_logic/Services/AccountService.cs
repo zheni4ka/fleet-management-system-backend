@@ -4,6 +4,7 @@ using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
 using business_logic.Interfaces;
+using business_logic.Specifications;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 
@@ -19,6 +20,10 @@ namespace business_logic.Services
         private readonly IMapper _mapper;
         private readonly IValidator<LoginModel> _loginValidator;
         private readonly IValidator<RegisterModel> _registerValidator;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IRepository<IdentityUser> _userRepository;
+        private readonly IRepository<IdentityUserRole<string>> _userRoleRepository;
+        private readonly IValidator<GetPagedListRequestModel<DispatcherSortField>> _dispatchersPagedListRequestValidator;
 
         public AccountService(
             UserManager<IdentityUser> userManager,
@@ -28,7 +33,11 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<LoginModel> loginValidator,
-            IValidator<RegisterModel> registerValidator)
+            IValidator<RegisterModel> registerValidator,
+            RoleManager<IdentityRole> roleManager,
+            IRepository<IdentityUser> userRepository,
+            IRepository<IdentityUserRole<string>> userRoleRepository,
+            IValidator<GetPagedListRequestModel<DispatcherSortField>> dispatchersPagedListRequestValidator)
         {
             _userManager = userManager;
             _tokenService = tokenService;
@@ -38,6 +47,28 @@ namespace business_logic.Services
             _mapper = mapper;
             _loginValidator = loginValidator;
             _registerValidator = registerValidator;
+            _roleManager = roleManager;
+            _userRepository = userRepository;
+            _userRoleRepository = userRoleRepository;
+            _dispatchersPagedListRequestValidator = dispatchersPagedListRequestValidator;
+        }
+
+        public async Task<GetPagedListResponseModel<UserDTO>> GetDispatchersPagedListAsync(GetPagedListRequestModel<DispatcherSortField> pagedListRequest)
+        {
+            await _dispatchersPagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
+
+            var dispatcherRole = await _roleManager.FindByNameAsync(UserRoles.Dispatcher)
+                ?? throw new InvalidOperationException($"Role '{UserRoles.Dispatcher}' is not seeded.");
+            var dispatcherUserIds = await _userRoleRepository.GetProjectedListBySpecAsync(
+                new IdentityUserRoleSpecs.UserIdsByRoleId(dispatcherRole.Id));
+
+            var dispatchersPagedListSpecification = new IdentityUserSpecs.DispatchersPagedList(dispatcherUserIds, pagedListRequest);
+            var dispatchersPage = await _userRepository.GetProjectedListBySpecAsync(dispatchersPagedListSpecification);
+            var dispatchersTotalCount = await _userRepository.CountBySpecAsync(dispatchersPagedListSpecification);
+
+            return new GetPagedListResponseModel<UserDTO>(
+                Items: dispatchersPage,
+                TotalCount: dispatchersTotalCount);
         }
 
         public async Task<ResponseAuth> LoginAsync(LoginModel model)

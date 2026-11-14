@@ -39,6 +39,7 @@ namespace transport_logistic_management_2026
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+            builder.Services.AddHostedService<DueMaintenanceAutoStatusSyncBackgroundService>();
             builder.Services.AddJwtAuthentication(builder.Configuration);
 
             builder.Services.AddCors(options =>

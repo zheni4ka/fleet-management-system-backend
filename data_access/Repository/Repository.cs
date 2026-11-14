@@ -55,6 +55,21 @@ namespace data_access.Repository
             return await ApplySpecification(specification).AnyAsync();
         }
 
+        public async Task<int> CountBySpecAsync(ISpecification<TEntity> specification)
+        {
+            return await SpecificationEvaluator.Default.GetQuery(_dbSet, specification, evaluateCriteriaOnly: true).CountAsync();
+        }
+
+        public async Task<IReadOnlyList<TResult>> GetProjectedListBySpecAsync<TResult>(ISpecification<TEntity, TResult> specification)
+        {
+            return await SpecificationEvaluator.Default.GetQuery(_dbSet, specification).ToListAsync();
+        }
+
+        public async Task<TResult?> GetProjectedItemBySpecAsync<TResult>(ISpecification<TEntity, TResult> specification)
+        {
+            return await SpecificationEvaluator.Default.GetQuery(_dbSet, specification).FirstOrDefaultAsync();
+        }
+
         private IQueryable<TEntity> ApplySpecification(ISpecification<TEntity> specification)
         {
             return SpecificationEvaluator.Default.GetQuery(_dbSet, specification);

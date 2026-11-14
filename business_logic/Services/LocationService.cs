@@ -16,6 +16,7 @@ namespace business_logic.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateLocationModel> _createValidator;
+        private readonly IValidator<GetPagedListRequestModel<LocationSortField>> _pagedListRequestValidator;
 
         public LocationService(
             IRepository<Location> locationRepository,
@@ -23,7 +24,8 @@ namespace business_logic.Services
             IAuditLogService auditLogService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<CreateLocationModel> createValidator)
+            IValidator<CreateLocationModel> createValidator,
+            IValidator<GetPagedListRequestModel<LocationSortField>> pagedListRequestValidator)
         {
             _locationRepository = locationRepository;
             _routeRepository = routeRepository;
@@ -31,11 +33,25 @@ namespace business_logic.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
+            _pagedListRequestValidator = pagedListRequestValidator;
         }
 
         public async Task<IEnumerable<LocationDTO>> GetAllAsync()
         {
             return _mapper.Map<IEnumerable<LocationDTO>>(await _locationRepository.GetAllAsync());
+        }
+
+        public async Task<GetPagedListResponseModel<LocationDTO>> GetPagedListAsync(GetPagedListRequestModel<LocationSortField> pagedListRequest)
+        {
+            await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
+
+            var locationsPagedListSpecification = new LocationSpecs.PagedList(pagedListRequest);
+            var locationsPage = await _locationRepository.GetListBySpecAsync(locationsPagedListSpecification);
+            var locationsTotalCount = await _locationRepository.CountBySpecAsync(locationsPagedListSpecification);
+
+            return new GetPagedListResponseModel<LocationDTO>(
+                Items: _mapper.Map<List<LocationDTO>>(locationsPage),
+                TotalCount: locationsTotalCount);
         }
 
         public async Task<LocationDTO> GetAsync(int id)

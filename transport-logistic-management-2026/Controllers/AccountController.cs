@@ -39,6 +39,13 @@ namespace transport_logistic_management_2026.Controllers
             return Ok(await _accountService.GetDispatchersAsync());
         }
 
+        [HttpGet("dispatchersPagedList")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<ActionResult<GetPagedListResponseModel<UserDTO>>> GetDispatchersPagedList([FromQuery] GetPagedListRequestModel<DispatcherSortField> pagedListRequest)
+        {
+            return Ok(await _accountService.GetDispatchersPagedListAsync(pagedListRequest));
+        }
+
         [HttpGet("{id}")]
         [Authorize(Roles = UserRoles.Admin)]
         public async Task<ActionResult<UserDTO>> GetDispatcherById([FromRoute] string id)

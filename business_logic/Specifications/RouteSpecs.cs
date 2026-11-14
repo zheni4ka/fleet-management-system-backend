@@ -1,6 +1,7 @@
 ﻿using Ardalis.Specification;
 using business_logic.DTOs;
 using business_logic.Entities;
+using System.Linq.Expressions;
 
 namespace business_logic.Specifications
 {
@@ -92,49 +93,93 @@ namespace business_logic.Specifications
         {
             public BySearchFilter(GetRoutesBySearchFilterRequestModel searchFilter)
             {
-                if (!string.IsNullOrWhiteSpace(searchFilter.StartCity))
-                {
-                    var trimmedStartCity = searchFilter.StartCity.Trim();
-                    Query.Where(r => r.StartLocation != null && r.StartLocation.City.Contains(trimmedStartCity));
-                }
-
-                if (!string.IsNullOrWhiteSpace(searchFilter.DestinationCity))
-                {
-                    var trimmedDestinationCity = searchFilter.DestinationCity.Trim();
-                    Query.Where(r => r.DestinationLocation != null && r.DestinationLocation.City.Contains(trimmedDestinationCity));
-                }
-
-                if (searchFilter.DepartureFromDate.HasValue)
-                {
-                    var departureFromDateTime = searchFilter.DepartureFromDate.Value.ToDateTime(TimeOnly.MinValue);
-                    Query.Where(r => r.DepartureTime >= departureFromDateTime);
-                }
-
-                if (searchFilter.DepartureToDate.HasValue)
-                {
-                    var departureToExclusiveDateTime = searchFilter.DepartureToDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue);
-                    Query.Where(r => r.DepartureTime < departureToExclusiveDateTime);
-                }
-
-                if (searchFilter.Status.HasValue)
-                {
-                    var searchedRouteStatus = searchFilter.Status.Value;
-                    Query.Where(r => r.Status == searchedRouteStatus);
-                }
-
-                if (searchFilter.DriverId.HasValue)
-                {
-                    var searchedDriverId = searchFilter.DriverId.Value;
-                    Query.Where(r => r.DriverId == searchedDriverId);
-                }
-
-                if (searchFilter.AutoId.HasValue)
-                {
-                    var searchedAutoId = searchFilter.AutoId.Value;
-                    Query.Where(r => r.AutoId == searchedAutoId);
-                }
-
+                ApplySearchFilterCriteria(Query, searchFilter);
                 Query.OrderBy(r => r.DepartureTime);
+            }
+        }
+
+        public class PagedListBySearchFilter : Specification<Route>
+        {
+            public PagedListBySearchFilter(
+                GetRoutesBySearchFilterRequestModel searchFilter,
+                GetPagedListRequestModel<RouteSortField> pagedListRequest)
+            {
+                ApplySearchFilterCriteria(Query, searchFilter);
+
+                if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
+                {
+                    var trimmedSearch = pagedListRequest.Search.Trim();
+                    Query.Where(r => (r.StartLocation != null
+                            && (r.StartLocation.City.Contains(trimmedSearch) || r.StartLocation.Country.Contains(trimmedSearch)))
+                        || (r.DestinationLocation != null
+                            && (r.DestinationLocation.City.Contains(trimmedSearch) || r.DestinationLocation.Country.Contains(trimmedSearch))));
+                }
+
+                var sortField = pagedListRequest.Sort ?? RouteSortField.DepartureTime;
+                Expression<Func<Route, object?>> sortKeySelector = sortField switch
+                {
+                    RouteSortField.Id => r => r.Id,
+                    RouteSortField.DepartureTime => r => r.DepartureTime,
+                    RouteSortField.ArrivalTime => r => r.ArrivalTime,
+                    RouteSortField.Status => r => r.Status,
+                    _ => throw new Exception($"Route sort field '{sortField}' is not supported.")
+                };
+
+                Query.OrderBySortDirection(sortKeySelector, r => r.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
+                Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
+            }
+        }
+
+        public class InProgressByAutoId : Specification<Route>
+        {
+            public InProgressByAutoId(int autoId)
+            {
+                Query.Where(r => r.AutoId == autoId && r.Status == RouteStatus.InProgress);
+            }
+        }
+
+        private static void ApplySearchFilterCriteria(ISpecificationBuilder<Route> routeQuery, GetRoutesBySearchFilterRequestModel searchFilter)
+        {
+            if (!string.IsNullOrWhiteSpace(searchFilter.StartCity))
+            {
+                var trimmedStartCity = searchFilter.StartCity.Trim();
+                routeQuery.Where(r => r.StartLocation != null && r.StartLocation.City.Contains(trimmedStartCity));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchFilter.DestinationCity))
+            {
+                var trimmedDestinationCity = searchFilter.DestinationCity.Trim();
+                routeQuery.Where(r => r.DestinationLocation != null && r.DestinationLocation.City.Contains(trimmedDestinationCity));
+            }
+
+            if (searchFilter.DepartureFromDate.HasValue)
+            {
+                var departureFromDateTime = searchFilter.DepartureFromDate.Value.ToDateTime(TimeOnly.MinValue);
+                routeQuery.Where(r => r.DepartureTime >= departureFromDateTime);
+            }
+
+            if (searchFilter.DepartureToDate.HasValue)
+            {
+                var departureToExclusiveDateTime = searchFilter.DepartureToDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue);
+                routeQuery.Where(r => r.DepartureTime < departureToExclusiveDateTime);
+            }
+
+            if (searchFilter.Status.HasValue)
+            {
+                var searchedRouteStatus = searchFilter.Status.Value;
+                routeQuery.Where(r => r.Status == searchedRouteStatus);
+            }
+
+            if (searchFilter.DriverId.HasValue)
+            {
+                var searchedDriverId = searchFilter.DriverId.Value;
+                routeQuery.Where(r => r.DriverId == searchedDriverId);
+            }
+
+            if (searchFilter.AutoId.HasValue)
+            {
+                var searchedAutoId = searchFilter.AutoId.Value;
+                routeQuery.Where(r => r.AutoId == searchedAutoId);
             }
         }
 
@@ -147,9 +192,9 @@ namespace business_logic.Specifications
             }
         }
 
-        public class OverlappingForAuto : Specification<Route>
+        public class ActiveIdOverlappingForAuto : Specification<Route, int?>
         {
-            public OverlappingForAuto(int autoId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
+            public ActiveIdOverlappingForAuto(int autoId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
             {
                 Query.Where(r => r.AutoId == autoId
                     && r.Status != RouteStatus.Cancelled
@@ -161,12 +206,15 @@ namespace business_logic.Specifications
                 {
                     Query.Where(r => r.Id != excludeRouteId.Value);
                 }
+
+                Query.OrderBy(r => r.DepartureTime);
+                Query.Select(r => (int?)r.Id);
             }
         }
 
-        public class OverlappingForDriver : Specification<Route>
+        public class ActiveIdOverlappingForDriver : Specification<Route, int?>
         {
-            public OverlappingForDriver(int driverId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
+            public ActiveIdOverlappingForDriver(int driverId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
             {
                 Query.Where(r => r.DriverId == driverId
                     && r.Status != RouteStatus.Cancelled
@@ -178,6 +226,9 @@ namespace business_logic.Specifications
                 {
                     Query.Where(r => r.Id != excludeRouteId.Value);
                 }
+
+                Query.OrderBy(r => r.DepartureTime);
+                Query.Select(r => (int?)r.Id);
             }
         }
     }

@@ -11,6 +11,8 @@ namespace data_access.Configs
             builder.HasKey(x => x.Id);
             builder.ToTable("AuditLogs");
 
+            builder.HasIndex(x => x.Time);
+
             builder.Property(x => x.Action)
                 .HasConversion<string>()
                 .HasMaxLength(50)

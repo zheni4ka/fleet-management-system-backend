@@ -17,6 +17,7 @@ namespace business_logic.Services
         private readonly IMapper _mapper;
         private readonly IValidator<CreateAutoModel> _createValidator;
         private readonly IValidator<EditAutoModel> _editValidator;
+        private readonly IValidator<GetPagedListRequestModel<AutoSortField>> _pagedListRequestValidator;
 
         public AutoService(
             IRepository<Auto> autoRepository,
@@ -25,7 +26,8 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateAutoModel> createValidator,
-            IValidator<EditAutoModel> editValidator)
+            IValidator<EditAutoModel> editValidator,
+            IValidator<GetPagedListRequestModel<AutoSortField>> pagedListRequestValidator)
         {
             _autoRepository = autoRepository;
             _routeRepository = routeRepository;
@@ -34,12 +36,26 @@ namespace business_logic.Services
             _mapper = mapper;
             _createValidator = createValidator;
             _editValidator = editValidator;
+            _pagedListRequestValidator = pagedListRequestValidator;
         }
 
         public async Task<IEnumerable<AutoDTO>> GetAllAsync()
         {
             var autos = await _autoRepository.GetListBySpecAsync(new AutoSpecs.All());
             return _mapper.Map<IEnumerable<AutoDTO>>(autos);
+        }
+
+        public async Task<GetPagedListResponseModel<AutoDTO>> GetPagedListAsync(GetPagedListRequestModel<AutoSortField> pagedListRequest)
+        {
+            await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
+
+            var autosPagedListSpecification = new AutoSpecs.PagedList(pagedListRequest);
+            var autosPage = await _autoRepository.GetListBySpecAsync(autosPagedListSpecification);
+            var autosTotalCount = await _autoRepository.CountBySpecAsync(autosPagedListSpecification);
+
+            return new GetPagedListResponseModel<AutoDTO>(
+                Items: _mapper.Map<List<AutoDTO>>(autosPage),
+                TotalCount: autosTotalCount);
         }
 
         public async Task<AutoDTO> GetAsync(int id)

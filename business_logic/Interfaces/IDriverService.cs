@@ -5,6 +5,7 @@ namespace business_logic.Interfaces
     public interface IDriverService
     {
         Task<IEnumerable<DriverDTO>> GetAllAsync();
+        Task<GetPagedListResponseModel<DriverDTO>> GetPagedListAsync(GetPagedListRequestModel<DriverSortField> pagedListRequest);
         Task<DriverDTO> GetAsync(int id);
         Task<DriverDTO> CreateAsync(CreateDriverModel model);
         Task EditAsync(EditDriverModel model);

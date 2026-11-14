@@ -37,6 +37,15 @@ namespace transport_logistic_management_2026.Controllers
             return Ok(await _routeService.GetRoutesBySearchFilterAsync(searchFilter));
         }
 
+        [HttpGet("pagedList")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<GetPagedListResponseModel<RouteDTO>>> GetRoutesPagedListBySearchFilter(
+            [FromQuery] GetRoutesBySearchFilterRequestModel searchFilter,
+            [FromQuery] GetPagedListRequestModel<RouteSortField> pagedListRequest)
+        {
+            return Ok(await _routeService.GetRoutesPagedListBySearchFilterAsync(searchFilter, pagedListRequest));
+        }
+
         [HttpGet("periodReport")]
         [Authorize(Roles = UserRoles.AdminOrDispatcher)]
         public async Task<ActionResult<GetRoutesPeriodReportResponseModel>> GetRoutesPeriodReport([FromQuery] GetRoutesPeriodReportRequestModel periodReportRequest)

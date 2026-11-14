@@ -24,6 +24,12 @@ namespace transport_logistic_management_2026.Controllers
             return Ok(await _driverService.GetAllAsync());
         }
 
+        [HttpGet("pagedList")]
+        public async Task<ActionResult<GetPagedListResponseModel<DriverDTO>>> GetDriversPagedList([FromQuery] GetPagedListRequestModel<DriverSortField> pagedListRequest)
+        {
+            return Ok(await _driverService.GetPagedListAsync(pagedListRequest));
+        }
+
         [HttpGet("{id:int}")]
         public async Task<ActionResult<DriverDTO>> GetById([FromRoute] int id)
         {

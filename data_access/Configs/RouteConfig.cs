@@ -12,6 +12,8 @@ namespace data_access.Configs
             builder.HasKey(x => x.Id);
             builder.ToTable("Routes");
 
+            builder.HasIndex(r => r.DepartureTime);
+
             builder.HasOne(r => r.Auto)
                    .WithMany(a => a.Routes)
                    .HasForeignKey(r => r.AutoId).OnDelete(DeleteBehavior.Restrict);

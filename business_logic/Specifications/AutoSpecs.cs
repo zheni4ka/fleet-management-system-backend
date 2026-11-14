@@ -1,5 +1,7 @@
 ﻿using Ardalis.Specification;
+using business_logic.DTOs;
 using business_logic.Entities;
+using System.Linq.Expressions;
 
 namespace business_logic.Specifications
 {
@@ -61,5 +63,45 @@ namespace business_logic.Specifications
             }
         }
 
+        public class PagedList : Specification<Auto>
+        {
+            public PagedList(GetPagedListRequestModel<AutoSortField> pagedListRequest)
+            {
+                if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
+                {
+                    var trimmedSearch = pagedListRequest.Search.Trim();
+                    Query.Where(a => a.Mark.Contains(trimmedSearch)
+                        || a.Model.Contains(trimmedSearch)
+                        || a.Color.Contains(trimmedSearch)
+                        || a.Number.Contains(trimmedSearch));
+                }
+
+                var sortField = pagedListRequest.Sort ?? AutoSortField.Mark;
+                Expression<Func<Auto, object?>> sortKeySelector = sortField switch
+                {
+                    AutoSortField.Id => a => a.Id,
+                    AutoSortField.Mark => a => a.Mark,
+                    AutoSortField.Model => a => a.Model,
+                    AutoSortField.Color => a => a.Color,
+                    AutoSortField.Number => a => a.Number,
+                    AutoSortField.Capacity => a => a.Capacity,
+                    AutoSortField.Status => a => a.Status,
+                    _ => throw new Exception($"Auto sort field '{sortField}' is not supported.")
+                };
+
+                Query.OrderBySortDirection(sortKeySelector, a => a.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
+                Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
+            }
+        }
+
+        public class AwaitingUnderMaintenanceStatusByDueMaintenance : Specification<Auto>
+        {
+            public AwaitingUnderMaintenanceStatusByDueMaintenance(DateTime dueMaintenanceEndExclusiveDateTime)
+            {
+                Query.Where(a => a.Status != AutoStatus.UnderMaintenance
+                    && a.Services.Any(am => !am.IsCompleted && am.ServiceDate < dueMaintenanceEndExclusiveDateTime)
+                    && !a.Routes.Any(r => r.Status == RouteStatus.InProgress));
+            }
+        }
     }
 }

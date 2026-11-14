@@ -17,6 +17,7 @@ namespace business_logic.Services
         private readonly IMapper _mapper;
         private readonly IValidator<CreateDriverModel> _createValidator;
         private readonly IValidator<EditDriverModel> _editValidator;
+        private readonly IValidator<GetPagedListRequestModel<DriverSortField>> _pagedListRequestValidator;
 
         public DriverService(
             IRepository<Driver> driverRepository,
@@ -25,7 +26,8 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateDriverModel> createValidator,
-            IValidator<EditDriverModel> editValidator)
+            IValidator<EditDriverModel> editValidator,
+            IValidator<GetPagedListRequestModel<DriverSortField>> pagedListRequestValidator)
         {
             _driverRepository = driverRepository;
             _routeRepository = routeRepository;
@@ -34,12 +36,26 @@ namespace business_logic.Services
             _mapper = mapper;
             _createValidator = createValidator;
             _editValidator = editValidator;
+            _pagedListRequestValidator = pagedListRequestValidator;
         }
 
         public async Task<IEnumerable<DriverDTO>> GetAllAsync()
         {
             var drivers = await _driverRepository.GetListBySpecAsync(new DriverSpecs.All());
             return _mapper.Map<IEnumerable<DriverDTO>>(drivers);
+        }
+
+        public async Task<GetPagedListResponseModel<DriverDTO>> GetPagedListAsync(GetPagedListRequestModel<DriverSortField> pagedListRequest)
+        {
+            await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
+
+            var driversPagedListSpecification = new DriverSpecs.PagedList(pagedListRequest);
+            var driversPage = await _driverRepository.GetListBySpecAsync(driversPagedListSpecification);
+            var driversTotalCount = await _driverRepository.CountBySpecAsync(driversPagedListSpecification);
+
+            return new GetPagedListResponseModel<DriverDTO>(
+                Items: _mapper.Map<List<DriverDTO>>(driversPage),
+                TotalCount: driversTotalCount);
         }
 
         public async Task<DriverDTO> GetAsync(int id)

@@ -247,6 +247,8 @@ namespace data_access.Migrations
 
                     b.HasIndex("DispatcherId");
 
+                    b.HasIndex("Time");
+
                     b.ToTable("AuditLogs", (string)null);
                 });
 
@@ -653,6 +655,8 @@ namespace data_access.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AutoId");
+
+                    b.HasIndex("DepartureTime");
 
                     b.HasIndex("DestinationLocationId");
 

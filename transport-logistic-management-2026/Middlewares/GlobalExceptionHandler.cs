@@ -24,6 +24,7 @@ namespace transport_logistic_management_2026.Middlewares
                 ValidationException validationException => CreateValidationProblem(validationException),
                 NotFoundException => CreateProblem(StatusCodes.Status404NotFound, "Not Found", exception.Message),
                 BusinessRuleException => CreateProblem(StatusCodes.Status400BadRequest, "Bad Request", exception.Message),
+                AssignmentConflictException => CreateProblem(StatusCodes.Status409Conflict, "Conflict", exception.Message),
                 UnauthorizedAccessException => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized", exception.Message),
                 _ => CreateProblem(StatusCodes.Status500InternalServerError, "Internal Server Error", "An unexpected error occurred.")
             };
