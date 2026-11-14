@@ -84,7 +84,9 @@ namespace business_logic.Specifications
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
                 {
                     var trimmedSearch = pagedListRequest.Search.Trim();
-                    Query.Where(a => a.Mark.Contains(trimmedSearch)
+                    var searchedId = SearchQueryIdParser.ParseSearchedId(trimmedSearch);
+                    Query.Where(a => (searchedId != null && a.Id == searchedId)
+                        || a.Mark.Contains(trimmedSearch)
                         || a.Model.Contains(trimmedSearch)
                         || a.Color.Contains(trimmedSearch)
                         || a.Number.Contains(trimmedSearch));

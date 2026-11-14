@@ -18,7 +18,8 @@ namespace business_logic.Specifications
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
                 {
                     var trimmedSearch = pagedListRequest.Search.Trim();
-                    Query.Where(u => (u.UserName != null && u.UserName.Contains(trimmedSearch))
+                    Query.Where(u => u.Id.Contains(trimmedSearch)
+                        || (u.UserName != null && u.UserName.Contains(trimmedSearch))
                         || (u.Email != null && u.Email.Contains(trimmedSearch)));
                 }
 

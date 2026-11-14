@@ -69,6 +69,22 @@ namespace business_logic_tests
             Assert.All(autosPage.Items, auto => Assert.Equal(AutoStatus.UnderMaintenance.ToString(), auto.Status));
         }
 
+        [Fact]
+        public async Task DriverGetPagedListAsync_NumericSearch_MatchesExactId()
+        {
+            var seededDrivers = Enumerable.Range(1, 12)
+                .Select(driverIndex => BusinessLogicTestHost.CreateDriver($"LICENSE {(char)('A' + driverIndex)}"))
+                .ToArray<object>();
+            await _testHost.SeedAsync(seededDrivers);
+
+            var driversPage = await _testHost.RunInNewScopeAsync<IDriverService, GetPagedListResponseModel<DriverDTO>>(
+                driverService => driverService.GetPagedListAsync(new GetPagedListRequestModel<DriverSortField>(
+                    Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: "12")));
+
+            Assert.Equal(1, driversPage.TotalCount);
+            Assert.Equal(12, driversPage.Items[0].Id);
+        }
+
         [Theory]
         [InlineData(0, 10)]
         [InlineData(1, 0)]

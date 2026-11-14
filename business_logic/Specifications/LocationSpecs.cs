@@ -22,7 +22,10 @@ namespace business_logic.Specifications
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
                 {
                     var trimmedSearch = pagedListRequest.Search.Trim();
-                    Query.Where(l => l.City.Contains(trimmedSearch) || l.Country.Contains(trimmedSearch));
+                    var searchedId = SearchQueryIdParser.ParseSearchedId(trimmedSearch);
+                    Query.Where(l => (searchedId != null && l.Id == searchedId)
+                        || l.City.Contains(trimmedSearch)
+                        || l.Country.Contains(trimmedSearch));
                 }
 
                 var sortField = pagedListRequest.Sort ?? LocationSortField.Id;

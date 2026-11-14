@@ -109,7 +109,9 @@ namespace business_logic.Specifications
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
                 {
                     var trimmedSearch = pagedListRequest.Search.Trim();
-                    Query.Where(r => (r.StartLocation != null
+                    var searchedId = SearchQueryIdParser.ParseSearchedId(trimmedSearch);
+                    Query.Where(r => (searchedId != null && r.Id == searchedId)
+                        || (r.StartLocation != null
                             && (r.StartLocation.City.Contains(trimmedSearch) || r.StartLocation.Country.Contains(trimmedSearch)))
                         || (r.DestinationLocation != null
                             && (r.DestinationLocation.City.Contains(trimmedSearch) || r.DestinationLocation.Country.Contains(trimmedSearch))));
