@@ -38,6 +38,8 @@ namespace transport_logistic_management_2026
 
             builder.Services.AddBusinessLogicServices();
             builder.Services.AddValidatedSettings<RefreshTokenSettings>(builder.Configuration, RefreshTokenSettings.SectionName);
+            builder.Services.AddValidatedSettings<ExternalIdentitySettings>(builder.Configuration, ExternalIdentitySettings.SectionName);
+            builder.Services.AddSingleton<IExternalIdentityTokenValidator, EntraIdTokenValidator>();
             builder.Services.AddDataAccessServices(connectionString);
 
             builder.Services.AddHttpContextAccessor();

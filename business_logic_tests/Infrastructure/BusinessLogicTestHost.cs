@@ -1,4 +1,5 @@
 using business_logic;
+using business_logic.Constants;
 using business_logic.Entities;
 using business_logic.Interfaces;
 using business_logic.Settings;
@@ -17,6 +18,8 @@ namespace business_logic_tests.Infrastructure
         public const int StartLocationId = 1;
         public const int DestinationLocationId = 2;
         public const int TestRefreshTokenExpiryInDays = 7;
+        public const string AdminGroupId = "group-admins";
+        public const string DispatcherGroupId = "group-dispatchers";
 
         private readonly SqliteConnection _sqliteConnection;
         private readonly ServiceProvider _serviceProvider;
@@ -45,6 +48,18 @@ namespace business_logic_tests.Infrastructure
                 refreshTokenSettings.ExpiryInDays = TestRefreshTokenExpiryInDays;
                 refreshTokenSettings.RotatedTokenReuseGracePeriodInSeconds = rotatedTokenReuseGracePeriodInSeconds;
             });
+            services.AddOptions<ExternalIdentitySettings>().Configure(externalIdentitySettings =>
+            {
+                externalIdentitySettings.Authority = "https://login.microsoftonline.com/test-tenant/v2.0";
+                externalIdentitySettings.ClientId = "test-client";
+                externalIdentitySettings.GroupRoleMappings = new Dictionary<string, string>
+                {
+                    [AdminGroupId] = UserRoles.Admin,
+                    [DispatcherGroupId] = UserRoles.Dispatcher
+                };
+            });
+            services.AddSingleton<TestExternalIdentityTokenValidator>();
+            services.AddSingleton<IExternalIdentityTokenValidator>(serviceProvider => serviceProvider.GetRequiredService<TestExternalIdentityTokenValidator>());
 
             _serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 

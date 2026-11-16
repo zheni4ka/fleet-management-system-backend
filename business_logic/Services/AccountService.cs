@@ -4,6 +4,7 @@ using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
 using business_logic.Helpers;
+using static business_logic.Helpers.IdentityOperationResultGuard;
 using business_logic.Interfaces;
 using business_logic.Specifications;
 using FluentValidation;
@@ -16,7 +17,7 @@ namespace business_logic.Services
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ITokenService _tokenService;
+        private readonly ISessionResponseFactory _sessionResponseFactory;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly ICurrentUserService _currentUser;
         private readonly IAuditLogService _auditLogService;
@@ -36,7 +37,7 @@ namespace business_logic.Services
         public AccountService(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            ITokenService tokenService,
+            ISessionResponseFactory sessionResponseFactory,
             IRefreshTokenService refreshTokenService,
             ICurrentUserService currentUser,
             IAuditLogService auditLogService,
@@ -55,7 +56,7 @@ namespace business_logic.Services
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _tokenService = tokenService;
+            _sessionResponseFactory = sessionResponseFactory;
             _refreshTokenService = refreshTokenService;
             _currentUser = currentUser;
             _auditLogService = auditLogService;
@@ -102,7 +103,7 @@ namespace business_logic.Services
             }
 
             var issuedRefreshToken = await _refreshTokenService.IssueRefreshTokenInNewFamilyAsync(user.Id);
-            return await CreateSessionResponseModelAsync<LoginResponseModel>(user, issuedRefreshToken);
+            return await _sessionResponseFactory.CreateSessionResponseModelAsync<LoginResponseModel>(user, issuedRefreshToken);
         }
 
         public async Task<RefreshSessionResponseModel> RefreshSessionAsync(RefreshSessionRequestModel model)
@@ -113,7 +114,7 @@ namespace business_logic.Services
             var user = await _userManager.FindByIdAsync(rotatedRefreshToken.UserId)
                 ?? throw new UnauthorizedAccessException(ExceptionMessages.RefreshTokenInvalid);
 
-            return await CreateSessionResponseModelAsync<RefreshSessionResponseModel>(user, rotatedRefreshToken.IssuedRefreshToken);
+            return await _sessionResponseFactory.CreateSessionResponseModelAsync<RefreshSessionResponseModel>(user, rotatedRefreshToken.IssuedRefreshToken);
         }
 
         public async Task LogoutAsync(LogoutRequestModel model)
@@ -140,7 +141,7 @@ namespace business_logic.Services
             var issuedRefreshToken = await _refreshTokenService.IssueRefreshTokenInNewFamilyAsync(user.Id);
             await passwordChangeTransaction.CommitAsync();
 
-            return await CreateSessionResponseModelAsync<ChangePasswordResponseModel>(user, issuedRefreshToken);
+            return await _sessionResponseFactory.CreateSessionResponseModelAsync<ChangePasswordResponseModel>(user, issuedRefreshToken);
         }
 
         public async Task<ResetUserPasswordResponseModel> ResetUserPasswordAsync(ResetUserPasswordRequestModel model)
@@ -259,26 +260,6 @@ namespace business_logic.Services
             return user;
         }
 
-        private async Task<TSessionResponseModel> CreateSessionResponseModelAsync<TSessionResponseModel>(
-            IdentityUser user,
-            IssuedRefreshTokenModel issuedRefreshToken)
-            where TSessionResponseModel : SessionResponseModelBase, new()
-        {
-            var roles = await _userManager.GetRolesAsync(user);
-            var issuedAccessToken = _tokenService.CreateAccessToken(user, roles);
-
-            return new TSessionResponseModel
-            {
-                AccessToken = issuedAccessToken.AccessToken,
-                AccessTokenExpiresAtUtc = issuedAccessToken.ExpiresAtUtc,
-                RefreshToken = issuedRefreshToken.RefreshToken,
-                RefreshTokenExpiresAtUtc = issuedRefreshToken.ExpiresAtUtc,
-                Username = user.UserName!,
-                Email = user.Email,
-                Roles = roles.ToList()
-            };
-        }
-
         private async Task<bool> IsPasswordChangeRequiredAsync(IdentityUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);
@@ -310,17 +291,6 @@ namespace business_logic.Services
             EnsureIdentityOperationSucceeded(
                 await _userManager.RemoveClaimsAsync(user, passwordChangeRequirementClaims),
                 identityErrorDescriptions => string.Format(ExceptionMessages.PasswordChangeFailedTemplate, user.UserName, identityErrorDescriptions));
-        }
-
-        private static void EnsureIdentityOperationSucceeded(IdentityResult identityOperationResult, Func<string, string> createFailureMessage)
-        {
-            if (identityOperationResult.Succeeded)
-            {
-                return;
-            }
-
-            var identityErrorDescriptions = string.Join("; ", identityOperationResult.Errors.Select(identityError => identityError.Description));
-            throw new BusinessRuleException(createFailureMessage(identityErrorDescriptions));
         }
     }
 }

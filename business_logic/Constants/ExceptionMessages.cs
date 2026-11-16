@@ -25,6 +25,10 @@ namespace business_logic.Constants
         public const string RefreshTokenInvalid = "Сесія недійсна або завершилась. Увійдіть у систему повторно.";
         public const string PasswordChangeFailedTemplate = "Не вдалося змінити пароль користувача '{0}': {1}";
         public const string PasswordResetFailedTemplate = "Не вдалося скинути пароль користувача з ідентифікатором '{0}': {1}";
+        public const string ExternalIdentityNotConfigured = "Вхід через корпоративний обліковий запис не налаштовано.";
+        public const string ExternalIdentityTokenInvalid = "Не вдалося підтвердити вхід через корпоративний обліковий запис.";
+        public const string ExternalIdentityHasNoMappedGroupTemplate = "Корпоративний обліковий запис '{0}' не входить до жодної групи з доступом до системи.";
+        public const string ExternalIdentityUsernameMissingTemplate = "Корпоративний обліковий запис '{0}' не містить імені користувача чи email.";
         public const string TooManyRequests = "Забагато запитів. Зачекайте трохи та спробуйте знову.";
         public const string UnexpectedError = "Сталася неочікувана помилка.";
         public const string ValidationFailed = "Одна або кілька перевірок даних не пройдені.";

@@ -26,6 +26,7 @@ namespace business_logic.Entities
         UserDeleted,
 
         UserPasswordReset,
-        UserPasswordChanged
+        UserPasswordChanged,
+        UserProvisioned
     }
 }

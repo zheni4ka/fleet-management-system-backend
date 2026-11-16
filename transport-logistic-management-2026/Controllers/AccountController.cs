@@ -13,10 +13,20 @@ namespace transport_logistic_management_2026.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly IExternalLoginService _externalLoginService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, IExternalLoginService externalLoginService)
         {
             _accountService = accountService;
+            _externalLoginService = externalLoginService;
+        }
+
+        [HttpPost("loginWithExternalIdentity")]
+        [AllowAnonymous]
+        [EnableRateLimiting(RateLimitingPolicyNames.CredentialEndpointsPerIpAddress)]
+        public async Task<ActionResult<LoginWithExternalIdentityResponseModel>> LoginWithExternalIdentity([FromBody] LoginWithExternalIdentityRequestModel model)
+        {
+            return Ok(await _externalLoginService.LoginWithExternalIdentityAsync(model));
         }
 
         [HttpPost("login")]
