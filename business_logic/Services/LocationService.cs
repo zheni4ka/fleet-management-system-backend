@@ -1,4 +1,5 @@
 using AutoMapper;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
@@ -71,10 +72,12 @@ namespace business_logic.Services
             await _createValidator.ValidateAndThrowAsync(model);
 
             var location = _mapper.Map<Location>(model);
+            await using var locationCreationTransaction = await _unitOfWork.BeginTransactionAsync();
             await _locationRepository.InsertAsync(location);
             await _unitOfWork.SaveChangesAsync();
             await _auditLogService.LogActionAsync(AuditAction.LocationCreated, location.Id);
             await _unitOfWork.SaveChangesAsync();
+            await locationCreationTransaction.CommitAsync();
 
             return _mapper.Map<GetLocationResponseModel>(location);
         }
@@ -85,7 +88,7 @@ namespace business_logic.Services
 
             if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByLocationId(id)))
             {
-                throw new BusinessRuleException("Unable to delete a location that is used in routes.");
+                throw new BusinessRuleException(string.Format(ExceptionMessages.LocationUsedInRoutesTemplate, id));
             }
 
             _locationRepository.Delete(location);

@@ -9,27 +9,27 @@ namespace business_logic.Validators.Account
         public RegisterAccountRequestModelValidator()
         {
             RuleFor(x => x.Username)
-                .NotEmpty().WithMessage("Name is required.")
-                .MaximumLength(AccountConstraints.UsernameMaxLength)
-                .WithMessage($"Name must not exceed {AccountConstraints.UsernameMaxLength} characters.");
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .MaximumLength(AccountConstraints.UsernameMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .WithName("Логін");
 
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("Invalid Email format.")
-                .MaximumLength(AccountConstraints.EmailMaxLength)
-                .WithMessage($"Email must not exceed {AccountConstraints.EmailMaxLength} characters.");
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .EmailAddress().WithMessage("Електронна пошта має некоректний формат.")
+                .MaximumLength(AccountConstraints.EmailMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .WithName("Електронна пошта");
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Password is required.")
-                .MinimumLength(AccountConstraints.PasswordMinLength)
-                .WithMessage($"Password must be at least {AccountConstraints.PasswordMinLength} characters long.")
-                .MaximumLength(AccountConstraints.PasswordMaxLength)
-                .WithMessage($"Password must not exceed {AccountConstraints.PasswordMaxLength} characters.");
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .MinimumLength(AccountConstraints.PasswordMinLength).WithMessage("Поле «{PropertyName}» має містити щонайменше {MinLength} символів.")
+                .MaximumLength(AccountConstraints.PasswordMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .WithName("Пароль");
 
             RuleFor(x => x.Role)
-                .NotEmpty().WithMessage("Role is required.")
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
                 .Must(role => UserRoles.All.Contains(role))
-                .WithMessage($"Role must be one of: {string.Join(", ", UserRoles.All)}.");
+                .WithMessage($"Роль має бути однією з: {string.Join(", ", UserRoles.All)}.")
+                .WithName("Роль");
         }
     }
 }

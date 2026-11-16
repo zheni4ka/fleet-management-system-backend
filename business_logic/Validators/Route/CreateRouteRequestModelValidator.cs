@@ -1,4 +1,5 @@
-﻿using business_logic.DTOs;
+﻿using business_logic.Constants;
+using business_logic.DTOs;
 using FluentValidation;
 
 namespace business_logic.Validators
@@ -8,32 +9,29 @@ namespace business_logic.Validators
         public CreateRouteRequestModelValidator()
         {
             RuleFor(x => x.StartLocationId)
-                .GreaterThan(0)
-                .WithMessage("Start location id must be greater than 0.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Початкова локація");
 
             RuleFor(x => x.DestinationLocationId)
-                .GreaterThan(0)
-                .WithMessage("Destination location id must be greater than 0.");
-
-            RuleFor(x => x.DestinationLocationId)
-                .NotEqual(x => x.StartLocationId)
-                .WithMessage("Destination must differ from the start location.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .NotEqual(x => x.StartLocationId).WithMessage("Початкова та кінцева локації мають відрізнятися.")
+                .WithName("Кінцева локація");
 
             RuleFor(x => x.AutoId)
-                .GreaterThan(0)
-                .WithMessage("Auto ID must be greater than 0.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Автомобіль");
 
             RuleFor(x => x.DriverId)
-                .GreaterThan(0)
-                .WithMessage("Driver ID must be greater than 0.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Водій");
 
             RuleFor(x => x.DepartureTime)
                 .LessThan(x => x.ArrivalTime)
-                .WithMessage("Departure time must be before arrival time.");
+                .WithMessage("Час відправлення має бути раніше за час прибуття.");
 
             RuleFor(x => x.Status)
-                .IsInEnum()
-                .WithMessage("Status must be a valid value.");
+                .IsInEnum().WithMessage(ValidationMessages.UnsupportedValue)
+                .WithName("Статус");
         }
     }
 }

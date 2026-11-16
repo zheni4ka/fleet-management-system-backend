@@ -13,22 +13,6 @@ namespace business_logic.Specifications
             }
         }
 
-        public class All : Specification<AutoMaintenance>
-        {
-            public All()
-            {
-                Query.OrderBy(am => am.Id);
-            }
-        }
-
-        public class ByDate : Specification<AutoMaintenance>
-        {
-            public ByDate(DateTime date)
-            {
-                Query.Where(am => am.ServiceDate.Date == date.Date);
-            }
-        }
-
         public class ByAutoId : Specification<AutoMaintenance>
         {
             public ByAutoId(int autoId)

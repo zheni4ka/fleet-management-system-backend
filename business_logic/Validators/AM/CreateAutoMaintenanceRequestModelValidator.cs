@@ -1,6 +1,6 @@
-using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Helpers;
+using business_logic.Validators.AM;
 using FluentValidation;
 
 namespace business_logic.Validators
@@ -9,23 +9,11 @@ namespace business_logic.Validators
     {
         public CreateAutoMaintenanceRequestModelValidator()
         {
-            RuleFor(x => x.AutoId)
-                .GreaterThan(0)
-                .WithMessage("Auto ID must be greater than 0.");
-
-            RuleFor(x => x.Name)
-                .NotEmpty()
-                .WithMessage("Maintenance name is required.")
-                .MaximumLength(AutoMaintenanceConstraints.NameMaxLength);
-
-            RuleFor(x => x.Description)
-                .NotEmpty()
-                .WithMessage("Maintenance description is required.")
-                .MaximumLength(AutoMaintenanceConstraints.DescriptionMaxLength);
+            Include(new AutoMaintenanceModelBaseValidator());
 
             RuleFor(x => x.ServiceDate)
                 .GreaterThanOrEqualTo(_ => BusinessTimeZoneConverter.GetBusinessNowDateTime())
-                .WithMessage("Service date cannot be in the past.");
+                .WithMessage("Дата початку робіт не може бути в минулому.");
         }
     }
 }

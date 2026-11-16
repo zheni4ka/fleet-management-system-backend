@@ -62,38 +62,6 @@ namespace business_logic.Specifications
             }
         }
 
-        public class ByStart : Specification<Route>
-        {
-            public ByStart(string city)
-            {
-                Query.Where(r => r.StartLocation != null && r.StartLocation.City == city);
-            }
-        }
-
-        public class ByDestination : Specification<Route>
-        {
-            public ByDestination(string city)
-            {
-                Query.Where(r => r.DestinationLocation != null && r.DestinationLocation.City == city);
-            }
-        }
-
-        public class ByStartDate : Specification<Route>
-        {
-            public ByStartDate(DateTime dateTime)
-            {
-                Query.Where(r => r.DepartureTime == dateTime);
-            }
-        }
-
-        public class ByEndDate : Specification<Route>
-        {
-            public ByEndDate(DateTime dateTime)
-            {
-                Query.Where(r => r.ArrivalTime == dateTime);
-            }
-        }
-
         public class ByDriverId : Specification<Route>
         {
             public ByDriverId(int driverId)
@@ -123,7 +91,7 @@ namespace business_logic.Specifications
             public ActiveByAutoFrom(int autoId, DateTime from)
             {
                 Query.Where(r => r.AutoId == autoId
-                    && (r.Status == RouteStatus.Planned || r.Status == RouteStatus.InProgress)
+                    && RouteStatusGroups.Active.Contains(r.Status)
                     && r.DepartureTime >= from);
             }
         }
@@ -141,10 +109,10 @@ namespace business_logic.Specifications
                     var trimmedSearch = pagedListRequest.Search.Trim();
                     var searchedId = SearchQueryIdParser.ParseSearchedId(trimmedSearch);
                     Query.Where(r => (searchedId != null && r.Id == searchedId)
-                        || (r.StartLocation != null
-                            && (r.StartLocation.City.Contains(trimmedSearch) || r.StartLocation.Country.Contains(trimmedSearch)))
-                        || (r.DestinationLocation != null
-                            && (r.DestinationLocation.City.Contains(trimmedSearch) || r.DestinationLocation.Country.Contains(trimmedSearch))));
+                        || r.StartLocation.City.Contains(trimmedSearch)
+                        || r.StartLocation.Country.Contains(trimmedSearch)
+                        || r.DestinationLocation.City.Contains(trimmedSearch)
+                        || r.DestinationLocation.Country.Contains(trimmedSearch));
                 }
 
                 var sortField = pagedListRequest.Sort ?? RouteSortField.DepartureTime;
@@ -154,7 +122,7 @@ namespace business_logic.Specifications
                     RouteSortField.DepartureTime => r => r.DepartureTime,
                     RouteSortField.ArrivalTime => r => r.ArrivalTime,
                     RouteSortField.Status => r => r.Status,
-                    _ => throw new Exception($"Route sort field '{sortField}' is not supported.")
+                    _ => throw new Exception(string.Format(ExceptionMessages.SortFieldNotSupportedTemplate, sortField))
                 };
 
                 Query.OrderBySortDirection(sortKeySelector, r => r.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
@@ -171,18 +139,67 @@ namespace business_logic.Specifications
             }
         }
 
+        public class ByDeparturePeriod : Specification<Route, GetRouteResponseModel>
+        {
+            public ByDeparturePeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
+            {
+                Query.Where(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime)
+                    .OrderBy(r => r.DepartureTime)
+                    .ThenBy(r => r.Id);
+                Query.Select(GetRouteResponseModelSelector);
+            }
+        }
+
+        public class ActiveIdOverlappingForAuto : Specification<Route, int?>
+        {
+            public ActiveIdOverlappingForAuto(int autoId, DateTime departure, DateTime arrival, int? excludedRouteId = null)
+            {
+                Query.Where(r => r.AutoId == autoId);
+                ApplyActiveRouteIdOverlappingIntervalQuery(Query, departure, arrival, excludedRouteId);
+            }
+        }
+
+        public class ActiveIdOverlappingForDriver : Specification<Route, int?>
+        {
+            public ActiveIdOverlappingForDriver(int driverId, DateTime departure, DateTime arrival, int? excludedRouteId = null)
+            {
+                Query.Where(r => r.DriverId == driverId);
+                ApplyActiveRouteIdOverlappingIntervalQuery(Query, departure, arrival, excludedRouteId);
+            }
+        }
+
+        private static void ApplyActiveRouteIdOverlappingIntervalQuery(
+            ISpecificationBuilder<Route, int?> routeIdQuery,
+            DateTime departure,
+            DateTime arrival,
+            int? excludedRouteId)
+        {
+            routeIdQuery.Where(r => RouteStatusGroups.Active.Contains(r.Status)
+                && r.DepartureTime < arrival
+                && r.ArrivalTime > departure);
+
+            if (excludedRouteId.HasValue)
+            {
+                var excludedRouteIdValue = excludedRouteId.Value;
+                routeIdQuery.Where(r => r.Id != excludedRouteIdValue);
+            }
+
+            routeIdQuery.OrderBy(r => r.DepartureTime);
+            routeIdQuery.Select(r => (int?)r.Id);
+        }
+
         private static void ApplySearchFilterCriteria(ISpecificationBuilder<Route> routeQuery, GetRoutesBySearchFilterRequestModel searchFilter)
         {
             if (!string.IsNullOrWhiteSpace(searchFilter.StartCity))
             {
                 var trimmedStartCity = searchFilter.StartCity.Trim();
-                routeQuery.Where(r => r.StartLocation != null && r.StartLocation.City.Contains(trimmedStartCity));
+                routeQuery.Where(r => r.StartLocation.City.Contains(trimmedStartCity));
             }
 
             if (!string.IsNullOrWhiteSpace(searchFilter.DestinationCity))
             {
                 var trimmedDestinationCity = searchFilter.DestinationCity.Trim();
-                routeQuery.Where(r => r.DestinationLocation != null && r.DestinationLocation.City.Contains(trimmedDestinationCity));
+                routeQuery.Where(r => r.DestinationLocation.City.Contains(trimmedDestinationCity));
             }
 
             if (searchFilter.DepartureFromDate.HasValue)
@@ -213,57 +230,6 @@ namespace business_logic.Specifications
             {
                 var searchedAutoId = searchFilter.AutoId.Value;
                 routeQuery.Where(r => r.AutoId == searchedAutoId);
-            }
-        }
-
-        public class ByDeparturePeriod : Specification<Route, GetRouteResponseModel>
-        {
-            public ByDeparturePeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
-            {
-                Query.Where(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime)
-                    .OrderBy(r => r.DepartureTime)
-                    .ThenBy(r => r.Id);
-                Query.Select(GetRouteResponseModelSelector);
-            }
-        }
-
-        public class ActiveIdOverlappingForAuto : Specification<Route, int?>
-        {
-            public ActiveIdOverlappingForAuto(int autoId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
-            {
-                Query.Where(r => r.AutoId == autoId
-                    && r.Status != RouteStatus.Cancelled
-                    && r.Status != RouteStatus.Completed
-                    && r.DepartureTime < arrival
-                    && r.ArrivalTime > departure);
-
-                if (excludeRouteId.HasValue)
-                {
-                    Query.Where(r => r.Id != excludeRouteId.Value);
-                }
-
-                Query.OrderBy(r => r.DepartureTime);
-                Query.Select(r => (int?)r.Id);
-            }
-        }
-
-        public class ActiveIdOverlappingForDriver : Specification<Route, int?>
-        {
-            public ActiveIdOverlappingForDriver(int driverId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
-            {
-                Query.Where(r => r.DriverId == driverId
-                    && r.Status != RouteStatus.Cancelled
-                    && r.Status != RouteStatus.Completed
-                    && r.DepartureTime < arrival
-                    && r.ArrivalTime > departure);
-
-                if (excludeRouteId.HasValue)
-                {
-                    Query.Where(r => r.Id != excludeRouteId.Value);
-                }
-
-                Query.OrderBy(r => r.DepartureTime);
-                Query.Select(r => (int?)r.Id);
             }
         }
     }

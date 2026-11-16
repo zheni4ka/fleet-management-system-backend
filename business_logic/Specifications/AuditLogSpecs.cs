@@ -1,4 +1,5 @@
 ﻿using Ardalis.Specification;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Helpers;
@@ -8,23 +9,6 @@ namespace business_logic.Specifications
 {
     public class AuditLogSpecs
     {
-        public class ById : Specification<AuditLog>
-        {
-            public ById(int id)
-            {
-                Query.Where(x => x.Id == id);
-            }
-        }
-
-        public class All : Specification<AuditLog>
-        {
-            public All()
-            {
-                Query.Include(x => x.Dispatcher)
-                    .OrderByDescending(x => x.Time);
-            }
-        }
-
         public class PagedList : Specification<AuditLog, GetAuditLogResponseModel>
         {
             public PagedList(
@@ -63,7 +47,7 @@ namespace business_logic.Specifications
                     AuditLogSortField.Action => x => x.Action,
                     AuditLogSortField.DispatcherUsername => x => x.Dispatcher != null ? x.Dispatcher.UserName : null,
                     AuditLogSortField.EntityId => x => x.EntityId,
-                    _ => throw new Exception($"Audit log sort field '{sortField}' is not supported.")
+                    _ => throw new Exception(string.Format(ExceptionMessages.SortFieldNotSupportedTemplate, sortField))
                 };
                 var defaultSortDirection = pagedListRequest.Sort.HasValue ? SortDirection.Ascending : SortDirection.Descending;
 

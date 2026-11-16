@@ -1,4 +1,5 @@
 ﻿using Ardalis.Specification;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using System.Linq.Expressions;
@@ -12,14 +13,6 @@ namespace business_logic.Specifications
             public ById(int id)
             {
                 Query.Where(d => d.Id == id);
-            }
-        }
-
-        public class ByName : Specification<Driver>
-        {
-            public ByName(string name)
-            {
-                Query.Where(d => d.Name == name);
             }
         }
 
@@ -68,7 +61,7 @@ namespace business_logic.Specifications
                     DriverSortField.Surname => d => d.Surname,
                     DriverSortField.Patronymic => d => d.Patronymic,
                     DriverSortField.LicenseNumber => d => d.LicenseNumber,
-                    _ => throw new Exception($"Driver sort field '{sortField}' is not supported.")
+                    _ => throw new Exception(string.Format(ExceptionMessages.SortFieldNotSupportedTemplate, sortField))
                 };
 
                 Query.OrderBySortDirection(sortKeySelector, d => d.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);

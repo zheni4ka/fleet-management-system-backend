@@ -18,7 +18,7 @@ namespace business_logic.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateAutoMaintenanceRequestModel> _createValidator;
-        private readonly IValidator<UpdateAutoMaintenanceRequestModel> _editValidator;
+        private readonly IValidator<UpdateAutoMaintenanceRequestModel> _updateValidator;
 
         public AutoMaintenanceService(
             IRepository<AutoMaintenance> maintenanceRepository,
@@ -29,7 +29,7 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateAutoMaintenanceRequestModel> createValidator,
-            IValidator<UpdateAutoMaintenanceRequestModel> editValidator)
+            IValidator<UpdateAutoMaintenanceRequestModel> updateValidator)
         {
             _maintenanceRepository = maintenanceRepository;
             _autoRepository = autoRepository;
@@ -39,19 +39,19 @@ namespace business_logic.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
-            _editValidator = editValidator;
+            _updateValidator = updateValidator;
         }
 
         public async Task<GetAutoMaintenanceResponseModel> GetAsync(int id)
         {
-            var item = await GetMaintenanceOrThrowAsync(id);
-            return _mapper.Map<GetAutoMaintenanceResponseModel>(item);
+            var maintenance = await GetMaintenanceOrThrowAsync(id);
+            return _mapper.Map<GetAutoMaintenanceResponseModel>(maintenance);
         }
 
         public async Task<IEnumerable<GetAutoMaintenanceResponseModel>> GetByAutoIdAsync(int autoId)
         {
-            var items = await _maintenanceRepository.GetListBySpecAsync(new AutoMaintenanceSpecs.ByAutoId(autoId));
-            return _mapper.Map<IEnumerable<GetAutoMaintenanceResponseModel>>(items);
+            var autoMaintenances = await _maintenanceRepository.GetListBySpecAsync(new AutoMaintenanceSpecs.ByAutoId(autoId));
+            return _mapper.Map<IEnumerable<GetAutoMaintenanceResponseModel>>(autoMaintenances);
         }
 
         public async Task<GetAutoMaintenanceResponseModel> CreateAsync(CreateAutoMaintenanceRequestModel model)
@@ -67,24 +67,26 @@ namespace business_logic.Services
             }
 
             var maintenance = _mapper.Map<AutoMaintenance>(model);
+            await using var maintenanceCreationTransaction = await _unitOfWork.BeginTransactionAsync();
             await _maintenanceRepository.InsertAsync(maintenance);
-
             await _unitOfWork.SaveChangesAsync();
             await _auditLogService.LogActionAsync(AuditAction.MaintenanceCreated, maintenance.Id);
             await _autoStatusSyncService.SyncAutoStatusAsync(auto);
             await _unitOfWork.SaveChangesAsync();
+            await maintenanceCreationTransaction.CommitAsync();
 
             return _mapper.Map<GetAutoMaintenanceResponseModel>(maintenance);
         }
 
         public async Task UpdateAsync(UpdateAutoMaintenanceRequestModel model)
         {
-            await _editValidator.ValidateAndThrowAsync(model);
+            await _updateValidator.ValidateAndThrowAsync(model);
 
             var maintenance = await GetMaintenanceOrThrowAsync(model.Id);
             var previousAutoId = maintenance.AutoId;
 
             _mapper.Map(model, maintenance);
+            await using var maintenanceUpdateTransaction = await _unitOfWork.BeginTransactionAsync();
             await _auditLogService.LogActionAsync(AuditAction.MaintenanceUpdated, maintenance.Id);
             await _unitOfWork.SaveChangesAsync();
 
@@ -94,6 +96,7 @@ namespace business_logic.Services
                 await _autoStatusSyncService.SyncAutoStatusAsync(previousAutoId);
             }
             await _unitOfWork.SaveChangesAsync();
+            await maintenanceUpdateTransaction.CommitAsync();
         }
 
         public async Task DeleteAsync(int id)
@@ -101,12 +104,14 @@ namespace business_logic.Services
             var maintenance = await GetMaintenanceOrThrowAsync(id);
             var maintenanceAutoId = maintenance.AutoId;
 
+            await using var maintenanceDeletionTransaction = await _unitOfWork.BeginTransactionAsync();
             _maintenanceRepository.Delete(maintenance);
             await _auditLogService.LogActionAsync(AuditAction.MaintenanceDeleted, id);
             await _unitOfWork.SaveChangesAsync();
 
             await _autoStatusSyncService.SyncAutoStatusAsync(maintenanceAutoId);
             await _unitOfWork.SaveChangesAsync();
+            await maintenanceDeletionTransaction.CommitAsync();
         }
 
         private async Task<AutoMaintenance> GetMaintenanceOrThrowAsync(int id)

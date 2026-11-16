@@ -21,7 +21,7 @@ namespace business_logic.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateRouteRequestModel> _createValidator;
-        private readonly IValidator<UpdateRouteRequestModel> _editValidator;
+        private readonly IValidator<UpdateRouteRequestModel> _updateValidator;
         private readonly IValidator<GetRoutesBySearchFilterRequestModel> _searchFilterValidator;
         private readonly IValidator<GetRoutesPeriodReportRequestModel> _periodReportValidator;
         private readonly IValidator<GetPagedListRequestModel<RouteSortField>> _pagedListRequestValidator;
@@ -37,7 +37,7 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateRouteRequestModel> createValidator,
-            IValidator<UpdateRouteRequestModel> editValidator,
+            IValidator<UpdateRouteRequestModel> updateValidator,
             IValidator<GetRoutesBySearchFilterRequestModel> searchFilterValidator,
             IValidator<GetRoutesPeriodReportRequestModel> periodReportValidator,
             IValidator<GetPagedListRequestModel<RouteSortField>> pagedListRequestValidator)
@@ -52,7 +52,7 @@ namespace business_logic.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
-            _editValidator = editValidator;
+            _updateValidator = updateValidator;
             _searchFilterValidator = searchFilterValidator;
             _periodReportValidator = periodReportValidator;
             _pagedListRequestValidator = pagedListRequestValidator;
@@ -135,19 +135,22 @@ namespace business_logic.Services
             }
 
             var route = _mapper.Map<Route>(model);
-            await _routeRepository.InsertAsync(route);
-
-            await _unitOfWork.SaveChangesAsync();
-            await _auditLogService.LogActionAsync(AuditAction.RouteCreated, route.Id);
-            await _autoStatusSyncService.SyncAutoStatusAsync(auto);
-            await _unitOfWork.SaveChangesAsync();
+            await using (var routeCreationTransaction = await _unitOfWork.BeginTransactionAsync())
+            {
+                await _routeRepository.InsertAsync(route);
+                await _unitOfWork.SaveChangesAsync();
+                await _auditLogService.LogActionAsync(AuditAction.RouteCreated, route.Id);
+                await _autoStatusSyncService.SyncAutoStatusAsync(auto);
+                await _unitOfWork.SaveChangesAsync();
+                await routeCreationTransaction.CommitAsync();
+            }
 
             return await GetAsync(route.Id);
         }
 
         public async Task UpdateAsync(UpdateRouteRequestModel model)
         {
-            await _editValidator.ValidateAndThrowAsync(model);
+            await _updateValidator.ValidateAndThrowAsync(model);
 
             var route = await GetRouteOrThrowAsync(model.Id);
             var previousAutoId = route.AutoId;
@@ -164,6 +167,7 @@ namespace business_logic.Services
             }
 
             _mapper.Map(model, route);
+            await using var routeUpdateTransaction = await _unitOfWork.BeginTransactionAsync();
             await _auditLogService.LogActionAsync(AuditAction.RouteUpdated, route.Id);
             await _unitOfWork.SaveChangesAsync();
 
@@ -173,6 +177,7 @@ namespace business_logic.Services
                 await _autoStatusSyncService.SyncAutoStatusAsync(previousAutoId);
             }
             await _unitOfWork.SaveChangesAsync();
+            await routeUpdateTransaction.CommitAsync();
         }
 
         public async Task DeleteAsync(int id)
@@ -180,12 +185,14 @@ namespace business_logic.Services
             var route = await GetRouteOrThrowAsync(id);
             var routeAutoId = route.AutoId;
 
+            await using var routeDeletionTransaction = await _unitOfWork.BeginTransactionAsync();
             _routeRepository.Delete(route);
             await _auditLogService.LogActionAsync(AuditAction.RouteDeleted, id);
             await _unitOfWork.SaveChangesAsync();
 
             await _autoStatusSyncService.SyncAutoStatusAsync(routeAutoId);
             await _unitOfWork.SaveChangesAsync();
+            await routeDeletionTransaction.CommitAsync();
         }
 
         private static double GetDrivingHours(IEnumerable<GetRouteResponseModel> routes)
@@ -204,7 +211,7 @@ namespace business_logic.Services
             var auto = await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(autoId)) ?? throw NotFoundException.For<Auto>(autoId);
             if (auto.Status == AutoStatus.UnderMaintenance)
             {
-                throw new BusinessRuleException("Автомобіль на ремонті.");
+                throw new BusinessRuleException(string.Format(ExceptionMessages.AutoUnderMaintenanceTemplate, autoId));
             }
             return auto;
         }
@@ -239,24 +246,24 @@ namespace business_logic.Services
                 new RouteSpecs.ActiveIdOverlappingForAuto(autoId, departure, arrival, excludeRouteId));
             if (conflictingAutoRouteId.HasValue)
             {
-                throw new AssignmentConflictException(
-                    $"Автомобіль (ID {autoId}) вже призначено на маршрут #{conflictingAutoRouteId.Value}, який перетинається з інтервалом {routeIntervalText}.");
+                throw new AssignmentConflictException(string.Format(
+                    ExceptionMessages.AutoAssignmentConflictTemplate, autoId, conflictingAutoRouteId.Value, routeIntervalText));
             }
 
             var conflictingDriverRouteId = await _routeRepository.GetProjectedItemBySpecAsync(
                 new RouteSpecs.ActiveIdOverlappingForDriver(driverId, departure, arrival, excludeRouteId));
             if (conflictingDriverRouteId.HasValue)
             {
-                throw new AssignmentConflictException(
-                    $"Водія (ID {driverId}) вже призначено на маршрут #{conflictingDriverRouteId.Value}, який перетинається з інтервалом {routeIntervalText}.");
+                throw new AssignmentConflictException(string.Format(
+                    ExceptionMessages.DriverAssignmentConflictTemplate, driverId, conflictingDriverRouteId.Value, routeIntervalText));
             }
 
             var conflictingMaintenanceId = await _maintenanceRepository.GetProjectedItemBySpecAsync(
                 new AutoMaintenanceSpecs.IncompleteIdOverlappingRouteIntervalForAuto(autoId, departure, arrival));
             if (conflictingMaintenanceId.HasValue)
             {
-                throw new AssignmentConflictException(
-                    $"Для автомобіля (ID {autoId}) заплановано техобслуговування #{conflictingMaintenanceId.Value}, яке припадає на інтервал {routeIntervalText}.");
+                throw new AssignmentConflictException(string.Format(
+                    ExceptionMessages.MaintenanceAssignmentConflictTemplate, autoId, conflictingMaintenanceId.Value, routeIntervalText));
             }
         }
     }

@@ -16,5 +16,11 @@ namespace data_access.Repository
         {
             return _context.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            var databaseTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            return new UnitOfWorkTransaction(databaseTransaction);
+        }
     }
 }

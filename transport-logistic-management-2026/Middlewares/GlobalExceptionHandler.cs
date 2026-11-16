@@ -1,4 +1,5 @@
-﻿using business_logic.Exceptions;
+﻿using business_logic.Constants;
+using business_logic.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ValidationException = FluentValidation.ValidationException;
@@ -26,7 +27,7 @@ namespace transport_logistic_management_2026.Middlewares
                 BusinessRuleException => CreateProblem(StatusCodes.Status400BadRequest, "Bad Request", exception.Message),
                 AssignmentConflictException => CreateProblem(StatusCodes.Status409Conflict, "Conflict", exception.Message),
                 UnauthorizedAccessException => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized", exception.Message),
-                _ => CreateProblem(StatusCodes.Status500InternalServerError, "Internal Server Error", "An unexpected error occurred.")
+                _ => CreateProblem(StatusCodes.Status500InternalServerError, "Internal Server Error", ExceptionMessages.UnexpectedError)
             };
 
             if (problemDetails.Status == StatusCodes.Status500InternalServerError)
@@ -62,7 +63,7 @@ namespace transport_logistic_management_2026.Middlewares
             {
                 Status = StatusCodes.Status400BadRequest,
                 Title = "Validation Failed",
-                Detail = "One or more validation errors occurred."
+                Detail = ExceptionMessages.ValidationFailed
             };
         }
     }

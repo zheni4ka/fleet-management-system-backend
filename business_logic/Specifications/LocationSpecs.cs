@@ -1,4 +1,5 @@
 using Ardalis.Specification;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using System.Linq.Expressions;
@@ -67,7 +68,7 @@ namespace business_logic.Specifications
                     LocationSortField.Id => l => l.Id,
                     LocationSortField.City => l => l.City,
                     LocationSortField.Country => l => l.Country,
-                    _ => throw new Exception($"Location sort field '{sortField}' is not supported.")
+                    _ => throw new Exception(string.Format(ExceptionMessages.SortFieldNotSupportedTemplate, sortField))
                 };
 
                 Query.OrderBySortDirection(sortKeySelector, l => l.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);

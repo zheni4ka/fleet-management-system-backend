@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
@@ -16,7 +17,7 @@ namespace business_logic.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateDriverRequestModel> _createValidator;
-        private readonly IValidator<UpdateDriverRequestModel> _editValidator;
+        private readonly IValidator<UpdateDriverRequestModel> _updateValidator;
         private readonly IValidator<GetPagedListRequestModel<DriverSortField>> _pagedListRequestValidator;
 
         public DriverService(
@@ -26,7 +27,7 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateDriverRequestModel> createValidator,
-            IValidator<UpdateDriverRequestModel> editValidator,
+            IValidator<UpdateDriverRequestModel> updateValidator,
             IValidator<GetPagedListRequestModel<DriverSortField>> pagedListRequestValidator)
         {
             _driverRepository = driverRepository;
@@ -35,7 +36,7 @@ namespace business_logic.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
-            _editValidator = editValidator;
+            _updateValidator = updateValidator;
             _pagedListRequestValidator = pagedListRequestValidator;
         }
 
@@ -69,17 +70,19 @@ namespace business_logic.Services
             await EnsureLicenseIsUniqueAsync(model.LicenseNumber);
 
             var driver = _mapper.Map<Driver>(model);
+            await using var driverCreationTransaction = await _unitOfWork.BeginTransactionAsync();
             await _driverRepository.InsertAsync(driver);
             await _unitOfWork.SaveChangesAsync();
             await _auditLogService.LogActionAsync(AuditAction.DriverCreated, driver.Id);
             await _unitOfWork.SaveChangesAsync();
+            await driverCreationTransaction.CommitAsync();
 
             return _mapper.Map<GetDriverResponseModel>(driver);
         }
 
         public async Task UpdateAsync(UpdateDriverRequestModel model)
         {
-            await _editValidator.ValidateAndThrowAsync(model);
+            await _updateValidator.ValidateAndThrowAsync(model);
 
             var driver = await GetDriverOrThrowAsync(model.Id);
             await EnsureLicenseIsUniqueAsync(model.LicenseNumber, model.Id);
@@ -95,7 +98,7 @@ namespace business_logic.Services
 
             if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByDriverId(id)))
             {
-                throw new BusinessRuleException("Unable to delete a driver that is assigned to routes.");
+                throw new BusinessRuleException(string.Format(ExceptionMessages.DriverAssignedToRoutesTemplate, id));
             }
 
             _driverRepository.Delete(driver);
@@ -112,7 +115,7 @@ namespace business_logic.Services
         {
             if (await _driverRepository.AnyBySpecAsync(new DriverSpecs.ByLicenseNumber(licenseNumber, excludedDriverId)))
             {
-                throw new BusinessRuleException($"Driver with license '{licenseNumber}' already exists.");
+                throw new BusinessRuleException(string.Format(ExceptionMessages.DriverLicenseNumberAlreadyExistsTemplate, licenseNumber));
             }
         }
     }

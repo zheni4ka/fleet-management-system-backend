@@ -1,12 +1,5 @@
-﻿namespace business_logic.Entities
+namespace business_logic.Entities
 {
-    public enum AutoStatus
-    {
-        Available,
-        InService,
-        UnderMaintenance
-    }
-
     public class Auto
     {
         public int Id { get; set; }

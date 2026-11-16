@@ -1,3 +1,6 @@
+using business_logic.Constants;
+using business_logic.Helpers;
+
 namespace business_logic.Exceptions
 {
     public class NotFoundException : Exception
@@ -6,6 +9,9 @@ namespace business_logic.Exceptions
         {
         }
 
-        public static NotFoundException For<TEntity>(object id) => new($"{typeof(TEntity).Name} with id '{id}' was not found.");
+        public static NotFoundException For<TEntity>(object id) => new(string.Format(
+            ExceptionMessages.EntityNotFoundTemplate,
+            EntityDisplayNameResolver.GetEntityDisplayName(typeof(TEntity)),
+            id));
     }
 }

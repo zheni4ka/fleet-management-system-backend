@@ -1,3 +1,4 @@
+using business_logic.Constants;
 using business_logic.DTOs;
 using FluentValidation;
 
@@ -7,8 +8,15 @@ namespace business_logic.Validators
     {
         public CreateLocationRequestModelValidator()
         {
-            RuleFor(x => x.City).NotEmpty().WithMessage("City is required").MaximumLength(200);
-            RuleFor(x => x.Country).NotEmpty().WithMessage("Country is required").MaximumLength(200);
+            RuleFor(x => x.City)
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .MaximumLength(200).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .WithName("Місто");
+
+            RuleFor(x => x.Country)
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .MaximumLength(200).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .WithName("Країна");
         }
     }
 }

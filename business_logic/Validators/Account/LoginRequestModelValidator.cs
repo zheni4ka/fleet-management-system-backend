@@ -1,3 +1,4 @@
+using business_logic.Constants;
 using business_logic.DTOs;
 using FluentValidation;
 
@@ -7,8 +8,13 @@ namespace business_logic.Validators.Account
     {
         public LoginRequestModelValidator()
         {
-            RuleFor(x => x.Username).NotEmpty().WithMessage("Username or Email is required.");
-            RuleFor(x => x.Password).NotEmpty().WithMessage("Password is required.");
+            RuleFor(x => x.Username)
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .WithName("Логін або email");
+
+            RuleFor(x => x.Password)
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .WithName("Пароль");
         }
     }
 }

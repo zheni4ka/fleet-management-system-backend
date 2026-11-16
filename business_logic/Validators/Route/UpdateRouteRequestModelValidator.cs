@@ -1,4 +1,5 @@
-﻿using business_logic.DTOs;
+﻿using business_logic.Constants;
+using business_logic.DTOs;
 using FluentValidation;
 
 namespace business_logic.Validators.Route
@@ -8,17 +9,28 @@ namespace business_logic.Validators.Route
         public UpdateRouteRequestModelValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("Id must be greater than 0.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Ідентифікатор");
+
             RuleFor(x => x.StartLocationId)
-                .GreaterThan(0).WithMessage("Start location ID is required.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Початкова локація");
+
             RuleFor(x => x.DestinationLocationId)
-                .GreaterThan(0).WithMessage("Destination location ID is required.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Кінцева локація");
+
             RuleFor(x => x.AutoId)
-                .GreaterThan(0).WithMessage("AutoId must be greater than 0.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Автомобіль");
+
             RuleFor(x => x.DriverId)
-                .GreaterThan(0).WithMessage("DriverId must be greater than 0.");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Водій");
+
             RuleFor(x => x.Status)
-                .IsInEnum().WithMessage("Status must be a valid value.");
+                .IsInEnum().WithMessage(ValidationMessages.UnsupportedValue)
+                .WithName("Статус");
         }
     }
 }

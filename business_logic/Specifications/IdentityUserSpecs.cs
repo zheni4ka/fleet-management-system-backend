@@ -1,4 +1,5 @@
 using Ardalis.Specification;
+using business_logic.Constants;
 using business_logic.DTOs;
 using Microsoft.AspNetCore.Identity;
 using System.Linq.Expressions;
@@ -29,7 +30,7 @@ namespace business_logic.Specifications
                     DispatcherSortField.Id => u => u.Id,
                     DispatcherSortField.Username => u => u.UserName,
                     DispatcherSortField.Email => u => u.Email,
-                    _ => throw new Exception($"Dispatcher sort field '{sortField}' is not supported.")
+                    _ => throw new Exception(string.Format(ExceptionMessages.SortFieldNotSupportedTemplate, sortField))
                 };
 
                 Query.OrderBySortDirection(sortKeySelector, u => u.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);

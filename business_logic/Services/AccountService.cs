@@ -80,7 +80,7 @@ namespace business_logic.Services
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                throw new UnauthorizedAccessException("Wrong username or password.");
+                throw new UnauthorizedAccessException(ExceptionMessages.WrongUsernameOrPassword);
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -98,12 +98,12 @@ namespace business_logic.Services
 
             if (await _userManager.FindByNameAsync(model.Username) != null)
             {
-                throw new BusinessRuleException("User already exists");
+                throw new BusinessRuleException(string.Format(ExceptionMessages.UsernameAlreadyExistsTemplate, model.Username));
             }
 
             if (await _userManager.FindByEmailAsync(model.Email) != null)
             {
-                throw new BusinessRuleException("Email already exists");
+                throw new BusinessRuleException(string.Format(ExceptionMessages.EmailAlreadyExistsTemplate, model.Email));
             }
 
             var user = new IdentityUser
@@ -113,11 +113,17 @@ namespace business_logic.Services
                 EmailConfirmed = true
             };
 
-            EnsureSucceeded(await _userManager.CreateAsync(user, model.Password), "Failed to create user");
-            EnsureSucceeded(await _userManager.AddToRoleAsync(user, model.Role), "Failed to assign role");
+            await using var accountRegistrationTransaction = await _unitOfWork.BeginTransactionAsync();
+            EnsureIdentityOperationSucceeded(
+                await _userManager.CreateAsync(user, model.Password),
+                identityErrorDescriptions => string.Format(ExceptionMessages.UserCreationFailedTemplate, model.Username, identityErrorDescriptions));
+            EnsureIdentityOperationSucceeded(
+                await _userManager.AddToRoleAsync(user, model.Role),
+                identityErrorDescriptions => string.Format(ExceptionMessages.RoleAssignmentFailedTemplate, model.Role, model.Username, identityErrorDescriptions));
 
             await _auditLogService.LogActionAsync(AuditAction.UserRegistered, user.Id);
             await _unitOfWork.SaveChangesAsync();
+            await accountRegistrationTransaction.CommitAsync();
 
             return _mapper.Map<GetDispatcherResponseModel>(user);
         }
@@ -127,7 +133,7 @@ namespace business_logic.Services
             var user = await _userManager.FindByIdAsync(id);
             if (user == null || !await _userManager.IsInRoleAsync(user, UserRoles.Dispatcher))
             {
-                throw new NotFoundException($"Dispatcher with id '{id}' was not found.");
+                throw NotFoundException.For<IdentityUser>(id);
             }
 
             return _mapper.Map<GetDispatcherResponseModel>(user);
@@ -135,26 +141,32 @@ namespace business_logic.Services
 
         public async Task DeleteUserAsync(string id)
         {
-            var user = await _userManager.FindByIdAsync(id) ?? throw new NotFoundException("User not found");
+            var user = await _userManager.FindByIdAsync(id) ?? throw NotFoundException.For<IdentityUser>(id);
 
             if (_currentUser.UserId == id)
             {
-                throw new BusinessRuleException("You cannot delete your own account");
+                throw new BusinessRuleException(ExceptionMessages.OwnAccountDeletionForbidden);
             }
 
-            EnsureSucceeded(await _userManager.DeleteAsync(user), "Error deleting user");
+            await using var userDeletionTransaction = await _unitOfWork.BeginTransactionAsync();
+            EnsureIdentityOperationSucceeded(
+                await _userManager.DeleteAsync(user),
+                identityErrorDescriptions => string.Format(ExceptionMessages.UserDeletionFailedTemplate, id, identityErrorDescriptions));
 
             await _auditLogService.LogActionAsync(AuditAction.UserDeleted, id);
             await _unitOfWork.SaveChangesAsync();
+            await userDeletionTransaction.CommitAsync();
         }
 
-        private static void EnsureSucceeded(IdentityResult result, string message)
+        private static void EnsureIdentityOperationSucceeded(IdentityResult identityOperationResult, Func<string, string> createFailureMessage)
         {
-            if (!result.Succeeded)
+            if (identityOperationResult.Succeeded)
             {
-                var details = string.Join("; ", result.Errors.Select(e => e.Description));
-                throw new BusinessRuleException($"{message}: {details}");
+                return;
             }
+
+            var identityErrorDescriptions = string.Join("; ", identityOperationResult.Errors.Select(identityError => identityError.Description));
+            throw new BusinessRuleException(createFailureMessage(identityErrorDescriptions));
         }
     }
 }

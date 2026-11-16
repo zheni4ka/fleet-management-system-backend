@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
@@ -16,7 +17,7 @@ namespace business_logic.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateAutoRequestModel> _createValidator;
-        private readonly IValidator<UpdateAutoRequestModel> _editValidator;
+        private readonly IValidator<UpdateAutoRequestModel> _updateValidator;
         private readonly IValidator<GetPagedListRequestModel<AutoSortField>> _pagedListRequestValidator;
         private readonly IValidator<GetAutosBySearchFilterRequestModel> _searchFilterValidator;
 
@@ -27,7 +28,7 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateAutoRequestModel> createValidator,
-            IValidator<UpdateAutoRequestModel> editValidator,
+            IValidator<UpdateAutoRequestModel> updateValidator,
             IValidator<GetPagedListRequestModel<AutoSortField>> pagedListRequestValidator,
             IValidator<GetAutosBySearchFilterRequestModel> searchFilterValidator)
         {
@@ -37,7 +38,7 @@ namespace business_logic.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
-            _editValidator = editValidator;
+            _updateValidator = updateValidator;
             _pagedListRequestValidator = pagedListRequestValidator;
             _searchFilterValidator = searchFilterValidator;
         }
@@ -75,17 +76,19 @@ namespace business_logic.Services
             await EnsureNumberIsUniqueAsync(model.Number);
 
             var auto = _mapper.Map<Auto>(model);
+            await using var autoCreationTransaction = await _unitOfWork.BeginTransactionAsync();
             await _autoRepository.InsertAsync(auto);
             await _unitOfWork.SaveChangesAsync();
             await _auditLogService.LogActionAsync(AuditAction.AutoCreated, auto.Id);
             await _unitOfWork.SaveChangesAsync();
+            await autoCreationTransaction.CommitAsync();
 
             return _mapper.Map<GetAutoResponseModel>(auto);
         }
 
         public async Task UpdateAsync(UpdateAutoRequestModel model)
         {
-            await _editValidator.ValidateAndThrowAsync(model);
+            await _updateValidator.ValidateAndThrowAsync(model);
 
             var auto = await GetAutoOrThrowAsync(model.Id);
             await EnsureNumberIsUniqueAsync(model.Number, model.Id);
@@ -101,7 +104,7 @@ namespace business_logic.Services
 
             if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByAutoId(id)))
             {
-                throw new BusinessRuleException("Unable to delete an auto that is used in routes.");
+                throw new BusinessRuleException(string.Format(ExceptionMessages.AutoUsedInRoutesTemplate, id));
             }
 
             _autoRepository.Delete(auto);
@@ -118,7 +121,7 @@ namespace business_logic.Services
         {
             if (await _autoRepository.AnyBySpecAsync(new AutoSpecs.ByNumber(number, excludedAutoId)))
             {
-                throw new BusinessRuleException($"Auto with number '{number}' already exists.");
+                throw new BusinessRuleException(string.Format(ExceptionMessages.AutoNumberAlreadyExistsTemplate, number));
             }
         }
     }

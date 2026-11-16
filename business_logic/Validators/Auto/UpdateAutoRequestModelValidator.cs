@@ -9,29 +9,10 @@ namespace business_logic.Validators.Auto
         public UpdateAutoRequestModelValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("Id must be greater than 0");
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Ідентифікатор");
 
-            RuleFor(x => x.Mark)
-                .NotEmpty().WithMessage("Name of this car is required.")
-                .MaximumLength(AutoConstraints.MarkMaxLength).WithMessage($"Name of this car must be less than {AutoConstraints.MarkMaxLength}");
-
-            RuleFor(x => x.Model)
-                .NotEmpty().WithMessage("Model of this car is required.")
-                .MaximumLength(AutoConstraints.ModelMaxLength).WithMessage($"Model of this car must be less than {AutoConstraints.ModelMaxLength}");
-
-            RuleFor(x => x.Color)
-                .NotEmpty().WithMessage("Color of this car is required.")
-                .MaximumLength(AutoConstraints.ColorMaxLength).WithMessage($"Color of this car must be less than {AutoConstraints.ColorMaxLength}");
-
-            RuleFor(x => x.Capacity)
-                .GreaterThan(0).WithMessage("Capacity must be greater than 0.");
-
-            RuleFor(x => x.Number)
-                .NotEmpty().WithMessage("Number is required.")
-                .Matches(AutoNumberFormat.Pattern).WithMessage("Number has an invalid format.");
-
-            RuleFor(x => x.Status)
-                .IsInEnum().WithMessage("Status must be a valid enum value");
+            Include(new AutoRequestModelBaseValidator());
         }
     }
 }
