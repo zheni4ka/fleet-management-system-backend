@@ -25,9 +25,15 @@ namespace business_logic.Specifications
 
         public class ByLicenseNumber : Specification<Driver>
         {
-            public ByLicenseNumber(string licenseNumber)
+            public ByLicenseNumber(string licenseNumber, int? excludedDriverId = null)
             {
                 Query.Where(d => d.LicenseNumber == licenseNumber);
+
+                if (excludedDriverId.HasValue)
+                {
+                    var excludedDriverIdValue = excludedDriverId.Value;
+                    Query.Where(d => d.Id != excludedDriverIdValue);
+                }
             }
         }
 
@@ -39,7 +45,7 @@ namespace business_logic.Specifications
             }
         }
 
-        public class PagedList : Specification<Driver>
+        public class PagedList : Specification<Driver, DriverDTO>
         {
             public PagedList(GetPagedListRequestModel<DriverSortField> pagedListRequest)
             {
@@ -67,6 +73,32 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, d => d.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
+                Query.Select(d => new DriverDTO
+                {
+                    Id = d.Id,
+                    Name = d.Name,
+                    Surname = d.Surname,
+                    Patronymic = d.Patronymic,
+                    LicenseNumber = d.LicenseNumber
+                });
+            }
+        }
+
+        public class RoutesPeriodReportSummaries : Specification<Driver, GetRoutesPeriodReportDriverSummaryResponseModel>
+        {
+            public RoutesPeriodReportSummaries(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
+            {
+                Query.Where(d => d.Routes.Any(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime))
+                    .OrderByDescending(d => d.Routes.Count(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime))
+                    .ThenBy(d => d.Id);
+                Query.Select(d => new GetRoutesPeriodReportDriverSummaryResponseModel
+                {
+                    DriverId = d.Id,
+                    RoutesCount = d.Routes.Count(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime),
+                    CompletedRoutesCount = d.Routes.Count(r => r.DepartureTime >= periodStartDateTime
+                        && r.DepartureTime < periodEndExclusiveDateTime
+                        && r.Status == RouteStatus.Completed)
+                });
             }
         }
     }

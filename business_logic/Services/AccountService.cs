@@ -20,7 +20,7 @@ namespace business_logic.Services
         private readonly IMapper _mapper;
         private readonly IValidator<LoginModel> _loginValidator;
         private readonly IValidator<RegisterModel> _registerValidator;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IRepository<IdentityRole> _roleRepository;
         private readonly IRepository<IdentityUser> _userRepository;
         private readonly IRepository<IdentityUserRole<string>> _userRoleRepository;
         private readonly IValidator<GetPagedListRequestModel<DispatcherSortField>> _dispatchersPagedListRequestValidator;
@@ -34,7 +34,7 @@ namespace business_logic.Services
             IMapper mapper,
             IValidator<LoginModel> loginValidator,
             IValidator<RegisterModel> registerValidator,
-            RoleManager<IdentityRole> roleManager,
+            IRepository<IdentityRole> roleRepository,
             IRepository<IdentityUser> userRepository,
             IRepository<IdentityUserRole<string>> userRoleRepository,
             IValidator<GetPagedListRequestModel<DispatcherSortField>> dispatchersPagedListRequestValidator)
@@ -47,7 +47,7 @@ namespace business_logic.Services
             _mapper = mapper;
             _loginValidator = loginValidator;
             _registerValidator = registerValidator;
-            _roleManager = roleManager;
+            _roleRepository = roleRepository;
             _userRepository = userRepository;
             _userRoleRepository = userRoleRepository;
             _dispatchersPagedListRequestValidator = dispatchersPagedListRequestValidator;
@@ -57,12 +57,12 @@ namespace business_logic.Services
         {
             await _dispatchersPagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
-            var dispatcherRole = await _roleManager.FindByNameAsync(UserRoles.Dispatcher)
-                ?? throw new InvalidOperationException($"Role '{UserRoles.Dispatcher}' is not seeded.");
-            var dispatcherUserIds = await _userRoleRepository.GetProjectedListBySpecAsync(
-                new IdentityUserRoleSpecs.UserIdsByRoleId(dispatcherRole.Id));
+            var dispatcherRoleIdsQuery = _roleRepository.GetProjectedQueryBySpec(
+                new IdentityRoleSpecs.IdsByName(UserRoles.Dispatcher));
+            var dispatcherUserIdsQuery = _userRoleRepository.GetProjectedQueryBySpec(
+                new IdentityUserRoleSpecs.UserIdsByRoleIds(dispatcherRoleIdsQuery));
 
-            var dispatchersPagedListSpecification = new IdentityUserSpecs.DispatchersPagedList(dispatcherUserIds, pagedListRequest);
+            var dispatchersPagedListSpecification = new IdentityUserSpecs.DispatchersPagedList(dispatcherUserIdsQuery, pagedListRequest);
             var dispatchersPage = await _userRepository.GetProjectedListBySpecAsync(dispatchersPagedListSpecification);
             var dispatchersTotalCount = await _userRepository.CountBySpecAsync(dispatchersPagedListSpecification);
 

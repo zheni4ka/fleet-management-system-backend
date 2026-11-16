@@ -64,7 +64,7 @@ namespace business_logic.Services
         {
             await _createValidator.ValidateAndThrowAsync(model);
 
-            var auto = await _autoRepository.GetByIdAsync(model.AutoId) ?? throw new NotFoundException("Автомобіль не знайдено");
+            var auto = await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(model.AutoId)) ?? throw NotFoundException.For<Auto>(model.AutoId);
 
             var affectedRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.ActiveByAutoFrom(model.AutoId, model.ServiceDate));
             foreach (var route in affectedRoutes)
@@ -117,7 +117,7 @@ namespace business_logic.Services
 
         private async Task<AutoMaintenance> GetMaintenanceOrThrowAsync(int id)
         {
-            return await _maintenanceRepository.GetByIdAsync(id) ?? throw NotFoundException.For<AutoMaintenance>(id);
+            return await _maintenanceRepository.GetItemBySpecAsync(new AutoMaintenanceSpecs.ById(id)) ?? throw NotFoundException.For<AutoMaintenance>(id);
         }
     }
 }

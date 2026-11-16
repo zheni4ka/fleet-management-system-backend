@@ -41,7 +41,7 @@ namespace business_logic.Services
 
         public async Task<IEnumerable<LocationDTO>> GetAllAsync()
         {
-            return _mapper.Map<IEnumerable<LocationDTO>>(await _locationRepository.GetAllAsync());
+            return _mapper.Map<IEnumerable<LocationDTO>>(await _locationRepository.GetListBySpecAsync(new LocationSpecs.All()));
         }
 
         public async Task<GetPagedListResponseModel<LocationDTO>> GetPagedListAsync(
@@ -52,17 +52,17 @@ namespace business_logic.Services
             await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
             var locationsPagedListSpecification = new LocationSpecs.PagedList(searchFilter, pagedListRequest);
-            var locationsPage = await _locationRepository.GetListBySpecAsync(locationsPagedListSpecification);
+            var locationsPage = await _locationRepository.GetProjectedListBySpecAsync(locationsPagedListSpecification);
             var locationsTotalCount = await _locationRepository.CountBySpecAsync(locationsPagedListSpecification);
 
             return new GetPagedListResponseModel<LocationDTO>(
-                Items: _mapper.Map<List<LocationDTO>>(locationsPage),
+                Items: locationsPage,
                 TotalCount: locationsTotalCount);
         }
 
         public async Task<LocationDTO> GetAsync(int id)
         {
-            var location = await _locationRepository.GetByIdAsync(id) ?? throw NotFoundException.For<Location>(id);
+            var location = await GetLocationOrThrowAsync(id);
             return _mapper.Map<LocationDTO>(location);
         }
 
@@ -81,7 +81,7 @@ namespace business_logic.Services
 
         public async Task DeleteAsync(int id)
         {
-            var location = await _locationRepository.GetByIdAsync(id) ?? throw NotFoundException.For<Location>(id);
+            var location = await GetLocationOrThrowAsync(id);
 
             if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByLocationId(id)))
             {
@@ -91,6 +91,11 @@ namespace business_logic.Services
             _locationRepository.Delete(location);
             await _auditLogService.LogActionAsync(AuditAction.LocationDeleted, id);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        private async Task<Location> GetLocationOrThrowAsync(int id)
+        {
+            return await _locationRepository.GetItemBySpecAsync(new LocationSpecs.ById(id)) ?? throw NotFoundException.For<Location>(id);
         }
     }
 }

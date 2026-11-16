@@ -56,11 +56,11 @@ namespace business_logic.Services
             await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
             var autosPagedListSpecification = new AutoSpecs.PagedList(searchFilter, pagedListRequest);
-            var autosPage = await _autoRepository.GetListBySpecAsync(autosPagedListSpecification);
+            var autosPage = await _autoRepository.GetProjectedListBySpecAsync(autosPagedListSpecification);
             var autosTotalCount = await _autoRepository.CountBySpecAsync(autosPagedListSpecification);
 
             return new GetPagedListResponseModel<AutoDTO>(
-                Items: _mapper.Map<List<AutoDTO>>(autosPage),
+                Items: autosPage,
                 TotalCount: autosTotalCount);
         }
 
@@ -125,13 +125,12 @@ namespace business_logic.Services
 
         private async Task<Auto> GetAutoOrThrowAsync(int id)
         {
-            return await _autoRepository.GetByIdAsync(id) ?? throw NotFoundException.For<Auto>(id);
+            return await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(id)) ?? throw NotFoundException.For<Auto>(id);
         }
 
-        private async Task EnsureNumberIsUniqueAsync(string number, int? excludeId = null)
+        private async Task EnsureNumberIsUniqueAsync(string number, int? excludedAutoId = null)
         {
-            var existing = await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ByNumber(number));
-            if (existing != null && existing.Id != excludeId)
+            if (await _autoRepository.AnyBySpecAsync(new AutoSpecs.ByNumber(number, excludedAutoId)))
             {
                 throw new BusinessRuleException($"Auto with number '{number}' already exists.");
             }

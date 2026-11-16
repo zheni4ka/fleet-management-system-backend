@@ -10,10 +10,10 @@ namespace business_logic.Specifications
         public class DispatchersPagedList : Specification<IdentityUser, UserDTO>
         {
             public DispatchersPagedList(
-                IReadOnlyList<string> dispatcherUserIds,
+                IQueryable<string> dispatcherUserIdsQuery,
                 GetPagedListRequestModel<DispatcherSortField> pagedListRequest)
             {
-                Query.Where(u => dispatcherUserIds.Contains(u.Id));
+                Query.Where(u => dispatcherUserIdsQuery.Contains(u.Id));
 
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
                 {

@@ -7,6 +7,18 @@ namespace business_logic.Specifications
 {
     public class RouteSpecs
     {
+        private static readonly Expression<Func<Route, RouteDTO>> RouteDTOSelector = r => new RouteDTO
+        {
+            Id = r.Id,
+            StartLocationId = r.StartLocationId,
+            DestinationLocationId = r.DestinationLocationId,
+            DepartureTime = r.DepartureTime,
+            ArrivalTime = r.ArrivalTime,
+            AutoId = r.AutoId,
+            DriverId = r.DriverId,
+            Status = r.Status
+        };
+
         public class ById : Specification<Route>
         {
             public ById(int id)
@@ -98,7 +110,7 @@ namespace business_logic.Specifications
             }
         }
 
-        public class PagedListBySearchFilter : Specification<Route>
+        public class PagedListBySearchFilter : Specification<Route, RouteDTO>
         {
             public PagedListBySearchFilter(
                 GetRoutesBySearchFilterRequestModel searchFilter,
@@ -129,6 +141,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, r => r.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
+                Query.Select(RouteDTOSelector);
             }
         }
 
@@ -185,12 +198,14 @@ namespace business_logic.Specifications
             }
         }
 
-        public class ByDeparturePeriod : Specification<Route>
+        public class ByDeparturePeriod : Specification<Route, RouteDTO>
         {
             public ByDeparturePeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
             {
                 Query.Where(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime)
-                    .OrderBy(r => r.DepartureTime);
+                    .OrderBy(r => r.DepartureTime)
+                    .ThenBy(r => r.Id);
+                Query.Select(RouteDTOSelector);
             }
         }
 

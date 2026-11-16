@@ -25,9 +25,15 @@ namespace business_logic.Specifications
 
         public class ByNumber : Specification<Auto>
         {
-            public ByNumber(string number)
+            public ByNumber(string number, int? excludedAutoId = null)
             {
                 Query.Where(a => a.Number == number);
+
+                if (excludedAutoId.HasValue)
+                {
+                    var excludedAutoIdValue = excludedAutoId.Value;
+                    Query.Where(a => a.Id != excludedAutoIdValue);
+                }
             }
         }
 
@@ -63,7 +69,7 @@ namespace business_logic.Specifications
             }
         }
 
-        public class PagedList : Specification<Auto>
+        public class PagedList : Specification<Auto, AutoDTO>
         {
             public PagedList(
                 GetAutosBySearchFilterRequestModel searchFilter,
@@ -107,6 +113,24 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, a => a.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
+                Query.Select(a => new AutoDTO
+                {
+                    Id = a.Id,
+                    Mark = a.Mark,
+                    Model = a.Model,
+                    Color = a.Color,
+                    Number = a.Number,
+                    Capacity = a.Capacity,
+                    Status = a.Status
+                });
+            }
+        }
+
+        public class WithRoutesDepartingInPeriod : Specification<Auto>
+        {
+            public WithRoutesDepartingInPeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
+            {
+                Query.Where(a => a.Routes.Any(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime));
             }
         }
 

@@ -7,7 +7,32 @@ namespace business_logic.Specifications
 {
     public class LocationSpecs
     {
-        public class PagedList : Specification<Location>
+        public class ById : Specification<Location>
+        {
+            public ById(int id)
+            {
+                Query.Where(l => l.Id == id);
+            }
+        }
+
+        public class All : Specification<Location>
+        {
+            public All()
+            {
+                Query.OrderBy(l => l.Id);
+            }
+        }
+
+        public class ExistingIdsByIds : Specification<Location, int>
+        {
+            public ExistingIdsByIds(IReadOnlyCollection<int> locationIds)
+            {
+                Query.Where(l => locationIds.Contains(l.Id));
+                Query.Select(l => l.Id);
+            }
+        }
+
+        public class PagedList : Specification<Location, LocationDTO>
         {
             public PagedList(
                 GetLocationsBySearchFilterRequestModel searchFilter,
@@ -39,6 +64,12 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, l => l.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
+                Query.Select(l => new LocationDTO
+                {
+                    Id = l.Id,
+                    City = l.City,
+                    Country = l.Country
+                });
             }
         }
     }

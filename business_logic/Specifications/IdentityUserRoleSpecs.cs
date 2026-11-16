@@ -5,11 +5,11 @@ namespace business_logic.Specifications
 {
     public class IdentityUserRoleSpecs
     {
-        public class UserIdsByRoleId : Specification<IdentityUserRole<string>, string>
+        public class UserIdsByRoleIds : Specification<IdentityUserRole<string>, string>
         {
-            public UserIdsByRoleId(string roleId)
+            public UserIdsByRoleIds(IQueryable<string> roleIdsQuery)
             {
-                Query.Where(ur => ur.RoleId == roleId);
+                Query.Where(ur => roleIdsQuery.Contains(ur.RoleId));
                 Query.Select(ur => ur.UserId);
             }
         }

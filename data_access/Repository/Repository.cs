@@ -3,6 +3,7 @@ using Ardalis.Specification.EntityFrameworkCore;
 using business_logic.Interfaces;
 using data_access.data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace data_access.Repository
 {
@@ -13,16 +14,6 @@ namespace data_access.Repository
         public Repository(FMS_DbContext context)
         {
             _dbSet = context.Set<TEntity>();
-        }
-
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
-        {
-            return await _dbSet.ToListAsync();
-        }
-
-        public async Task<TEntity?> GetByIdAsync(object id)
-        {
-            return await _dbSet.FindAsync(id);
         }
 
         public async Task InsertAsync(TEntity entity)
@@ -57,22 +48,42 @@ namespace data_access.Repository
 
         public async Task<int> CountBySpecAsync(ISpecification<TEntity> specification)
         {
-            return await SpecificationEvaluator.Default.GetQuery(_dbSet, specification, evaluateCriteriaOnly: true).CountAsync();
+            return await ApplySpecificationCriteria(specification).CountAsync();
+        }
+
+        public async Task<IReadOnlyDictionary<TGroupKey, int>> GetCountsByGroupKeyBySpecAsync<TGroupKey>(
+            ISpecification<TEntity> specification,
+            Expression<Func<TEntity, TGroupKey>> groupKeySelector) where TGroupKey : notnull
+        {
+            return await ApplySpecificationCriteria(specification)
+                .GroupBy(groupKeySelector)
+                .Select(entityGroup => new { GroupKey = entityGroup.Key, EntitiesCount = entityGroup.Count() })
+                .ToDictionaryAsync(groupCount => groupCount.GroupKey, groupCount => groupCount.EntitiesCount);
         }
 
         public async Task<IReadOnlyList<TResult>> GetProjectedListBySpecAsync<TResult>(ISpecification<TEntity, TResult> specification)
         {
-            return await SpecificationEvaluator.Default.GetQuery(_dbSet, specification).ToListAsync();
+            return await GetProjectedQueryBySpec(specification).ToListAsync();
         }
 
         public async Task<TResult?> GetProjectedItemBySpecAsync<TResult>(ISpecification<TEntity, TResult> specification)
         {
-            return await SpecificationEvaluator.Default.GetQuery(_dbSet, specification).FirstOrDefaultAsync();
+            return await GetProjectedQueryBySpec(specification).FirstOrDefaultAsync();
+        }
+
+        public IQueryable<TResult> GetProjectedQueryBySpec<TResult>(ISpecification<TEntity, TResult> specification)
+        {
+            return SpecificationEvaluator.Default.GetQuery(_dbSet, specification);
         }
 
         private IQueryable<TEntity> ApplySpecification(ISpecification<TEntity> specification)
         {
             return SpecificationEvaluator.Default.GetQuery(_dbSet, specification);
+        }
+
+        private IQueryable<TEntity> ApplySpecificationCriteria(ISpecification<TEntity> specification)
+        {
+            return SpecificationEvaluator.Default.GetQuery(_dbSet, specification, evaluateCriteriaOnly: true);
         }
     }
 }

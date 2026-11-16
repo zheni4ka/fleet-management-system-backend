@@ -86,11 +86,11 @@ namespace business_logic.Services
             await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
             var routesPagedListSpecification = new RouteSpecs.PagedListBySearchFilter(searchFilter, pagedListRequest);
-            var routesPage = await _routeRepository.GetListBySpecAsync(routesPagedListSpecification);
+            var routesPage = await _routeRepository.GetProjectedListBySpecAsync(routesPagedListSpecification);
             var routesTotalCount = await _routeRepository.CountBySpecAsync(routesPagedListSpecification);
 
             return new GetPagedListResponseModel<RouteDTO>(
-                Items: _mapper.Map<List<RouteDTO>>(routesPage),
+                Items: routesPage,
                 TotalCount: routesTotalCount);
         }
 
@@ -100,32 +100,39 @@ namespace business_logic.Services
 
             var periodStartDateTime = periodReportRequest.PeriodStartDate.ToDateTime(TimeOnly.MinValue);
             var periodEndExclusiveDateTime = periodReportRequest.PeriodEndDate.AddDays(1).ToDateTime(TimeOnly.MinValue);
-            var periodRoutes = (await _routeRepository.GetListBySpecAsync(
-                new RouteSpecs.ByDeparturePeriod(periodStartDateTime, periodEndExclusiveDateTime))).ToList();
+            var periodRoutesSpecification = new RouteSpecs.ByDeparturePeriod(periodStartDateTime, periodEndExclusiveDateTime);
 
-            var driverSummaries = periodRoutes
+            var periodRoutes = await _routeRepository.GetProjectedListBySpecAsync(periodRoutesSpecification);
+            var periodRoutesCountsByStatus = await _routeRepository.GetCountsByGroupKeyBySpecAsync(periodRoutesSpecification, route => route.Status);
+            var involvedAutosCount = await _autoRepository.CountBySpecAsync(
+                new AutoSpecs.WithRoutesDepartingInPeriod(periodStartDateTime, periodEndExclusiveDateTime));
+            var driverRoutesCountSummaries = await _driverRepository.GetProjectedListBySpecAsync(
+                new DriverSpecs.RoutesPeriodReportSummaries(periodStartDateTime, periodEndExclusiveDateTime));
+
+            var completedPeriodRoutes = periodRoutes.Where(route => route.Status == RouteStatus.Completed).ToList();
+            var completedRoutesDrivingHoursByDriverId = completedPeriodRoutes
                 .GroupBy(route => route.DriverId)
-                .Select(driverRoutes => new GetRoutesPeriodReportDriverSummaryResponseModel(
-                    DriverId: driverRoutes.Key,
-                    RoutesCount: driverRoutes.Count(),
-                    CompletedRoutesCount: driverRoutes.Count(route => route.Status == RouteStatus.Completed),
-                    CompletedRoutesDrivingHours: GetCompletedRoutesDrivingHours(driverRoutes)))
-                .OrderByDescending(driverSummary => driverSummary.RoutesCount)
+                .ToDictionary(driverCompletedRoutes => driverCompletedRoutes.Key, GetDrivingHours);
+            var driverSummaries = driverRoutesCountSummaries
+                .Select(driverSummary => driverSummary with
+                {
+                    CompletedRoutesDrivingHours = completedRoutesDrivingHoursByDriverId.GetValueOrDefault(driverSummary.DriverId)
+                })
                 .ToList();
 
             return new GetRoutesPeriodReportResponseModel(
                 PeriodStartDate: periodReportRequest.PeriodStartDate,
                 PeriodEndDate: periodReportRequest.PeriodEndDate,
                 TotalRoutesCount: periodRoutes.Count,
-                PlannedRoutesCount: periodRoutes.Count(route => route.Status == RouteStatus.Planned),
-                InProgressRoutesCount: periodRoutes.Count(route => route.Status == RouteStatus.InProgress),
-                CompletedRoutesCount: periodRoutes.Count(route => route.Status == RouteStatus.Completed),
-                CancelledRoutesCount: periodRoutes.Count(route => route.Status == RouteStatus.Cancelled),
-                CompletedRoutesDrivingHours: GetCompletedRoutesDrivingHours(periodRoutes),
-                InvolvedAutosCount: periodRoutes.Select(route => route.AutoId).Distinct().Count(),
+                PlannedRoutesCount: periodRoutesCountsByStatus.GetValueOrDefault(RouteStatus.Planned),
+                InProgressRoutesCount: periodRoutesCountsByStatus.GetValueOrDefault(RouteStatus.InProgress),
+                CompletedRoutesCount: periodRoutesCountsByStatus.GetValueOrDefault(RouteStatus.Completed),
+                CancelledRoutesCount: periodRoutesCountsByStatus.GetValueOrDefault(RouteStatus.Cancelled),
+                CompletedRoutesDrivingHours: GetDrivingHours(completedPeriodRoutes),
+                InvolvedAutosCount: involvedAutosCount,
                 InvolvedDriversCount: driverSummaries.Count,
                 DriverSummaries: driverSummaries,
-                Routes: _mapper.Map<List<RouteDTO>>(periodRoutes));
+                Routes: periodRoutes);
         }
 
         public async Task<RouteDTO> CreateAsync(CreateRouteModel model)
@@ -195,22 +202,20 @@ namespace business_logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        private static double GetCompletedRoutesDrivingHours(IEnumerable<Route> routes)
+        private static double GetDrivingHours(IEnumerable<RouteDTO> routes)
         {
-            var completedRoutesDrivingHours = routes
-                .Where(route => route.Status == RouteStatus.Completed)
-                .Sum(route => (route.ArrivalTime - route.DepartureTime).TotalHours);
-            return Math.Round(completedRoutesDrivingHours, 1);
+            var drivingHours = routes.Sum(route => (route.ArrivalTime - route.DepartureTime).TotalHours);
+            return Math.Round(drivingHours, 1);
         }
 
         private async Task<Route> GetRouteOrThrowAsync(int id)
         {
-            return await _routeRepository.GetByIdAsync(id) ?? throw NotFoundException.For<Route>(id);
+            return await _routeRepository.GetItemBySpecAsync(new RouteSpecs.ById(id)) ?? throw NotFoundException.For<Route>(id);
         }
 
         private async Task<Auto> GetUsableAutoAsync(int autoId)
         {
-            var auto = await _autoRepository.GetByIdAsync(autoId) ?? throw NotFoundException.For<Auto>(autoId);
+            var auto = await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(autoId)) ?? throw NotFoundException.For<Auto>(autoId);
             if (auto.Status == AutoStatus.UnderMaintenance)
             {
                 throw new BusinessRuleException("Автомобіль на ремонті.");
@@ -220,7 +225,7 @@ namespace business_logic.Services
 
         private async Task EnsureDriverExistsAsync(int driverId)
         {
-            if (await _driverRepository.GetByIdAsync(driverId) == null)
+            if (!await _driverRepository.AnyBySpecAsync(new DriverSpecs.ById(driverId)))
             {
                 throw NotFoundException.For<Driver>(driverId);
             }
@@ -228,13 +233,16 @@ namespace business_logic.Services
 
         private async Task EnsureLocationsExistAsync(params int[] locationIds)
         {
-            foreach (var locationId in locationIds)
+            var distinctLocationIds = locationIds.Distinct().ToArray();
+            var existingLocationIds = await _locationRepository.GetProjectedListBySpecAsync(
+                new LocationSpecs.ExistingIdsByIds(distinctLocationIds));
+            if (existingLocationIds.Count == distinctLocationIds.Length)
             {
-                if (await _locationRepository.GetByIdAsync(locationId) == null)
-                {
-                    throw NotFoundException.For<Location>(locationId);
-                }
+                return;
             }
+
+            var missingLocationIds = distinctLocationIds.Except(existingLocationIds);
+            throw NotFoundException.For<Location>(string.Join(", ", missingLocationIds));
         }
 
         private async Task EnsureAssignmentHasNoConflictsAsync(int autoId, int driverId, DateTime departure, DateTime arrival, int? excludeRouteId = null)

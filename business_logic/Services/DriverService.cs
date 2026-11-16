@@ -50,11 +50,11 @@ namespace business_logic.Services
             await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
             var driversPagedListSpecification = new DriverSpecs.PagedList(pagedListRequest);
-            var driversPage = await _driverRepository.GetListBySpecAsync(driversPagedListSpecification);
+            var driversPage = await _driverRepository.GetProjectedListBySpecAsync(driversPagedListSpecification);
             var driversTotalCount = await _driverRepository.CountBySpecAsync(driversPagedListSpecification);
 
             return new GetPagedListResponseModel<DriverDTO>(
-                Items: _mapper.Map<List<DriverDTO>>(driversPage),
+                Items: driversPage,
                 TotalCount: driversTotalCount);
         }
 
@@ -106,13 +106,12 @@ namespace business_logic.Services
 
         private async Task<Driver> GetDriverOrThrowAsync(int id)
         {
-            return await _driverRepository.GetByIdAsync(id) ?? throw NotFoundException.For<Driver>(id);
+            return await _driverRepository.GetItemBySpecAsync(new DriverSpecs.ById(id)) ?? throw NotFoundException.For<Driver>(id);
         }
 
-        private async Task EnsureLicenseIsUniqueAsync(string licenseNumber, int? excludeId = null)
+        private async Task EnsureLicenseIsUniqueAsync(string licenseNumber, int? excludedDriverId = null)
         {
-            var existing = await _driverRepository.GetItemBySpecAsync(new DriverSpecs.ByLicenseNumber(licenseNumber));
-            if (existing != null && existing.Id != excludeId)
+            if (await _driverRepository.AnyBySpecAsync(new DriverSpecs.ByLicenseNumber(licenseNumber, excludedDriverId)))
             {
                 throw new BusinessRuleException($"Driver with license '{licenseNumber}' already exists.");
             }
