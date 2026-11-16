@@ -1,6 +1,8 @@
+using business_logic.Interfaces;
+
 namespace business_logic.Entities
 {
-    public class Auto
+    public class Auto : IHasRowVersion
     {
         public int Id { get; set; }
         public string Mark { get; set; }
@@ -11,5 +13,6 @@ namespace business_logic.Entities
         public IEnumerable<Route> Routes { get; set; }
         public IEnumerable<AutoMaintenance> Services { get; set; }
         public AutoStatus Status { get; set; } = AutoStatus.Available;
+        public byte[] RowVersion { get; set; } = [];
     }
 }

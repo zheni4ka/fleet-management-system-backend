@@ -12,6 +12,10 @@ namespace business_logic.Validators
                 .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
                 .WithName("Ідентифікатор");
 
+            RuleFor(x => x.RowVersion)
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .WithName("Версія запису");
+
             Include(new DriverRequestModelBaseValidator());
         }
     }

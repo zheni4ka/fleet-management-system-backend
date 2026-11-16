@@ -21,7 +21,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver, route);
 
             await _testHost.RunInNewScopeAsync<IRouteService>(routeService => routeService.UpdateAsync(
-                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(route.Id, auto.Id, driver.Id, RouteStatus.InProgress)));
+                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(route, auto.Id, driver.Id, RouteStatus.InProgress)));
 
             Assert.Equal(AutoStatus.InService, await _testHost.GetPersistedAutoStatusAsync(auto.Id));
         }
@@ -37,7 +37,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver, route);
 
             await _testHost.RunInNewScopeAsync<IRouteService>(routeService => routeService.UpdateAsync(
-                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(route.Id, auto.Id, driver.Id, finishedRouteStatus)));
+                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(route, auto.Id, driver.Id, finishedRouteStatus)));
 
             Assert.Equal(AutoStatus.Available, await _testHost.GetPersistedAutoStatusAsync(auto.Id));
         }
@@ -52,7 +52,7 @@ namespace business_logic_tests
                 BusinessLogicTestHost.CreateMaintenance(auto, DateTimeOffset.Now.Date));
 
             await _testHost.RunInNewScopeAsync<IRouteService>(routeService => routeService.UpdateAsync(
-                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(route.Id, auto.Id, driver.Id, RouteStatus.Completed)));
+                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(route, auto.Id, driver.Id, RouteStatus.Completed)));
 
             Assert.Equal(AutoStatus.UnderMaintenance, await _testHost.GetPersistedAutoStatusAsync(auto.Id));
         }
@@ -68,7 +68,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver, otherDriver, completedRoute, stillInProgressRoute);
 
             await _testHost.RunInNewScopeAsync<IRouteService>(routeService => routeService.UpdateAsync(
-                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(completedRoute.Id, auto.Id, driver.Id, RouteStatus.Completed)));
+                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(completedRoute, auto.Id, driver.Id, RouteStatus.Completed)));
 
             Assert.Equal(AutoStatus.InService, await _testHost.GetPersistedAutoStatusAsync(auto.Id));
         }
@@ -83,7 +83,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(previousAuto, replacementAuto, driver, route);
 
             await _testHost.RunInNewScopeAsync<IRouteService>(routeService => routeService.UpdateAsync(
-                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(route.Id, replacementAuto.Id, driver.Id, RouteStatus.InProgress)));
+                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(route, replacementAuto.Id, driver.Id, RouteStatus.InProgress)));
 
             Assert.Equal(AutoStatus.Available, await _testHost.GetPersistedAutoStatusAsync(previousAuto.Id));
             Assert.Equal(AutoStatus.InService, await _testHost.GetPersistedAutoStatusAsync(replacementAuto.Id));
@@ -134,6 +134,7 @@ namespace business_logic_tests
             await _testHost.RunInNewScopeAsync<IAutoMaintenanceService>(maintenanceService => maintenanceService.UpdateAsync(new UpdateAutoMaintenanceRequestModel
             {
                 Id = maintenance.Id,
+                RowVersion = maintenance.RowVersion,
                 AutoId = auto.Id,
                 Name = maintenance.Name,
                 Description = maintenance.Description,

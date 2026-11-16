@@ -85,6 +85,7 @@ namespace business_logic.Services
             await _updateValidator.ValidateAndThrowAsync(model);
 
             var driver = await GetDriverOrThrowAsync(model.Id);
+            _driverRepository.SetExpectedRowVersion(driver, model.RowVersion);
             await EnsureLicenseIsUniqueAsync(model.LicenseNumber, model.Id);
 
             _mapper.Map(model, driver);

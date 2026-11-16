@@ -282,6 +282,12 @@ namespace data_access.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -290,7 +296,8 @@ namespace data_access.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Number")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Autos_Number");
 
                     b.ToTable("Autos", (string)null);
                 });
@@ -318,6 +325,12 @@ namespace data_access.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime>("ServiceDate")
                         .HasColumnType("datetime2");
@@ -351,6 +364,12 @@ namespace data_access.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<string>("Surname")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -359,7 +378,8 @@ namespace data_access.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("LicenseNumber")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Drivers_LicenseNumber");
 
                     b.ToTable("Drivers", (string)null);
                 });
@@ -698,6 +718,12 @@ namespace data_access.Migrations
 
                     b.Property<int>("DriverId")
                         .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<int>("StartLocationId")
                         .HasColumnType("int");

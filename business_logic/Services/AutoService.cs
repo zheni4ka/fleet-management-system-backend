@@ -91,6 +91,7 @@ namespace business_logic.Services
             await _updateValidator.ValidateAndThrowAsync(model);
 
             var auto = await GetAutoOrThrowAsync(model.Id);
+            _autoRepository.SetExpectedRowVersion(auto, model.RowVersion);
             await EnsureNumberIsUniqueAsync(model.Number, model.Id);
 
             _mapper.Map(model, auto);

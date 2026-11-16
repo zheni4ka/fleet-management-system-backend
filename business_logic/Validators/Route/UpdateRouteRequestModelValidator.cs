@@ -12,6 +12,10 @@ namespace business_logic.Validators.Route
                 .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
                 .WithName("Ідентифікатор");
 
+            RuleFor(x => x.RowVersion)
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .WithName("Версія запису");
+
             RuleFor(x => x.StartLocationId)
                 .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
                 .WithName("Початкова локація");

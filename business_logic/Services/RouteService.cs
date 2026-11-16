@@ -3,6 +3,7 @@ using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
+using business_logic.Helpers;
 using business_logic.Interfaces;
 using business_logic.Specifications;
 using FluentValidation;
@@ -18,6 +19,7 @@ namespace business_logic.Services
         private readonly IRepository<AutoMaintenance> _maintenanceRepository;
         private readonly IAuditLogService _auditLogService;
         private readonly IAutoStatusSyncService _autoStatusSyncService;
+        private readonly IDatabaseApplicationLockService _databaseApplicationLockService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateRouteRequestModel> _createValidator;
@@ -34,6 +36,7 @@ namespace business_logic.Services
             IRepository<AutoMaintenance> maintenanceRepository,
             IAuditLogService auditLogService,
             IAutoStatusSyncService autoStatusSyncService,
+            IDatabaseApplicationLockService databaseApplicationLockService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateRouteRequestModel> createValidator,
@@ -49,6 +52,7 @@ namespace business_logic.Services
             _maintenanceRepository = maintenanceRepository;
             _auditLogService = auditLogService;
             _autoStatusSyncService = autoStatusSyncService;
+            _databaseApplicationLockService = databaseApplicationLockService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
@@ -125,18 +129,19 @@ namespace business_logic.Services
         {
             await _createValidator.ValidateAndThrowAsync(model);
 
-            var auto = await GetUsableAutoAsync(model.AutoId);
-            await EnsureDriverExistsAsync(model.DriverId);
-            await EnsureLocationsExistAsync(model.StartLocationId, model.DestinationLocationId);
-
-            if (RouteStatusGroups.Active.Contains(model.Status))
-            {
-                await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, model.DepartureTime, model.ArrivalTime);
-            }
-
             var route = _mapper.Map<Route>(model);
             await using (var routeCreationTransaction = await _unitOfWork.BeginTransactionAsync())
             {
+                await AcquireAssignmentLocksAsync(model.AutoId, model.DriverId);
+                var auto = await GetUsableAutoAsync(model.AutoId);
+                await EnsureDriverExistsAsync(model.DriverId);
+                await EnsureLocationsExistAsync(model.StartLocationId, model.DestinationLocationId);
+
+                if (RouteStatusGroups.Active.Contains(model.Status))
+                {
+                    await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, model.DepartureTime, model.ArrivalTime);
+                }
+
                 await _routeRepository.InsertAsync(route);
                 await _unitOfWork.SaveChangesAsync();
                 await _auditLogService.LogActionAsync(AuditAction.RouteCreated, route.Id);
@@ -152,7 +157,10 @@ namespace business_logic.Services
         {
             await _updateValidator.ValidateAndThrowAsync(model);
 
+            await using var routeUpdateTransaction = await _unitOfWork.BeginTransactionAsync();
+            await AcquireAssignmentLocksAsync(model.AutoId, model.DriverId);
             var route = await GetRouteOrThrowAsync(model.Id);
+            _routeRepository.SetExpectedRowVersion(route, model.RowVersion);
             var previousAutoId = route.AutoId;
 
             var assignedAuto = previousAutoId == model.AutoId
@@ -167,7 +175,6 @@ namespace business_logic.Services
             }
 
             _mapper.Map(model, route);
-            await using var routeUpdateTransaction = await _unitOfWork.BeginTransactionAsync();
             await _auditLogService.LogActionAsync(AuditAction.RouteUpdated, route.Id);
             await _unitOfWork.SaveChangesAsync();
 
@@ -199,6 +206,15 @@ namespace business_logic.Services
         {
             var drivingHours = routes.Sum(route => (route.ArrivalTime - route.DepartureTime).TotalHours);
             return Math.Round(drivingHours, 1);
+        }
+
+        private Task AcquireAssignmentLocksAsync(int autoId, int driverId)
+        {
+            return _databaseApplicationLockService.AcquireTransactionExclusiveLocksAsync(
+            [
+                ApplicationLockResourceNameFactory.CreateAutoAssignmentLockResourceName(autoId),
+                ApplicationLockResourceNameFactory.CreateDriverAssignmentLockResourceName(driverId)
+            ]);
         }
 
         private async Task<Route> GetRouteOrThrowAsync(int id)

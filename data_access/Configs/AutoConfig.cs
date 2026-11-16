@@ -10,10 +10,12 @@ namespace data_access.Configs
         public void Configure(EntityTypeBuilder<Auto> builder)
         {
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.RowVersion).IsRowVersion();
             builder.ToTable("Autos");
 
             builder.HasIndex(a => a.Number)
-                .IsUnique();
+                .IsUnique()
+                .HasDatabaseName(UniqueIndexNames.AutoNumber);
 
             builder.Property(a => a.Mark)
                 .HasMaxLength(AutoConstraints.MarkMaxLength);

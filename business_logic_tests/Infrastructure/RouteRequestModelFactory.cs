@@ -19,11 +19,12 @@ namespace business_logic_tests.Infrastructure
             };
         }
 
-        public static UpdateRouteRequestModel CreateUpdateRouteRequestModelFor(int routeId, int autoId, int driverId, RouteStatus status)
+        public static UpdateRouteRequestModel CreateUpdateRouteRequestModelFor(Route route, int autoId, int driverId, RouteStatus status)
         {
             return new UpdateRouteRequestModel
             {
-                Id = routeId,
+                Id = route.Id,
+                RowVersion = route.RowVersion,
                 AutoId = autoId,
                 DriverId = driverId,
                 StartLocationId = BusinessLogicTestHost.StartLocationId,

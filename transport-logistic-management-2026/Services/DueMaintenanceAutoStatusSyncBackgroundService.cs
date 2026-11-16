@@ -31,6 +31,15 @@ namespace transport_logistic_management_2026.Services
             try
             {
                 using var serviceScope = _serviceScopeFactory.CreateScope();
+                var databaseApplicationLockService = serviceScope.ServiceProvider.GetRequiredService<IDatabaseApplicationLockService>();
+                await using var dueMaintenanceSyncJobLock = await databaseApplicationLockService.TryAcquireSessionExclusiveLockWithoutWaitingAsync(
+                    ApplicationLockResourceNames.DueMaintenanceAutoStatusSyncJob);
+                if (dueMaintenanceSyncJobLock is null)
+                {
+                    _logger.LogInformation("Skipped due maintenance auto status sync because another instance is running it.");
+                    return;
+                }
+
                 var autoStatusSyncService = serviceScope.ServiceProvider.GetRequiredService<IAutoStatusSyncService>();
                 var autosMovedUnderMaintenanceCount = await autoStatusSyncService.SyncAutosWithDueMaintenanceAsync();
                 if (autosMovedUnderMaintenanceCount > 0)

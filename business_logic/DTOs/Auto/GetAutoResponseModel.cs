@@ -11,5 +11,6 @@ namespace business_logic.DTOs
         public string Number { get; init; }
         public double Capacity { get; init; }
         public AutoStatus Status { get; init; }
+        public byte[] RowVersion { get; init; } = [];
     }
 }

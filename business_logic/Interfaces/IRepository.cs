@@ -8,6 +8,8 @@ namespace business_logic.Interfaces
         Task InsertAsync(TEntity entity);
         void Update(TEntity entity);
         void Delete(TEntity entity);
+        void SetExpectedRowVersion<TRowVersionedEntity>(TRowVersionedEntity entity, byte[] expectedRowVersion)
+            where TRowVersionedEntity : class, TEntity, IHasRowVersion;
 
         Task<TEntity?> GetItemBySpecAsync(ISpecification<TEntity> specification);
         Task<IEnumerable<TEntity>> GetListBySpecAsync(ISpecification<TEntity> specification);

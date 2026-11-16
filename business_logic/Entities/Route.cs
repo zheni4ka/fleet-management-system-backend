@@ -1,6 +1,8 @@
+using business_logic.Interfaces;
+
 namespace business_logic.Entities
 {
-    public class Route
+    public class Route : IHasRowVersion
     {
         public int Id { get; set; }
 
@@ -15,5 +17,6 @@ namespace business_logic.Entities
         public int AutoId { get; set; }
         public Driver Driver { get; set; }
         public int DriverId { get; set; }
+        public byte[] RowVersion { get; set; } = [];
     }
 }

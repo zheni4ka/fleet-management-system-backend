@@ -10,6 +10,7 @@ namespace data_access.Configs
         public void Configure(EntityTypeBuilder<Driver> builder)
         {
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.RowVersion).IsRowVersion();
             builder.ToTable("Drivers");
 
             builder.Property(d => d.Name)
@@ -22,7 +23,8 @@ namespace data_access.Configs
                 .HasMaxLength(DriverConstraints.PatronymicMaxLength);
 
             builder.HasIndex(d => d.LicenseNumber)
-                .IsUnique();
+                .IsUnique()
+                .HasDatabaseName(UniqueIndexNames.DriverLicenseNumber);
         }
     }
 }

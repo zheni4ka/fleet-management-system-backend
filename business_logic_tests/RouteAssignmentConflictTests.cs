@@ -97,7 +97,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver, firstRoute, overlappingRoute);
 
             await _testHost.RunInNewScopeAsync<IRouteService>(routeService => routeService.UpdateAsync(
-                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(overlappingRoute.Id, auto.Id, driver.Id, RouteStatus.Cancelled)));
+                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(overlappingRoute, auto.Id, driver.Id, RouteStatus.Cancelled)));
 
             var updatedRoute = await _testHost.RunInNewScopeAsync<IRouteService, GetRouteResponseModel>(routeService => routeService.GetAsync(overlappingRoute.Id));
             Assert.Equal(RouteStatus.Cancelled, updatedRoute.Status);
@@ -113,7 +113,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver, activeRoute, cancelledRoute);
 
             await Assert.ThrowsAsync<AssignmentConflictException>(() => _testHost.RunInNewScopeAsync<IRouteService>(
-                routeService => routeService.UpdateAsync(RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(cancelledRoute.Id, auto.Id, driver.Id, RouteStatus.Planned))));
+                routeService => routeService.UpdateAsync(RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(cancelledRoute, auto.Id, driver.Id, RouteStatus.Planned))));
         }
 
         public void Dispose()

@@ -10,5 +10,6 @@ namespace business_logic.DTOs
         public int AutoId { get; init; }
         public int DriverId { get; init; }
         public RouteStatus Status { get; init; }
+        public byte[] RowVersion { get; init; } = [];
     }
 }

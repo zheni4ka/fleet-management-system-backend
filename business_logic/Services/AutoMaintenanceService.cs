@@ -2,6 +2,7 @@
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
+using business_logic.Helpers;
 using business_logic.Interfaces;
 using business_logic.Specifications;
 using FluentValidation;
@@ -15,6 +16,7 @@ namespace business_logic.Services
         private readonly IRepository<Route> _routeRepository;
         private readonly IAuditLogService _auditLogService;
         private readonly IAutoStatusSyncService _autoStatusSyncService;
+        private readonly IDatabaseApplicationLockService _databaseApplicationLockService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateAutoMaintenanceRequestModel> _createValidator;
@@ -26,6 +28,7 @@ namespace business_logic.Services
             IRepository<Route> routeRepository,
             IAuditLogService auditLogService,
             IAutoStatusSyncService autoStatusSyncService,
+            IDatabaseApplicationLockService databaseApplicationLockService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<CreateAutoMaintenanceRequestModel> createValidator,
@@ -36,6 +39,7 @@ namespace business_logic.Services
             _routeRepository = routeRepository;
             _auditLogService = auditLogService;
             _autoStatusSyncService = autoStatusSyncService;
+            _databaseApplicationLockService = databaseApplicationLockService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _createValidator = createValidator;
@@ -58,6 +62,9 @@ namespace business_logic.Services
         {
             await _createValidator.ValidateAndThrowAsync(model);
 
+            await using var maintenanceCreationTransaction = await _unitOfWork.BeginTransactionAsync();
+            await _databaseApplicationLockService.AcquireTransactionExclusiveLocksAsync(
+                [ApplicationLockResourceNameFactory.CreateAutoAssignmentLockResourceName(model.AutoId)]);
             var auto = await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(model.AutoId)) ?? throw NotFoundException.For<Auto>(model.AutoId);
 
             var affectedRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.ActiveByAutoFrom(model.AutoId, model.ServiceDate));
@@ -67,7 +74,6 @@ namespace business_logic.Services
             }
 
             var maintenance = _mapper.Map<AutoMaintenance>(model);
-            await using var maintenanceCreationTransaction = await _unitOfWork.BeginTransactionAsync();
             await _maintenanceRepository.InsertAsync(maintenance);
             await _unitOfWork.SaveChangesAsync();
             await _auditLogService.LogActionAsync(AuditAction.MaintenanceCreated, maintenance.Id);
@@ -84,6 +90,7 @@ namespace business_logic.Services
 
             var maintenance = await GetMaintenanceOrThrowAsync(model.Id);
             var previousAutoId = maintenance.AutoId;
+            _maintenanceRepository.SetExpectedRowVersion(maintenance, model.RowVersion);
 
             _mapper.Map(model, maintenance);
             await using var maintenanceUpdateTransaction = await _unitOfWork.BeginTransactionAsync();

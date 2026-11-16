@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using business_logic.Interfaces;
 
 namespace business_logic.Entities
 {
-    public class AutoMaintenance
+    public class AutoMaintenance : IHasRowVersion
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -13,5 +11,6 @@ namespace business_logic.Entities
         public int AutoId { get; set; }
         public Auto Auto { get; set; }
         public bool IsCompleted { get; set; } = false;
+        public byte[] RowVersion { get; set; } = [];
     }
 }

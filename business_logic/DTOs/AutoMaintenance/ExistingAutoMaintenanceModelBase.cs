@@ -4,5 +4,6 @@ namespace business_logic.DTOs
     {
         public int Id { get; init; }
         public bool IsCompleted { get; init; }
+        public byte[] RowVersion { get; init; } = [];
     }
 }

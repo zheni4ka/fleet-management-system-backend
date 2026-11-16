@@ -90,7 +90,8 @@ namespace business_logic.Specifications
                     Color = a.Color,
                     Number = a.Number,
                     Capacity = a.Capacity,
-                    Status = a.Status
+                    Status = a.Status,
+                    RowVersion = a.RowVersion
                 });
             }
         }

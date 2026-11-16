@@ -26,6 +26,7 @@ namespace data_access
         {
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IDatabaseApplicationLockService, SqlServerDatabaseApplicationLockService>();
         }
 
         public static void AddAccountIdentity(this IServiceCollection services)

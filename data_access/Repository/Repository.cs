@@ -31,6 +31,12 @@ namespace data_access.Repository
             _dbSet.Remove(entity);
         }
 
+        public void SetExpectedRowVersion<TRowVersionedEntity>(TRowVersionedEntity entity, byte[] expectedRowVersion)
+            where TRowVersionedEntity : class, TEntity, IHasRowVersion
+        {
+            _dbSet.Entry(entity).Property(nameof(IHasRowVersion.RowVersion)).OriginalValue = expectedRowVersion;
+        }
+
         public async Task<TEntity?> GetItemBySpecAsync(ISpecification<TEntity> specification)
         {
             return await ApplySpecification(specification).FirstOrDefaultAsync();

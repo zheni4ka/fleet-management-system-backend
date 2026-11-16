@@ -11,6 +11,7 @@ namespace data_access.Configs
         {
             builder.ToTable("AutoMaintenance");
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.RowVersion).IsRowVersion();
 
             builder.Property(am => am.Name)
                 .HasMaxLength(AutoMaintenanceConstraints.NameMaxLength);

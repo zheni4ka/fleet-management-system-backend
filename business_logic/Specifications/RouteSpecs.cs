@@ -26,7 +26,8 @@ namespace business_logic.Specifications
             DriverId = r.DriverId,
             DriverName = r.Driver.Name,
             DriverSurname = r.Driver.Surname,
-            Status = r.Status
+            Status = r.Status,
+            RowVersion = r.RowVersion
         };
 
         public class ById : Specification<Route>

@@ -72,7 +72,8 @@ namespace business_logic.Specifications
                     Name = d.Name,
                     Surname = d.Surname,
                     Patronymic = d.Patronymic,
-                    LicenseNumber = d.LicenseNumber
+                    LicenseNumber = d.LicenseNumber,
+                    RowVersion = d.RowVersion
                 });
             }
         }

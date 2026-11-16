@@ -26,6 +26,8 @@ namespace transport_logistic_management_2026.Middlewares
                 NotFoundException => CreateProblem(StatusCodes.Status404NotFound, "Not Found", exception.Message),
                 BusinessRuleException => CreateProblem(StatusCodes.Status400BadRequest, "Bad Request", exception.Message),
                 AssignmentConflictException => CreateProblem(StatusCodes.Status409Conflict, "Conflict", exception.Message),
+                UniqueConstraintViolationException => CreateProblem(StatusCodes.Status409Conflict, "Conflict", exception.Message),
+                ConcurrencyConflictException => CreateConcurrencyConflictProblem(exception.Message),
                 UnauthorizedAccessException => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized", exception.Message),
                 PasswordChangeRequiredException => CreateForbiddenProblem(ProblemTypes.PasswordChangeRequired, exception.Message),
                 ExternalIdentityAccessDeniedException => CreateForbiddenProblem(ProblemTypes.ExternalIdentityAccessDenied, exception.Message),
@@ -52,6 +54,14 @@ namespace transport_logistic_management_2026.Middlewares
         {
             Status = status,
             Title = title,
+            Detail = detail
+        };
+
+        private static ProblemDetails CreateConcurrencyConflictProblem(string detail) => new()
+        {
+            Status = StatusCodes.Status409Conflict,
+            Title = "Conflict",
+            Type = ProblemTypes.ConcurrencyConflict,
             Detail = detail
         };
 

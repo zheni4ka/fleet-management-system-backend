@@ -29,6 +29,9 @@ namespace business_logic.Constants
         public const string ExternalIdentityTokenInvalid = "Не вдалося підтвердити вхід через корпоративний обліковий запис.";
         public const string ExternalIdentityHasNoMappedGroupTemplate = "Корпоративний обліковий запис '{0}' не входить до жодної групи з доступом до системи.";
         public const string ExternalIdentityUsernameMissingTemplate = "Корпоративний обліковий запис '{0}' не містить імені користувача чи email.";
+        public const string ConcurrencyConflictTemplate = "{0} з ідентифікатором '{1}' змінив інший користувач. Оновіть дані та повторіть дію.";
+        public const string ApplicationLockNotAcquiredTemplate = "Інший запит саме змінює призначення для '{0}'. Спробуйте ще раз.";
+        public const string ApplicationLockFailedTemplate = "Не вдалося отримати блокування '{0}': код {1}.";
         public const string TooManyRequests = "Забагато запитів. Зачекайте трохи та спробуйте знову.";
         public const string UnexpectedError = "Сталася неочікувана помилка.";
         public const string ValidationFailed = "Одна або кілька перевірок даних не пройдені.";

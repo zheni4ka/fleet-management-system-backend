@@ -39,6 +39,7 @@ namespace business_logic_tests.Infrastructure
             services.AddDbContext<FMS_DbContext>(options => options.UseSqlite(_sqliteConnection));
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IDatabaseApplicationLockService, TestDatabaseApplicationLockService>();
             services.AddScoped<ICurrentUserService, TestCurrentUserService>();
             services.AddScoped<ITokenService, TestTokenService>();
             services.AddAuthentication();

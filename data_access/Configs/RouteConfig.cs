@@ -10,6 +10,7 @@ namespace data_access.Configs
         public void Configure(EntityTypeBuilder<Route> builder)
         {
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.RowVersion).IsRowVersion();
             builder.ToTable("Routes");
 
             builder.HasIndex(r => r.DepartureTime);

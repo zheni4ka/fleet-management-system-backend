@@ -1,4 +1,5 @@
 using business_logic.DTOs;
+using business_logic.Entities;
 using business_logic.Exceptions;
 using business_logic.Interfaces;
 using business_logic_tests.Infrastructure;
@@ -16,7 +17,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto);
 
             await _testHost.RunInNewScopeAsync<IAutoService>(autoService => autoService.UpdateAsync(
-                CreateUpdateAutoRequestModel(auto.Id, auto.Number, updatedMark: "Scania")));
+                CreateUpdateAutoRequestModel(auto, auto.Number, updatedMark: "Scania")));
 
             var updatedAuto = await _testHost.RunInNewScopeAsync<IAutoService, GetAutoResponseModel>(autoService => autoService.GetAsync(auto.Id));
             Assert.Equal("Scania", updatedAuto.Mark);
@@ -30,7 +31,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(updatedAuto, otherAuto);
 
             var uniquenessException = await Assert.ThrowsAsync<BusinessRuleException>(() => _testHost.RunInNewScopeAsync<IAutoService>(
-                autoService => autoService.UpdateAsync(CreateUpdateAutoRequestModel(updatedAuto.Id, otherAuto.Number, updatedMark: "Volvo"))));
+                autoService => autoService.UpdateAsync(CreateUpdateAutoRequestModel(updatedAuto, otherAuto.Number, updatedMark: "Volvo"))));
 
             Assert.Contains(otherAuto.Number, uniquenessException.Message);
         }
@@ -42,7 +43,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(driver);
 
             await _testHost.RunInNewScopeAsync<IDriverService>(driverService => driverService.UpdateAsync(
-                CreateUpdateDriverRequestModel(driver.Id, driver.LicenseNumber, updatedSurname: "Франко")));
+                CreateUpdateDriverRequestModel(driver, driver.LicenseNumber, updatedSurname: "Франко")));
 
             var updatedDriver = await _testHost.RunInNewScopeAsync<IDriverService, GetDriverResponseModel>(driverService => driverService.GetAsync(driver.Id));
             Assert.Equal("Франко", updatedDriver.Surname);
@@ -56,7 +57,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(updatedDriver, otherDriver);
 
             var uniquenessException = await Assert.ThrowsAsync<BusinessRuleException>(() => _testHost.RunInNewScopeAsync<IDriverService>(
-                driverService => driverService.UpdateAsync(CreateUpdateDriverRequestModel(updatedDriver.Id, otherDriver.LicenseNumber, updatedSurname: "Шевченко"))));
+                driverService => driverService.UpdateAsync(CreateUpdateDriverRequestModel(updatedDriver, otherDriver.LicenseNumber, updatedSurname: "Шевченко"))));
 
             Assert.Contains(otherDriver.LicenseNumber, uniquenessException.Message);
         }
@@ -66,11 +67,12 @@ namespace business_logic_tests
             _testHost.Dispose();
         }
 
-        private static UpdateAutoRequestModel CreateUpdateAutoRequestModel(int autoId, string number, string updatedMark)
+        private static UpdateAutoRequestModel CreateUpdateAutoRequestModel(Auto updatedAuto, string number, string updatedMark)
         {
             return new UpdateAutoRequestModel
             {
-                Id = autoId,
+                Id = updatedAuto.Id,
+                RowVersion = updatedAuto.RowVersion,
                 Mark = updatedMark,
                 Model = "FH16",
                 Color = "Білий",
@@ -79,11 +81,12 @@ namespace business_logic_tests
             };
         }
 
-        private static UpdateDriverRequestModel CreateUpdateDriverRequestModel(int driverId, string licenseNumber, string updatedSurname)
+        private static UpdateDriverRequestModel CreateUpdateDriverRequestModel(Driver updatedDriver, string licenseNumber, string updatedSurname)
         {
             return new UpdateDriverRequestModel
             {
-                Id = driverId,
+                Id = updatedDriver.Id,
+                RowVersion = updatedDriver.RowVersion,
                 Name = "Тарас",
                 Surname = updatedSurname,
                 Patronymic = "Григорович",

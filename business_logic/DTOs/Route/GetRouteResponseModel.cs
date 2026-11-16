@@ -21,5 +21,6 @@ namespace business_logic.DTOs
         public string DriverName { get; init; }
         public string DriverSurname { get; init; }
         public RouteStatus Status { get; init; }
+        public byte[] RowVersion { get; init; } = [];
     }
 }
