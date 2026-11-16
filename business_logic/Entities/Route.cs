@@ -10,8 +10,8 @@ namespace business_logic.Entities
         public Location StartLocation { get; set; }
         public int DestinationLocationId { get; set; }
         public Location DestinationLocation { get; set; }
-        public DateTime DepartureTime { get; set; }
-        public DateTime ArrivalTime { get; set; }
+        public DateTime DepartureTimeUtc { get; set; }
+        public DateTime ArrivalTimeUtc { get; set; }
         public RouteStatus Status { get; set; } = RouteStatus.Planned;
         public Auto Auto { get; set; }
         public int AutoId { get; set; }

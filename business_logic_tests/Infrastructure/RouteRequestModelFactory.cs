@@ -13,8 +13,8 @@ namespace business_logic_tests.Infrastructure
                 DriverId = driverId,
                 StartLocationId = BusinessLogicTestHost.StartLocationId,
                 DestinationLocationId = BusinessLogicTestHost.DestinationLocationId,
-                DepartureTime = departure,
-                ArrivalTime = arrival,
+                DepartureTimeUtc = DateTime.SpecifyKind(departure, DateTimeKind.Utc),
+                ArrivalTimeUtc = DateTime.SpecifyKind(arrival, DateTimeKind.Utc),
                 Status = RouteStatus.Planned
             };
         }

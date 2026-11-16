@@ -25,9 +25,14 @@ namespace business_logic.Validators
                 .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
                 .WithName("Водій");
 
-            RuleFor(x => x.DepartureTime)
-                .LessThan(x => x.ArrivalTime)
-                .WithMessage("Час відправлення має бути раніше за час прибуття.");
+            RuleFor(x => x.DepartureTimeUtc)
+                .Must(departureTimeUtc => departureTimeUtc.Kind == DateTimeKind.Utc).WithMessage(ValidationMessages.UtcTimeRequired)
+                .LessThan(x => x.ArrivalTimeUtc).WithMessage("Час відправлення має бути раніше за час прибуття.")
+                .WithName("Час відправлення");
+
+            RuleFor(x => x.ArrivalTimeUtc)
+                .Must(arrivalTimeUtc => arrivalTimeUtc.Kind == DateTimeKind.Utc).WithMessage(ValidationMessages.UtcTimeRequired)
+                .WithName("Час прибуття");
 
             RuleFor(x => x.Status)
                 .IsInEnum().WithMessage(ValidationMessages.UnsupportedValue)

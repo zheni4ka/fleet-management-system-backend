@@ -1,5 +1,6 @@
 using business_logic.Entities;
 using business_logic.Exceptions;
+using business_logic.Helpers;
 using business_logic.Interfaces;
 using business_logic.Specifications;
 
@@ -59,7 +60,7 @@ namespace business_logic.Services
 
         private static DateTime GetDueMaintenanceEndExclusiveDateTime()
         {
-            return DateTimeOffset.Now.Date.AddDays(1);
+            return BusinessTimeZoneConverter.GetBusinessToday().AddDays(1).ToDateTime(TimeOnly.MinValue);
         }
     }
 }

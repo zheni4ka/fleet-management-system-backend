@@ -185,7 +185,7 @@ namespace business_logic_tests
                     new GetPagedListRequestModel<RouteSortField>(Page: 1, PageSize: 2, Sort: RouteSortField.DepartureTime, SortDirection: SortDirection.Descending, Search: null)));
 
             Assert.Equal(3, routesPage.TotalCount);
-            Assert.Equal(new[] { firstDeparture.AddDays(4), firstDeparture.AddDays(2) }, routesPage.Items.Select(route => route.DepartureTime));
+            Assert.Equal(new[] { firstDeparture.AddDays(4), firstDeparture.AddDays(2) }, routesPage.Items.Select(route => route.DepartureTimeUtc));
         }
 
         public void Dispose()

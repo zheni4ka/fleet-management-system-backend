@@ -139,7 +139,7 @@ namespace business_logic.Specifications
         {
             public WithRoutesDepartingInPeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
             {
-                Query.Where(a => a.Routes.Any(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime));
+                Query.Where(a => a.Routes.Any(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime));
             }
         }
 

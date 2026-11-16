@@ -12,13 +12,19 @@ namespace data_access.Configs
             builder.HasKey(x => x.Id);
             builder.Property(x => x.RowVersion).IsRowVersion();
             builder.ConfigureDepotOwnership();
+            builder.Property(r => r.DepartureTimeUtc).HasConversion(
+                utcTime => utcTime,
+                persistedUtcTime => DateTime.SpecifyKind(persistedUtcTime, DateTimeKind.Utc));
+            builder.Property(r => r.ArrivalTimeUtc).HasConversion(
+                utcTime => utcTime,
+                persistedUtcTime => DateTime.SpecifyKind(persistedUtcTime, DateTimeKind.Utc));
             builder.ToTable("Routes");
 
-            builder.HasIndex(r => r.DepartureTime);
+            builder.HasIndex(r => r.DepartureTimeUtc);
 
-            builder.HasIndex(r => new { r.AutoId, r.Status, r.DepartureTime });
+            builder.HasIndex(r => new { r.AutoId, r.Status, r.DepartureTimeUtc });
 
-            builder.HasIndex(r => new { r.DriverId, r.Status, r.DepartureTime });
+            builder.HasIndex(r => new { r.DriverId, r.Status, r.DepartureTimeUtc });
 
             builder.HasOne(r => r.Auto)
                    .WithMany(a => a.Routes)

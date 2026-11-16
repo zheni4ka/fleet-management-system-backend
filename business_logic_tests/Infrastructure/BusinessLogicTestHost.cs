@@ -123,8 +123,8 @@ namespace business_logic_tests.Infrastructure
                 DepotId = auto.DepotId,
                 StartLocationId = StartLocationId,
                 DestinationLocationId = DestinationLocationId,
-                DepartureTime = departure,
-                ArrivalTime = arrival,
+                DepartureTimeUtc = DateTime.SpecifyKind(departure, DateTimeKind.Utc),
+                ArrivalTimeUtc = DateTime.SpecifyKind(arrival, DateTimeKind.Utc),
                 Status = status
             };
         }

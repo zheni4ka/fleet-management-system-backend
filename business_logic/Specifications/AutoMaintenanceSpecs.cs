@@ -33,13 +33,13 @@ namespace business_logic.Specifications
 
         public class IncompleteIdOverlappingRouteIntervalForAuto : Specification<AutoMaintenance, int?>
         {
-            public IncompleteIdOverlappingRouteIntervalForAuto(int autoId, DateTime departure, DateTime arrival)
+            public IncompleteIdOverlappingRouteIntervalForAuto(int autoId, DateTime departureBusinessDateTime, DateTime arrivalBusinessDateTime)
             {
-                var departureDayStartDateTime = departure.Date;
+                var departureBusinessDayStartDateTime = departureBusinessDateTime.Date;
                 Query.Where(am => am.AutoId == autoId
                     && !am.IsCompleted
-                    && am.ServiceDate >= departureDayStartDateTime
-                    && am.ServiceDate < arrival)
+                    && am.ServiceDate >= departureBusinessDayStartDateTime
+                    && am.ServiceDate < arrivalBusinessDateTime)
                     .OrderBy(am => am.ServiceDate);
                 Query.Select(am => (int?)am.Id);
             }

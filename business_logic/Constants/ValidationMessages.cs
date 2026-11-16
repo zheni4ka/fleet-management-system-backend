@@ -13,5 +13,7 @@ namespace business_logic.Constants
         public const string NewPasswordMustDifferFromCurrent = "Новий пароль має відрізнятися від поточного.";
         public const string DispatcherDepotsRequired = "Диспетчеру потрібно призначити щонайменше одне депо.";
         public const string AdminDepotsForbidden = "Адміністратор має доступ до всіх депо, тому депо йому не призначаються.";
+        public const string UnknownTimeZoneId = "Поле «{PropertyName}» має бути ідентифікатором часового поясу IANA, наприклад Europe/Kyiv.";
+        public const string UtcTimeRequired = "Поле «{PropertyName}» має бути часом UTC (із суфіксом Z).";
     }
 }

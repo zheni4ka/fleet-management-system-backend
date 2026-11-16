@@ -10,13 +10,20 @@ namespace business_logic.Validators
         {
             RuleFor(x => x.City)
                 .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(200).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .MaximumLength(LocationConstraints.CityMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
                 .WithName("Місто");
 
             RuleFor(x => x.Country)
                 .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(200).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .MaximumLength(LocationConstraints.CountryMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
                 .WithName("Країна");
+
+            RuleFor(x => x.TimeZoneId)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .MaximumLength(LocationConstraints.TimeZoneIdMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .Must(timeZoneId => TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId!, out _)).WithMessage(ValidationMessages.UnknownTimeZoneId)
+                .WithName("Часовий пояс");
         }
     }
 }

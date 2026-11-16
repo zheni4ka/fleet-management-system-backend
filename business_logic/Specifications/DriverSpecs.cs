@@ -132,17 +132,17 @@ namespace business_logic.Specifications
         {
             public RoutesPeriodReportSummaries(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
             {
-                Query.Where(d => d.Routes.Any(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime))
-                    .OrderByDescending(d => d.Routes.Count(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime))
+                Query.Where(d => d.Routes.Any(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime))
+                    .OrderByDescending(d => d.Routes.Count(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime))
                     .ThenBy(d => d.Id);
                 Query.Select(d => new GetRoutesPeriodReportDriverSummaryResponseModel
                 {
                     DriverId = d.Id,
                     DriverName = d.Name,
                     DriverSurname = d.Surname,
-                    RoutesCount = d.Routes.Count(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime),
-                    CompletedRoutesCount = d.Routes.Count(r => r.DepartureTime >= periodStartDateTime
-                        && r.DepartureTime < periodEndExclusiveDateTime
+                    RoutesCount = d.Routes.Count(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime),
+                    CompletedRoutesCount = d.Routes.Count(r => r.DepartureTimeUtc >= periodStartDateTime
+                        && r.DepartureTimeUtc < periodEndExclusiveDateTime
                         && r.Status == RouteStatus.Completed)
                 });
             }

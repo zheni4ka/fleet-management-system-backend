@@ -466,6 +466,11 @@ namespace data_access.Migrations
                     b.Property<bool>("IsArchived")
                         .HasColumnType("bit");
 
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IsArchived");
@@ -478,280 +483,320 @@ namespace data_access.Migrations
                             Id = 1,
                             City = "Kyiv",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 2,
                             City = "Lviv",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 3,
                             City = "Odessa",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 4,
                             City = "Kharkiv",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 5,
                             City = "Dnipro",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 6,
                             City = "Zaporizhzhia",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 7,
                             City = "Ivano-Frankivsk",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 8,
                             City = "Ternopil",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 9,
                             City = "Chernivtsi",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 10,
                             City = "Vinnytsia",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 11,
                             City = "Rivne",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 12,
                             City = "Lutsk",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 13,
                             City = "Poltava",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 14,
                             City = "Chernihiv",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 15,
                             City = "Cherkasy",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 16,
                             City = "Khmelnytskyi",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 17,
                             City = "Zhytomyr",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 18,
                             City = "Uzhhorod",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 19,
                             City = "Mykolaiv",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 20,
                             City = "Kherson",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 21,
                             City = "Sumy",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 22,
                             City = "Kropyvnytskyi",
                             Country = "Ukraine",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Kyiv"
                         },
                         new
                         {
                             Id = 24,
                             City = "Warsaw",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 25,
                             City = "Krakow",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 26,
                             City = "Wroclaw",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 27,
                             City = "Gdansk",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 28,
                             City = "Poznan",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 29,
                             City = "Lodz",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 30,
                             City = "Katowice",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 31,
                             City = "Lublin",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 32,
                             City = "Rzeszow",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 33,
                             City = "Szczecin",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 34,
                             City = "Bydgoszcz",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 35,
                             City = "Gdynia",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 36,
                             City = "Bialystok",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 37,
                             City = "Czestochowa",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 38,
                             City = "Radom",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 39,
                             City = "Torun",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 40,
                             City = "Kielce",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         },
                         new
                         {
                             Id = 41,
                             City = "Gliwice",
                             Country = "Poland",
-                            IsArchived = false
+                            IsArchived = false,
+                            TimeZoneId = "Europe/Warsaw"
                         });
                 });
 
@@ -810,13 +855,13 @@ namespace data_access.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("ArrivalTime")
+                    b.Property<DateTime>("ArrivalTimeUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("AutoId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("DepartureTime")
+                    b.Property<DateTime>("DepartureTimeUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("DepotId")
@@ -844,7 +889,7 @@ namespace data_access.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DepartureTime");
+                    b.HasIndex("DepartureTimeUtc");
 
                     b.HasIndex("DepotId");
 
@@ -852,9 +897,9 @@ namespace data_access.Migrations
 
                     b.HasIndex("StartLocationId");
 
-                    b.HasIndex("AutoId", "Status", "DepartureTime");
+                    b.HasIndex("AutoId", "Status", "DepartureTimeUtc");
 
-                    b.HasIndex("DriverId", "Status", "DepartureTime");
+                    b.HasIndex("DriverId", "Status", "DepartureTimeUtc");
 
                     b.ToTable("Routes", (string)null);
                 });

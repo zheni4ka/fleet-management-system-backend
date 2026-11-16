@@ -4,5 +4,6 @@ namespace business_logic.DTOs
     {
         public string City { get; init; }
         public string Country { get; init; }
+        public string? TimeZoneId { get; init; }
     }
 }

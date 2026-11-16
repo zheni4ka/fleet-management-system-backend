@@ -67,7 +67,9 @@ namespace business_logic.Services
                 [ApplicationLockResourceNameFactory.CreateAutoAssignmentLockResourceName(model.AutoId)]);
             var auto = await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(model.AutoId)) ?? throw NotFoundException.For<Auto>(model.AutoId);
 
-            var affectedRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.ActiveByAutoFrom(model.AutoId, model.ServiceDate));
+            var affectedRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.ActiveByAutoFrom(
+                model.AutoId,
+                BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(DateOnly.FromDateTime(model.ServiceDate))));
             foreach (var route in affectedRoutes)
             {
                 route.Status = RouteStatus.Cancelled;

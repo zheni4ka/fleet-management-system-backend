@@ -8,11 +8,13 @@ namespace business_logic.DTOs
         public int StartLocationId { get; init; }
         public string StartLocationCity { get; init; }
         public string StartLocationCountry { get; init; }
+        public string StartLocationTimeZoneId { get; init; } = string.Empty;
         public int DestinationLocationId { get; init; }
         public string DestinationLocationCity { get; init; }
         public string DestinationLocationCountry { get; init; }
-        public DateTime DepartureTime { get; init; }
-        public DateTime ArrivalTime { get; init; }
+        public string DestinationLocationTimeZoneId { get; init; } = string.Empty;
+        public DateTime DepartureTimeUtc { get; init; }
+        public DateTime ArrivalTimeUtc { get; init; }
         public int AutoId { get; init; }
         public string AutoMark { get; init; }
         public string AutoModel { get; init; }

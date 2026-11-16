@@ -28,7 +28,8 @@ namespace business_logic.Specifications
                 {
                     Id = l.Id,
                     City = l.City,
-                    Country = l.Country
+                    Country = l.Country,
+                    TimeZoneId = l.TimeZoneId
                 });
             }
         }
@@ -82,6 +83,7 @@ namespace business_logic.Specifications
                     Id = l.Id,
                     City = l.City,
                     Country = l.Country,
+                    TimeZoneId = l.TimeZoneId,
                     IsArchived = l.IsArchived
                 });
             }

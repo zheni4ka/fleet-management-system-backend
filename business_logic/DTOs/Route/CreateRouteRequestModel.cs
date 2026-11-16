@@ -6,8 +6,8 @@ namespace business_logic.DTOs
     {
         public int StartLocationId { get; init; }
         public int DestinationLocationId { get; init; }
-        public DateTime DepartureTime { get; init; }
-        public DateTime ArrivalTime { get; init; }
+        public DateTime DepartureTimeUtc { get; init; }
+        public DateTime ArrivalTimeUtc { get; init; }
         public int AutoId { get; init; }
         public int DriverId { get; init; }
         public RouteStatus Status { get; init; } = RouteStatus.Planned;

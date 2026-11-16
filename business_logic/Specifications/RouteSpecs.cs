@@ -2,6 +2,7 @@
 using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
+using business_logic.Helpers;
 using System.Linq.Expressions;
 
 namespace business_logic.Specifications
@@ -14,11 +15,13 @@ namespace business_logic.Specifications
             StartLocationId = r.StartLocationId,
             StartLocationCity = r.StartLocation.City,
             StartLocationCountry = r.StartLocation.Country,
+            StartLocationTimeZoneId = r.StartLocation.TimeZoneId,
             DestinationLocationId = r.DestinationLocationId,
             DestinationLocationCity = r.DestinationLocation.City,
             DestinationLocationCountry = r.DestinationLocation.Country,
-            DepartureTime = r.DepartureTime,
-            ArrivalTime = r.ArrivalTime,
+            DestinationLocationTimeZoneId = r.DestinationLocation.TimeZoneId,
+            DepartureTimeUtc = r.DepartureTimeUtc,
+            ArrivalTimeUtc = r.ArrivalTimeUtc,
             AutoId = r.AutoId,
             AutoMark = r.Auto.Mark,
             AutoModel = r.Auto.Model,
@@ -128,7 +131,7 @@ namespace business_logic.Specifications
             {
                 Query.Where(r => r.AutoId == autoId
                     && RouteStatusGroups.Active.Contains(r.Status)
-                    && r.DepartureTime >= from);
+                    && r.DepartureTimeUtc >= from);
             }
         }
 
@@ -155,8 +158,8 @@ namespace business_logic.Specifications
                 Expression<Func<Route, object?>> sortKeySelector = sortField switch
                 {
                     RouteSortField.Id => r => r.Id,
-                    RouteSortField.DepartureTime => r => r.DepartureTime,
-                    RouteSortField.ArrivalTime => r => r.ArrivalTime,
+                    RouteSortField.DepartureTime => r => r.DepartureTimeUtc,
+                    RouteSortField.ArrivalTime => r => r.ArrivalTimeUtc,
                     RouteSortField.Status => r => r.Status,
                     _ => throw new Exception(string.Format(ExceptionMessages.SortFieldNotSupportedTemplate, sortField))
                 };
@@ -179,8 +182,8 @@ namespace business_logic.Specifications
         {
             public ByDeparturePeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
             {
-                Query.Where(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime)
-                    .OrderBy(r => r.DepartureTime)
+                Query.Where(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime)
+                    .OrderBy(r => r.DepartureTimeUtc)
                     .ThenBy(r => r.Id);
                 Query.Select(GetRouteResponseModelSelector);
             }
@@ -211,8 +214,8 @@ namespace business_logic.Specifications
             int? excludedRouteId)
         {
             routeIdQuery.Where(r => RouteStatusGroups.Active.Contains(r.Status)
-                && r.DepartureTime < arrival
-                && r.ArrivalTime > departure);
+                && r.DepartureTimeUtc < arrival
+                && r.ArrivalTimeUtc > departure);
 
             if (excludedRouteId.HasValue)
             {
@@ -220,7 +223,7 @@ namespace business_logic.Specifications
                 routeIdQuery.Where(r => r.Id != excludedRouteIdValue);
             }
 
-            routeIdQuery.OrderBy(r => r.DepartureTime);
+            routeIdQuery.OrderBy(r => r.DepartureTimeUtc);
             routeIdQuery.Select(r => (int?)r.Id);
         }
 
@@ -240,14 +243,14 @@ namespace business_logic.Specifications
 
             if (searchFilter.DepartureFromDate.HasValue)
             {
-                var departureFromDateTime = searchFilter.DepartureFromDate.Value.ToDateTime(TimeOnly.MinValue);
-                routeQuery.Where(r => r.DepartureTime >= departureFromDateTime);
+                var departureFromDateTime = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(searchFilter.DepartureFromDate.Value);
+                routeQuery.Where(r => r.DepartureTimeUtc >= departureFromDateTime);
             }
 
             if (searchFilter.DepartureToDate.HasValue)
             {
-                var departureToExclusiveDateTime = searchFilter.DepartureToDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue);
-                routeQuery.Where(r => r.DepartureTime < departureToExclusiveDateTime);
+                var departureToExclusiveDateTime = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(searchFilter.DepartureToDate.Value.AddDays(1));
+                routeQuery.Where(r => r.DepartureTimeUtc < departureToExclusiveDateTime);
             }
 
             if (searchFilter.Status.HasValue)

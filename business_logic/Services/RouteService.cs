@@ -88,8 +88,8 @@ namespace business_logic.Services
         {
             await _periodReportValidator.ValidateAndThrowAsync(periodReportRequest);
 
-            var periodStartDateTime = periodReportRequest.PeriodStartDate.ToDateTime(TimeOnly.MinValue);
-            var periodEndExclusiveDateTime = periodReportRequest.PeriodEndDate.AddDays(1).ToDateTime(TimeOnly.MinValue);
+            var periodStartDateTime = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(periodReportRequest.PeriodStartDate);
+            var periodEndExclusiveDateTime = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(periodReportRequest.PeriodEndDate.AddDays(1));
             var periodRoutesSpecification = new RouteSpecs.ByDeparturePeriod(periodStartDateTime, periodEndExclusiveDateTime);
 
             var periodRoutes = await _routeRepository.GetProjectedListBySpecAsync(periodRoutesSpecification);
@@ -140,7 +140,7 @@ namespace business_logic.Services
 
                 if (RouteStatusGroups.Active.Contains(model.Status))
                 {
-                    await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, model.DepartureTime, model.ArrivalTime);
+                    await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, model.DepartureTimeUtc, model.ArrivalTimeUtc);
                 }
 
                 await _routeRepository.InsertAsync(route);
@@ -174,7 +174,7 @@ namespace business_logic.Services
 
             if (RouteStatusGroups.Active.Contains(model.Status))
             {
-                await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, route.DepartureTime, route.ArrivalTime, route.Id);
+                await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, route.DepartureTimeUtc, route.ArrivalTimeUtc, route.Id);
             }
 
             _mapper.Map(model, route);
@@ -208,7 +208,7 @@ namespace business_logic.Services
 
         private static double GetDrivingHours(IEnumerable<GetRouteResponseModel> routes)
         {
-            var drivingHours = routes.Sum(route => (route.ArrivalTime - route.DepartureTime).TotalHours);
+            var drivingHours = routes.Sum(route => (route.ArrivalTimeUtc - route.DepartureTimeUtc).TotalHours);
             return Math.Round(drivingHours, 1);
         }
 
@@ -290,7 +290,7 @@ namespace business_logic.Services
 
         private async Task EnsureAssignmentHasNoConflictsAsync(int autoId, int driverId, DateTime departure, DateTime arrival, int? excludeRouteId = null)
         {
-            var routeIntervalText = $"{departure.ToString(DisplayFormats.DateTime)}–{arrival.ToString(DisplayFormats.DateTime)}";
+            var routeIntervalText = $"{BusinessTimeZoneConverter.FormatUtcAsBusinessDateTime(departure)} – {BusinessTimeZoneConverter.FormatUtcAsBusinessDateTime(arrival)}";
 
             var conflictingAutoRouteId = await _routeRepository.GetProjectedItemBySpecAsync(
                 new RouteSpecs.ActiveIdOverlappingForAuto(autoId, departure, arrival, excludeRouteId));
@@ -309,7 +309,10 @@ namespace business_logic.Services
             }
 
             var conflictingMaintenanceId = await _maintenanceRepository.GetProjectedItemBySpecAsync(
-                new AutoMaintenanceSpecs.IncompleteIdOverlappingRouteIntervalForAuto(autoId, departure, arrival));
+                new AutoMaintenanceSpecs.IncompleteIdOverlappingRouteIntervalForAuto(
+                    autoId,
+                    BusinessTimeZoneConverter.ConvertUtcToBusinessDateTime(departure),
+                    BusinessTimeZoneConverter.ConvertUtcToBusinessDateTime(arrival)));
             if (conflictingMaintenanceId.HasValue)
             {
                 throw new AssignmentConflictException(string.Format(
