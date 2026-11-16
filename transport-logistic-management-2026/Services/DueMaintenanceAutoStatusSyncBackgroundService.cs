@@ -46,6 +46,13 @@ namespace transport_logistic_management_2026.Services
                 {
                     _logger.LogInformation("Moved {AutosCount} autos to UnderMaintenance because of due maintenance.", autosMovedUnderMaintenanceCount);
                 }
+
+                var auditLogService = serviceScope.ServiceProvider.GetRequiredService<IAuditLogService>();
+                var purgedAuditLogsCount = await auditLogService.PurgeExpiredAuditLogsAsync();
+                if (purgedAuditLogsCount > 0)
+                {
+                    _logger.LogInformation("Purged {AuditLogsCount} audit log rows older than the retention period.", purgedAuditLogsCount);
+                }
             }
             catch (Exception exception)
             {

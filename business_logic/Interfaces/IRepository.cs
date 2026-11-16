@@ -15,6 +15,7 @@ namespace business_logic.Interfaces
         Task<IEnumerable<TEntity>> GetListBySpecAsync(ISpecification<TEntity> specification);
         Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification);
         Task<int> CountBySpecAsync(ISpecification<TEntity> specification);
+        Task<int> DeleteBySpecAsync(ISpecification<TEntity> specification);
         Task<IReadOnlyDictionary<TGroupKey, int>> GetCountsByGroupKeyBySpecAsync<TGroupKey>(
             ISpecification<TEntity> specification,
             Expression<Func<TEntity, TGroupKey>> groupKeySelector) where TGroupKey : notnull;

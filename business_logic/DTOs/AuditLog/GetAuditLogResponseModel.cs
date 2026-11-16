@@ -10,5 +10,6 @@ namespace business_logic.DTOs
         public DateTime Time { get; init; }
         public AuditAction Action { get; init; }
         public string? EntityId { get; init; }
+        public IReadOnlyList<AuditLogPropertyChangeModel> Changes { get; init; } = [];
     }
 }

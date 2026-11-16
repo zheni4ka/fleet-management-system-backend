@@ -1,0 +1,82 @@
+name: fleet-management-system
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SQL_SERVER_SA_PASSWORD:?Set SQL_SERVER_SA_PASSWORD in .env}
+    ports:
+      - "14333:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      fleet-network:
+        ipv4_address: 172.28.0.5
+
+  migrations:
+    build:
+      context: .
+      target: migrations
+    environment:
+      ObservabilitySettings__ServiceName: fleet-management-migrations
+      ConnectionStrings__connectionString: Server=sqlserver;Database=FleetManagement;User Id=sa;Password=${SQL_SERVER_SA_PASSWORD};TrustServerCertificate=True
+    command: ["--connection", "Server=sqlserver;Database=FleetManagement;User Id=sa;Password=${SQL_SERVER_SA_PASSWORD};TrustServerCertificate=True"]
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      fleet-network:
+        ipv4_address: 172.28.0.6
+
+  api:
+    build:
+      context: .
+      target: runtime
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__connectionString: Server=sqlserver;Database=FleetManagement;User Id=sa;Password=${SQL_SERVER_SA_PASSWORD};TrustServerCertificate=True
+      JwtSettings__Secret: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JwtSettings__Issuer: http://localhost:5196
+      JwtSettings__Audience: http://localhost:3000
+      SeedAdmin__Password: ${SEED_ADMIN_PASSWORD:?Set SEED_ADMIN_PASSWORD in .env}
+      CorsSettings__AllowedOrigins__0: http://localhost:3000
+      ForwardedHeadersSettings__KnownProxyAddresses__0: 172.28.0.10
+      ObservabilitySettings__OtlpEndpoint: ${OTLP_ENDPOINT:-}
+    ports:
+      - "5196:8080"
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    networks:
+      fleet-network:
+        ipv4_address: 172.28.0.7
+
+  frontend:
+    build:
+      context: ${FRONTEND_REPOSITORY_PATH:?Set FRONTEND_REPOSITORY_PATH in .env to the fleet-management-system-frontend checkout}
+      args:
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+    environment:
+      API_BASE_URL: http://api:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      fleet-network:
+        ipv4_address: 172.28.0.10
+
+volumes:
+  sqlserver-data:
+
+networks:
+  fleet-network:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

@@ -50,6 +50,7 @@ namespace business_logic
             services.AddScoped<ISessionResponseFactory, SessionResponseFactory>();
             services.AddScoped<IExternalLoginService, ExternalLoginService>();
             services.AddSingleton<IValidateOptions<ExternalIdentitySettings>, ExternalIdentitySettingsValidator>();
+            services.AddSingleton<IValidateOptions<AuditLogRetentionSettings>, AuditLogRetentionSettingsValidator>();
             services.AddSingleton<IValidateOptions<RefreshTokenSettings>, RefreshTokenSettingsValidator>();
         }
     }

@@ -11,5 +11,6 @@ namespace business_logic.Entities
         public DateTime Time { get; set; }
         public AuditAction Action { get; set; }
         public string? EntityId { get; set; }
+        public string? ChangesJson { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using business_logic.Interfaces;
 using business_logic.Settings;
 using data_access;
 using data_access.data;
+using data_access.Interceptors;
 using data_access.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
@@ -18,6 +19,7 @@ namespace business_logic_tests.Infrastructure
         public const int StartLocationId = 1;
         public const int DestinationLocationId = 2;
         public const int TestRefreshTokenExpiryInDays = 7;
+        public const int TestAuditLogRetentionPeriodInDays = 365;
         public const string AdminGroupId = "group-admins";
         public const string DispatcherGroupId = "group-dispatchers";
 
@@ -36,7 +38,7 @@ namespace business_logic_tests.Infrastructure
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddBusinessLogicServices();
-            services.AddDbContext<FMS_DbContext>(options => options.UseSqlite(_sqliteConnection));
+            services.AddDbContext<FMS_DbContext>(options => options.UseSqlite(_sqliteConnection).AddInterceptors(new AuditLogChangesInterceptor()));
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDatabaseApplicationLockService, TestDatabaseApplicationLockService>();
@@ -45,6 +47,10 @@ namespace business_logic_tests.Infrastructure
             services.AddScoped<ITokenService, TestTokenService>();
             services.AddAuthentication();
             services.AddAccountIdentity();
+            services.AddOptions<AuditLogRetentionSettings>().Configure(auditLogRetentionSettings =>
+            {
+                auditLogRetentionSettings.RetentionPeriodInDays = BusinessLogicTestHost.TestAuditLogRetentionPeriodInDays;
+            });
             services.AddOptions<RefreshTokenSettings>().Configure(refreshTokenSettings =>
             {
                 refreshTokenSettings.ExpiryInDays = TestRefreshTokenExpiryInDays;

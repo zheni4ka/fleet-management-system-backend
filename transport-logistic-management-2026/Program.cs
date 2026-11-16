@@ -3,7 +3,9 @@ using business_logic.Interfaces;
 using business_logic.Settings;
 using data_access;
 using data_access.Identity;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Scalar.AspNetCore;
+using Serilog;
 using System.Text.Json.Serialization;
 using transport_logistic_management_2026.Constants;
 using transport_logistic_management_2026.Helpers;
@@ -39,6 +41,7 @@ namespace transport_logistic_management_2026
             builder.Services.AddBusinessLogicServices();
             builder.Services.AddValidatedSettings<RefreshTokenSettings>(builder.Configuration, RefreshTokenSettings.SectionName);
             builder.Services.AddValidatedSettings<ExternalIdentitySettings>(builder.Configuration, ExternalIdentitySettings.SectionName);
+            builder.Services.AddValidatedSettings<AuditLogRetentionSettings>(builder.Configuration, AuditLogRetentionSettings.SectionName);
             builder.Services.AddSingleton<IExternalIdentityTokenValidator, EntraIdTokenValidator>();
             builder.Services.AddDataAccessServices(connectionString);
 
@@ -50,12 +53,16 @@ namespace transport_logistic_management_2026
             builder.Services.AddConfiguredCors(builder.Configuration);
             builder.Services.AddApiRateLimiting(builder.Configuration);
 
+            builder.Services.AddDatabaseHealthChecks();
+            builder.AddConfiguredObservability();
+
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<Middlewares.GlobalExceptionHandler>();
 
             var app = builder.Build();
 
             app.UseForwardedHeaders();
+            app.UseSerilogRequestLogging();
             app.UseExceptionHandler();
 
             if (app.Environment.IsDevelopment())
@@ -73,6 +80,13 @@ namespace transport_logistic_management_2026
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHealthChecks(HealthCheckEndpoints.LivenessPath, new HealthCheckOptions { Predicate = _ => false })
+                .DisableRateLimiting();
+            app.MapHealthChecks(HealthCheckEndpoints.ReadinessPath, new HealthCheckOptions
+            {
+                Predicate = healthCheckRegistration => healthCheckRegistration.Tags.Contains(HealthCheckEndpoints.ReadinessTag)
+            })
+                .DisableRateLimiting();
 
             await IdentitySeeder.SeedAsync(
                 app.Services,

@@ -1,6 +1,7 @@
 ﻿using business_logic.Constants;
 using business_logic.Interfaces;
 using data_access.data;
+using data_access.Interceptors;
 using data_access.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,10 @@ namespace data_access
 
         private static void AddDbContext(this IServiceCollection services, string connectionString)
         {
-            services.AddDbContext<FMS_DbContext>(opts => opts.UseSqlServer(connectionString));
+            services.AddSingleton<AuditLogChangesInterceptor>();
+            services.AddDbContext<FMS_DbContext>((serviceProvider, opts) => opts
+                .UseSqlServer(connectionString)
+                .AddInterceptors(serviceProvider.GetRequiredService<AuditLogChangesInterceptor>()));
         }
 
         private static void AddRepositories(this IServiceCollection services)

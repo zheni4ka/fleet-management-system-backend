@@ -233,6 +233,9 @@ namespace data_access.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("ChangesJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DispatcherId")
                         .HasColumnType("nvarchar(450)");
 

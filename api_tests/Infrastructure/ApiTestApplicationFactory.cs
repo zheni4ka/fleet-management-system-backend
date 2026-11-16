@@ -45,6 +45,7 @@ namespace api_tests.Infrastructure
                 ["RateLimitingSettings:GeneralPermitLimitPerUser"] = "300",
                 ["RateLimitingSettings:GeneralWindowInSeconds"] = "60",
                 ["CorsSettings:AllowedOrigins:0"] = "http://localhost:3000",
+                ["ObservabilitySettings:ServiceName"] = "fleet-management-api-tests",
                 ["SeedAdmin:Password"] = "Integration1Admin"
             };
         }

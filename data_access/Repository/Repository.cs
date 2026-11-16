@@ -57,6 +57,11 @@ namespace data_access.Repository
             return await ApplySpecificationCriteria(specification).CountAsync();
         }
 
+        public async Task<int> DeleteBySpecAsync(ISpecification<TEntity> specification)
+        {
+            return await ApplySpecificationCriteria(specification).ExecuteDeleteAsync();
+        }
+
         public async Task<IReadOnlyDictionary<TGroupKey, int>> GetCountsByGroupKeyBySpecAsync<TGroupKey>(
             ISpecification<TEntity> specification,
             Expression<Func<TEntity, TGroupKey>> groupKeySelector) where TGroupKey : notnull

@@ -1,0 +1,45 @@
+name: backend-ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-test-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore fleet-management-system-2026.sln
+
+      - name: Build
+        run: dotnet build fleet-management-system-2026.sln --configuration Release --no-restore
+
+      - name: Test (SQL Server tests use Testcontainers on the runner's Docker)
+        run: dotnet test fleet-management-system-2026.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Check that the model and migrations are in sync
+        run: dotnet ef migrations has-pending-model-changes --project data_access --startup-project transport-logistic-management-2026 --configuration Release --no-build
+
+      - name: Build EF migration bundle
+        run: dotnet ef migrations bundle --project data_access --startup-project transport-logistic-management-2026 --configuration Release --self-contained --target-runtime linux-x64 --output artifacts/efbundle
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: efbundle-linux-x64
+          path: artifacts/efbundle
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"

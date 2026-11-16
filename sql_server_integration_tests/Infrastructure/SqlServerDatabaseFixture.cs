@@ -46,6 +46,10 @@ namespace sql_server_integration_tests.Infrastructure
             services.AddScoped<ICurrentUserService, TestCurrentUserService>();
             services.AddScoped<ITokenService, TestTokenService>();
             services.AddSingleton<IExternalIdentityTokenValidator, TestExternalIdentityTokenValidator>();
+            services.AddOptions<AuditLogRetentionSettings>().Configure(auditLogRetentionSettings =>
+            {
+                auditLogRetentionSettings.RetentionPeriodInDays = BusinessLogicTestHost.TestAuditLogRetentionPeriodInDays;
+            });
             services.AddOptions<RefreshTokenSettings>().Configure(refreshTokenSettings =>
             {
                 refreshTokenSettings.ExpiryInDays = BusinessLogicTestHost.TestRefreshTokenExpiryInDays;

@@ -6,6 +6,7 @@ namespace business_logic.Interfaces
     public interface IAuditLogService
     {
         Task LogActionAsync(AuditAction action, object? entityId = null);
+        Task<int> PurgeExpiredAuditLogsAsync();
 
         Task<GetPagedListResponseModel<GetAuditLogResponseModel>> GetPagedListAsync(
             GetAuditLogsBySearchFilterRequestModel searchFilter,

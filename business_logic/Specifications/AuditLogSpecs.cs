@@ -9,7 +9,15 @@ namespace business_logic.Specifications
 {
     public class AuditLogSpecs
     {
-        public class PagedList : Specification<AuditLog, GetAuditLogResponseModel>
+        public class OlderThan : Specification<AuditLog>
+        {
+            public OlderThan(DateTime cutoffUtcTime)
+            {
+                Query.Where(x => x.Time < cutoffUtcTime);
+            }
+        }
+
+        public class PagedList : Specification<AuditLog, AuditLogPageRowModel>
         {
             public PagedList(
                 GetAuditLogsBySearchFilterRequestModel searchFilter,
@@ -53,14 +61,15 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, x => x.Id, pagedListRequest.SortDirection ?? defaultSortDirection);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(x => new GetAuditLogResponseModel
+                Query.Select(x => new AuditLogPageRowModel
                 {
                     Id = x.Id,
                     DispatcherId = x.DispatcherId,
                     DispatcherUsername = x.Dispatcher != null ? x.Dispatcher.UserName : null,
                     Time = x.Time,
                     Action = x.Action,
-                    EntityId = x.EntityId
+                    EntityId = x.EntityId,
+                    ChangesJson = x.ChangesJson
                 });
             }
         }
