@@ -1,12 +1,15 @@
 using business_logic.DTOs;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using transport_logistic_management_2026.Constants;
 
 namespace transport_logistic_management_2026.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion(ApiVersions.Version1)]
+    [Route(ApiVersions.VersionedControllerRoute)]
     [Authorize]
     public class DashboardController : ControllerBase
     {

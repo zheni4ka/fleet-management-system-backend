@@ -9,7 +9,8 @@ namespace api_tests
 {
     public sealed class LoginRateLimitingTests
     {
-        private const string LoginApiPath = "/api/Account/login";
+        private const string LoginApiPath = "/api/v1/Account/login";
+        private const string UnversionedLoginApiPath = "/api/Account/login";
         private const int TestCredentialEndpointsPermitLimit = 3;
 
         [Fact]
@@ -44,6 +45,17 @@ namespace api_tests
 
             Assert.Contains("JwtSettings:AccessTokenExpiryInMinutes", startupException.Message);
             Assert.Contains("'0'", startupException.Message);
+        }
+
+        [Fact]
+        public async Task Login_UnversionedRoute_ReturnsNotFound()
+        {
+            using var apiTestApplicationFactory = new ApiTestApplicationFactory(ApiTestApplicationFactory.CreateValidConfiguration());
+            using var apiHttpClient = apiTestApplicationFactory.CreateClient();
+
+            var unversionedLoginResponse = await apiHttpClient.PostAsJsonAsync(UnversionedLoginApiPath, new { username = "unknown_user", password = "Unknown1Password" });
+
+            Assert.Equal(HttpStatusCode.NotFound, unversionedLoginResponse.StatusCode);
         }
 
         private static Task<HttpResponseMessage> PostUnknownUserLoginAsync(HttpClient apiHttpClient)

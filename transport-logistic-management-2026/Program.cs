@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using business_logic;
 using business_logic.Interfaces;
 using business_logic.Settings;
@@ -35,6 +36,12 @@ namespace transport_logistic_management_2026
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
 
+            builder.Services.AddApiVersioning(apiVersioningOptions =>
+            {
+                apiVersioningOptions.DefaultApiVersion = new ApiVersion(ApiVersions.Version1MajorVersion);
+                apiVersioningOptions.AssumeDefaultVersionWhenUnspecified = false;
+                apiVersioningOptions.ReportApiVersions = true;
+            }).AddMvc();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddOpenApi();
 
