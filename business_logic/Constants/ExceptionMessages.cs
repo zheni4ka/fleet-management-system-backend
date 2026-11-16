@@ -20,6 +20,12 @@ namespace business_logic.Constants
         public const string RoleAssignmentFailedTemplate = "Не вдалося призначити роль '{0}' користувачу '{1}': {2}";
         public const string UserDeletionFailedTemplate = "Не вдалося видалити користувача з ідентифікатором '{0}': {1}";
         public const string OwnAccountDeletionForbidden = "Неможливо видалити власний обліковий запис.";
+        public const string AccountLockedOut = "Обліковий запис тимчасово заблоковано через забагато невдалих спроб входу. Спробуйте пізніше.";
+        public const string PasswordChangeRequired = "Потрібно змінити тимчасовий пароль перед входом у систему.";
+        public const string RefreshTokenInvalid = "Сесія недійсна або завершилась. Увійдіть у систему повторно.";
+        public const string PasswordChangeFailedTemplate = "Не вдалося змінити пароль користувача '{0}': {1}";
+        public const string PasswordResetFailedTemplate = "Не вдалося скинути пароль користувача з ідентифікатором '{0}': {1}";
+        public const string TooManyRequests = "Забагато запитів. Зачекайте трохи та спробуйте знову.";
         public const string UnexpectedError = "Сталася неочікувана помилка.";
         public const string ValidationFailed = "Одна або кілька перевірок даних не пройдені.";
     }

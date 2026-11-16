@@ -1,9 +1,11 @@
 using business_logic;
 using business_logic.Interfaces;
+using business_logic.Settings;
 using data_access;
 using data_access.Identity;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
+using transport_logistic_management_2026.Constants;
 using transport_logistic_management_2026.Helpers;
 using transport_logistic_management_2026.Services;
 
@@ -35,28 +37,23 @@ namespace transport_logistic_management_2026
             builder.Services.AddOpenApi();
 
             builder.Services.AddBusinessLogicServices();
+            builder.Services.AddValidatedSettings<RefreshTokenSettings>(builder.Configuration, RefreshTokenSettings.SectionName);
             builder.Services.AddDataAccessServices(connectionString);
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             builder.Services.AddHostedService<DueMaintenanceAutoStatusSyncBackgroundService>();
             builder.Services.AddJwtAuthentication(builder.Configuration);
-
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowNextJS", policy =>
-                {
-                    policy.WithOrigins("http://localhost:3000")
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
-                });
-            });
+            builder.Services.AddConfiguredForwardedHeaders(builder.Configuration);
+            builder.Services.AddConfiguredCors(builder.Configuration);
+            builder.Services.AddApiRateLimiting(builder.Configuration);
 
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<Middlewares.GlobalExceptionHandler>();
 
             var app = builder.Build();
 
+            app.UseForwardedHeaders();
             app.UseExceptionHandler();
 
             if (app.Environment.IsDevelopment())
@@ -67,9 +64,10 @@ namespace transport_logistic_management_2026
 
             app.UseHttpsRedirection();
 
-            app.UseCors("AllowNextJS");
+            app.UseCors(CorsPolicyNames.Frontend);
 
             app.UseAuthentication();
+            app.UseRateLimiter();
             app.UseAuthorization();
 
             app.MapControllers();

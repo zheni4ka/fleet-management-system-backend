@@ -1,5 +1,6 @@
 ﻿using business_logic.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using transport_logistic_management_2026.Options;
@@ -11,15 +12,7 @@ namespace transport_logistic_management_2026.Helpers
     {
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            var section = configuration.GetSection(JwtSettings.SectionName);
-            var jwtSettings = section.Get<JwtSettings>();
-
-            if (jwtSettings is null || string.IsNullOrWhiteSpace(jwtSettings.Secret))
-            {
-                throw new InvalidOperationException($"'{JwtSettings.SectionName}:Secret' is not configured.");
-            }
-
-            services.Configure<JwtSettings>(section);
+            services.AddValidatedSettings<JwtSettings, JwtSettingsValidator>(configuration, JwtSettings.SectionName);
             services.AddScoped<ITokenService, JwtTokenService>();
 
             services.AddAuthentication(options =>
@@ -28,22 +21,26 @@ namespace transport_logistic_management_2026.Helpers
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false; // Увімкнути True для продукту (Azure)
-                options.TokenValidationParameters = new TokenValidationParameters
+            .AddJwtBearer();
+
+            services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+                .Configure<IOptions<JwtSettings>, IHostEnvironment>((jwtBearerOptions, jwtSettingsOptions, hostEnvironment) =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidIssuer = jwtSettings.Issuer,
-                    ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
-                    ValidateIssuerSigningKey = true,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
+                    var jwtSettings = jwtSettingsOptions.Value;
+                    jwtBearerOptions.SaveToken = true;
+                    jwtBearerOptions.RequireHttpsMetadata = !hostEnvironment.IsDevelopment();
+                    jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidIssuer = jwtSettings.Issuer,
+                        ValidAudience = jwtSettings.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
 
             return services;
         }

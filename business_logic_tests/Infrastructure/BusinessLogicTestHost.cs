@@ -1,6 +1,8 @@
 using business_logic;
 using business_logic.Entities;
 using business_logic.Interfaces;
+using business_logic.Settings;
+using data_access;
 using data_access.data;
 using data_access.Repository;
 using Microsoft.AspNetCore.Identity;
@@ -14,11 +16,16 @@ namespace business_logic_tests.Infrastructure
     {
         public const int StartLocationId = 1;
         public const int DestinationLocationId = 2;
+        public const int TestRefreshTokenExpiryInDays = 7;
 
         private readonly SqliteConnection _sqliteConnection;
         private readonly ServiceProvider _serviceProvider;
 
-        public BusinessLogicTestHost()
+        public BusinessLogicTestHost() : this(rotatedTokenReuseGracePeriodInSeconds: 0)
+        {
+        }
+
+        public BusinessLogicTestHost(int rotatedTokenReuseGracePeriodInSeconds)
         {
             _sqliteConnection = new SqliteConnection("DataSource=:memory:");
             _sqliteConnection.Open();
@@ -31,9 +38,13 @@ namespace business_logic_tests.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ICurrentUserService, TestCurrentUserService>();
             services.AddScoped<ITokenService, TestTokenService>();
-            services.AddIdentityCore<IdentityUser>()
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<FMS_DbContext>();
+            services.AddAuthentication();
+            services.AddAccountIdentity();
+            services.AddOptions<RefreshTokenSettings>().Configure(refreshTokenSettings =>
+            {
+                refreshTokenSettings.ExpiryInDays = TestRefreshTokenExpiryInDays;
+                refreshTokenSettings.RotatedTokenReuseGracePeriodInSeconds = rotatedTokenReuseGracePeriodInSeconds;
+            });
 
             _serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 

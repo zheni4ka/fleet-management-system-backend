@@ -6,5 +6,10 @@ namespace business_logic.Constants
         public const string MaximumLengthExceeded = "Поле «{PropertyName}» не може перевищувати {MaxLength} символів.";
         public const string PositiveNumberRequired = "Поле «{PropertyName}» має бути більшим за 0.";
         public const string UnsupportedValue = "Поле «{PropertyName}» має недопустиме значення.";
+        public const string MinimumLengthRequired = "Поле «{PropertyName}» має містити щонайменше {MinLength} символів.";
+        public const string PasswordDigitRequired = "Поле «{PropertyName}» має містити щонайменше одну цифру.";
+        public const string PasswordUppercaseLetterRequired = "Поле «{PropertyName}» має містити щонайменше одну велику латинську літеру.";
+        public const string PasswordLowercaseLetterRequired = "Поле «{PropertyName}» має містити щонайменше одну малу латинську літеру.";
+        public const string NewPasswordMustDifferFromCurrent = "Новий пароль має відрізнятися від поточного.";
     }
 }

@@ -27,6 +27,7 @@ namespace transport_logistic_management_2026.Middlewares
                 BusinessRuleException => CreateProblem(StatusCodes.Status400BadRequest, "Bad Request", exception.Message),
                 AssignmentConflictException => CreateProblem(StatusCodes.Status409Conflict, "Conflict", exception.Message),
                 UnauthorizedAccessException => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized", exception.Message),
+                PasswordChangeRequiredException => CreatePasswordChangeRequiredProblem(exception.Message),
                 _ => CreateProblem(StatusCodes.Status500InternalServerError, "Internal Server Error", ExceptionMessages.UnexpectedError)
             };
 
@@ -50,6 +51,14 @@ namespace transport_logistic_management_2026.Middlewares
         {
             Status = status,
             Title = title,
+            Detail = detail
+        };
+
+        private static ProblemDetails CreatePasswordChangeRequiredProblem(string detail) => new()
+        {
+            Status = StatusCodes.Status403Forbidden,
+            Title = "Forbidden",
+            Type = ProblemTypes.PasswordChangeRequired,
             Detail = detail
         };
 

@@ -3,6 +3,8 @@ using business_logic.DTOs;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using transport_logistic_management_2026.Constants;
 
 namespace transport_logistic_management_2026.Controllers
 {
@@ -19,9 +21,41 @@ namespace transport_logistic_management_2026.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitingPolicyNames.CredentialEndpointsPerIpAddress)]
         public async Task<ActionResult<LoginResponseModel>> Login([FromBody] LoginRequestModel model)
         {
             return Ok(await _accountService.LoginAsync(model));
+        }
+
+        [HttpPost("refreshSession")]
+        [AllowAnonymous]
+        [EnableRateLimiting(RateLimitingPolicyNames.CredentialEndpointsPerIpAddress)]
+        public async Task<ActionResult<RefreshSessionResponseModel>> RefreshSession([FromBody] RefreshSessionRequestModel model)
+        {
+            return Ok(await _accountService.RefreshSessionAsync(model));
+        }
+
+        [HttpPost("logout")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequestModel model)
+        {
+            await _accountService.LogoutAsync(model);
+            return NoContent();
+        }
+
+        [HttpPost("changePassword")]
+        [AllowAnonymous]
+        [EnableRateLimiting(RateLimitingPolicyNames.CredentialEndpointsPerIpAddress)]
+        public async Task<ActionResult<ChangePasswordResponseModel>> ChangePassword([FromBody] ChangePasswordRequestModel model)
+        {
+            return Ok(await _accountService.ChangePasswordAsync(model));
+        }
+
+        [HttpPost("resetUserPassword")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<ActionResult<ResetUserPasswordResponseModel>> ResetUserPassword([FromBody] ResetUserPasswordRequestModel model)
+        {
+            return Ok(await _accountService.ResetUserPasswordAsync(model));
         }
 
         [HttpPost("registerAccount")]

@@ -1,3 +1,4 @@
+using business_logic.DTOs;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -18,7 +19,7 @@ namespace transport_logistic_management_2026.Services
             _settings = options.Value;
         }
 
-        public string CreateToken(IdentityUser user, IEnumerable<string> roles)
+        public IssuedAccessTokenModel CreateAccessToken(IdentityUser user, IEnumerable<string> roles)
         {
             var claims = new List<Claim>
             {
@@ -30,18 +31,21 @@ namespace transport_logistic_management_2026.Services
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
+            var accessTokenExpiresAtUtc = DateTime.UtcNow.AddMinutes(_settings.AccessTokenExpiryInMinutes);
 
             var descriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(_settings.ExpiryInMinutes),
+                Expires = accessTokenExpiresAtUtc,
                 Issuer = _settings.Issuer,
                 Audience = _settings.Audience,
                 SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
             };
 
             var handler = new JwtSecurityTokenHandler();
-            return handler.WriteToken(handler.CreateToken(descriptor));
+            return new IssuedAccessTokenModel(
+                AccessToken: handler.WriteToken(handler.CreateToken(descriptor)),
+                ExpiresAtUtc: new DateTimeOffset(accessTokenExpiresAtUtc));
         }
     }
 }

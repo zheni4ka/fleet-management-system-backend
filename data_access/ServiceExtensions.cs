@@ -14,7 +14,7 @@ namespace data_access
         {
             services.AddDbContext(connectionString);
             services.AddRepositories();
-            services.AddIdentity();
+            services.AddAccountIdentity();
         }
 
         private static void AddDbContext(this IServiceCollection services, string connectionString)
@@ -28,17 +28,22 @@ namespace data_access
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
 
-        private static void AddIdentity(this IServiceCollection services)
+        public static void AddAccountIdentity(this IServiceCollection services)
         {
-            services.AddIdentityCore<IdentityUser>(opts =>
+            services.AddIdentityCore<IdentityUser>(identityOptions =>
             {
-                opts.Password.RequireDigit = false;
-                opts.Password.RequiredLength = AccountConstraints.PasswordMinLength;
-                opts.Password.RequireNonAlphanumeric = false;
-                opts.Password.RequireUppercase = false;
+                identityOptions.Password.RequiredLength = AccountConstraints.PasswordMinLength;
+                identityOptions.Password.RequireDigit = true;
+                identityOptions.Password.RequireUppercase = true;
+                identityOptions.Password.RequireLowercase = true;
+                identityOptions.Password.RequireNonAlphanumeric = false;
+                identityOptions.Lockout.AllowedForNewUsers = true;
+                identityOptions.Lockout.MaxFailedAccessAttempts = AccountConstraints.LockoutMaxFailedAccessAttempts;
+                identityOptions.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(AccountConstraints.LockoutDurationInMinutes);
             })
             .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<FMS_DbContext>();
+            .AddEntityFrameworkStores<FMS_DbContext>()
+            .AddSignInManager();
         }
     }
 }

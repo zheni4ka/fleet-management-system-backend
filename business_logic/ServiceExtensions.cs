@@ -1,9 +1,11 @@
 ﻿using business_logic.DTOs;
 using business_logic.Interfaces;
 using business_logic.Services;
+using business_logic.Settings;
 using business_logic.Validators.Common;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace business_logic
 {
@@ -43,6 +45,8 @@ namespace business_logic
             services.AddScoped<IAuditLogService, AuditLogService>();
             services.AddScoped<IAutoStatusSyncService, AutoStatusSyncService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddSingleton<IValidateOptions<RefreshTokenSettings>, RefreshTokenSettingsValidator>();
         }
     }
 }

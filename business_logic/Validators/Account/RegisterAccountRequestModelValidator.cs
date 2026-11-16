@@ -20,9 +20,7 @@ namespace business_logic.Validators.Account
                 .WithName("Електронна пошта");
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MinimumLength(AccountConstraints.PasswordMinLength).WithMessage("Поле «{PropertyName}» має містити щонайменше {MinLength} символів.")
-                .MaximumLength(AccountConstraints.PasswordMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .MustSatisfyPasswordPolicy()
                 .WithName("Пароль");
 
             RuleFor(x => x.Role)
