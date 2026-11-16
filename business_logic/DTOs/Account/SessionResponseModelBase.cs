@@ -9,5 +9,6 @@ namespace business_logic.DTOs
         public string Username { get; init; } = string.Empty;
         public string? Email { get; init; }
         public IReadOnlyList<string> Roles { get; init; } = [];
+        public string PreferredLanguage { get; init; } = string.Empty;
     }
 }

@@ -9,7 +9,7 @@ namespace business_logic.Validators.Account
         public ResetUserPasswordRequestModelValidator()
         {
             RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .WithName("Ідентифікатор користувача");
         }
     }

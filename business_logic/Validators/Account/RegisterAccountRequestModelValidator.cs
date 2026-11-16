@@ -9,14 +9,14 @@ namespace business_logic.Validators.Account
         public RegisterAccountRequestModelValidator()
         {
             RuleFor(x => x.Username)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(AccountConstraints.UsernameMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
+                .MaximumLength(AccountConstraints.UsernameMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Логін");
 
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .EmailAddress().WithMessage("Електронна пошта має некоректний формат.")
-                .MaximumLength(AccountConstraints.EmailMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .MaximumLength(AccountConstraints.EmailMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Електронна пошта");
 
             RuleFor(x => x.Password)
@@ -24,16 +24,16 @@ namespace business_logic.Validators.Account
                 .WithName("Пароль");
 
             RuleFor(x => x.DepotIds)
-                .NotEmpty().When(x => x.Role == UserRoles.Dispatcher).WithMessage(ValidationMessages.DispatcherDepotsRequired)
-                .Empty().When(x => x.Role == UserRoles.Admin).WithMessage(ValidationMessages.AdminDepotsForbidden)
+                .NotEmpty().When(x => x.Role == UserRoles.Dispatcher).WithMessage(_ => ValidationMessages.DispatcherDepotsRequired)
+                .Empty().When(x => x.Role == UserRoles.Admin).WithMessage(_ => ValidationMessages.AdminDepotsForbidden)
                 .WithName("Депо");
 
             RuleForEach(x => x.DepotIds)
-                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
                 .WithName("Депо");
 
             RuleFor(x => x.Role)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .Must(role => UserRoles.All.Contains(role))
                 .WithMessage($"Роль має бути однією з: {string.Join(", ", UserRoles.All)}.")
                 .WithName("Роль");

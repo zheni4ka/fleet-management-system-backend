@@ -15,5 +15,6 @@ namespace business_logic.Interfaces
         Task UpdateUserDepotsAsync(UpdateUserDepotsRequestModel model);
         Task DeactivateUserAsync(string id);
         Task ReactivateUserAsync(string id);
+        Task UpdatePreferredLanguageAsync(UpdatePreferredLanguageRequestModel model);
     }
 }

@@ -9,17 +9,17 @@ namespace business_logic.Validators.AM
         public AutoMaintenanceModelBaseValidator()
         {
             RuleFor(x => x.AutoId)
-                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
                 .WithName("Автомобіль");
 
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(AutoMaintenanceConstraints.NameMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
+                .MaximumLength(AutoMaintenanceConstraints.NameMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Тип робіт");
 
             RuleFor(x => x.Description)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(AutoMaintenanceConstraints.DescriptionMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
+                .MaximumLength(AutoMaintenanceConstraints.DescriptionMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Опис проблеми");
         }
     }

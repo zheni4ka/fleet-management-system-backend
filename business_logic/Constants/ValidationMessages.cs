@@ -1,19 +1,24 @@
+using business_logic.Helpers;
+using System.Resources;
+
 namespace business_logic.Constants
 {
     public static class ValidationMessages
     {
-        public const string RequiredField = "Поле «{PropertyName}» є обов'язковим.";
-        public const string MaximumLengthExceeded = "Поле «{PropertyName}» не може перевищувати {MaxLength} символів.";
-        public const string PositiveNumberRequired = "Поле «{PropertyName}» має бути більшим за 0.";
-        public const string UnsupportedValue = "Поле «{PropertyName}» має недопустиме значення.";
-        public const string MinimumLengthRequired = "Поле «{PropertyName}» має містити щонайменше {MinLength} символів.";
-        public const string PasswordDigitRequired = "Поле «{PropertyName}» має містити щонайменше одну цифру.";
-        public const string PasswordUppercaseLetterRequired = "Поле «{PropertyName}» має містити щонайменше одну велику латинську літеру.";
-        public const string PasswordLowercaseLetterRequired = "Поле «{PropertyName}» має містити щонайменше одну малу латинську літеру.";
-        public const string NewPasswordMustDifferFromCurrent = "Новий пароль має відрізнятися від поточного.";
-        public const string DispatcherDepotsRequired = "Диспетчеру потрібно призначити щонайменше одне депо.";
-        public const string AdminDepotsForbidden = "Адміністратор має доступ до всіх депо, тому депо йому не призначаються.";
-        public const string UnknownTimeZoneId = "Поле «{PropertyName}» має бути ідентифікатором часового поясу IANA, наприклад Europe/Kyiv.";
-        public const string UtcTimeRequired = "Поле «{PropertyName}» має бути часом UTC (із суфіксом Z).";
+        private static readonly ResourceManager ValidationMessagesResourceManager = new("business_logic.Resources.ValidationMessageResources", typeof(ValidationMessages).Assembly);
+
+        public static string RequiredField => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(RequiredField));
+        public static string MaximumLengthExceeded => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(MaximumLengthExceeded));
+        public static string PositiveNumberRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(PositiveNumberRequired));
+        public static string UnsupportedValue => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(UnsupportedValue));
+        public static string MinimumLengthRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(MinimumLengthRequired));
+        public static string PasswordDigitRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(PasswordDigitRequired));
+        public static string PasswordUppercaseLetterRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(PasswordUppercaseLetterRequired));
+        public static string PasswordLowercaseLetterRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(PasswordLowercaseLetterRequired));
+        public static string NewPasswordMustDifferFromCurrent => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(NewPasswordMustDifferFromCurrent));
+        public static string DispatcherDepotsRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(DispatcherDepotsRequired));
+        public static string AdminDepotsForbidden => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(AdminDepotsForbidden));
+        public static string UnknownTimeZoneId => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(UnknownTimeZoneId));
+        public static string UtcTimeRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(UtcTimeRequired));
     }
 }

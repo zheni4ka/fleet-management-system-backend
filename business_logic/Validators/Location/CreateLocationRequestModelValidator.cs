@@ -9,20 +9,20 @@ namespace business_logic.Validators
         public CreateLocationRequestModelValidator()
         {
             RuleFor(x => x.City)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(LocationConstraints.CityMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
+                .MaximumLength(LocationConstraints.CityMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Місто");
 
             RuleFor(x => x.Country)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(LocationConstraints.CountryMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
+                .MaximumLength(LocationConstraints.CountryMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Країна");
 
             RuleFor(x => x.TimeZoneId)
                 .Cascade(CascadeMode.Stop)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(LocationConstraints.TimeZoneIdMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
-                .Must(timeZoneId => TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId!, out _)).WithMessage(ValidationMessages.UnknownTimeZoneId)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
+                .MaximumLength(LocationConstraints.TimeZoneIdMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
+                .Must(timeZoneId => TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId!, out _)).WithMessage(_ => ValidationMessages.UnknownTimeZoneId)
                 .WithName("Часовий пояс");
         }
     }

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="EntityNotFoundTemplate" xml:space="preserve"><value>{0} with id '{1}' was not found.</value></data>
+  <data name="AutoNumberAlreadyExistsTemplate" xml:space="preserve"><value>A vehicle with number '{0}' already exists.</value></data>
+  <data name="DriverLicenseNumberAlreadyExistsTemplate" xml:space="preserve"><value>A driver with licence '{0}' already exists.</value></data>
+  <data name="AutoUnderMaintenanceTemplate" xml:space="preserve"><value>The vehicle with id '{0}' is under maintenance.</value></data>
+  <data name="AutoAssignmentConflictTemplate" xml:space="preserve"><value>Vehicle (ID {0}) is already assigned to route #{1}, which overlaps the interval {2}.</value></data>
+  <data name="DriverAssignmentConflictTemplate" xml:space="preserve"><value>Driver (ID {0}) is already assigned to route #{1}, which overlaps the interval {2}.</value></data>
+  <data name="MaintenanceAssignmentConflictTemplate" xml:space="preserve"><value>Maintenance #{1} is planned for vehicle (ID {0}) within the interval {2}.</value></data>
+  <data name="SortFieldNotSupportedTemplate" xml:space="preserve"><value>Sort field '{0}' is not supported.</value></data>
+  <data name="WrongUsernameOrPassword" xml:space="preserve"><value>Wrong username or password.</value></data>
+  <data name="UsernameAlreadyExistsTemplate" xml:space="preserve"><value>A user with username '{0}' already exists.</value></data>
+  <data name="EmailAlreadyExistsTemplate" xml:space="preserve"><value>A user with email '{0}' already exists.</value></data>
+  <data name="UserCreationFailedTemplate" xml:space="preserve"><value>Could not create user '{0}': {1}</value></data>
+  <data name="RoleAssignmentFailedTemplate" xml:space="preserve"><value>Could not assign role '{0}' to user '{1}': {2}</value></data>
+  <data name="AccountLockedOut" xml:space="preserve"><value>The account is temporarily locked after too many failed sign-in attempts. Try again later.</value></data>
+  <data name="PasswordChangeRequired" xml:space="preserve"><value>You must change the temporary password before signing in.</value></data>
+  <data name="RefreshTokenInvalid" xml:space="preserve"><value>The session is invalid or has ended. Sign in again.</value></data>
+  <data name="PasswordChangeFailedTemplate" xml:space="preserve"><value>Could not change the password of user '{0}': {1}</value></data>
+  <data name="PasswordResetFailedTemplate" xml:space="preserve"><value>Could not reset the password of the user with id '{0}': {1}</value></data>
+  <data name="ExternalIdentityNotConfigured" xml:space="preserve"><value>Sign-in with a corporate account is not configured.</value></data>
+  <data name="ExternalIdentityTokenInvalid" xml:space="preserve"><value>Could not verify the corporate account sign-in.</value></data>
+  <data name="ExternalIdentityHasNoMappedGroupTemplate" xml:space="preserve"><value>Corporate account '{0}' is not a member of any group with access to the system.</value></data>
+  <data name="ExternalIdentityUsernameMissingTemplate" xml:space="preserve"><value>Corporate account '{0}' has no username or email.</value></data>
+  <data name="ConcurrencyConflictTemplate" xml:space="preserve"><value>{0} with id '{1}' was changed by another user. Reload the data and try again.</value></data>
+  <data name="ApplicationLockNotAcquiredTemplate" xml:space="preserve"><value>Another request is changing the assignment for '{0}'. Try again.</value></data>
+  <data name="ApplicationLockFailedTemplate" xml:space="preserve"><value>Could not acquire lock '{0}': code {1}.</value></data>
+  <data name="DepotNameAlreadyExistsTemplate" xml:space="preserve"><value>A depot named '{0}' already exists.</value></data>
+  <data name="DepotInUseTemplate" xml:space="preserve"><value>The depot with id '{0}' cannot be deleted because vehicles, drivers, routes or users belong to it.</value></data>
+  <data name="DriverDepotMismatchTemplate" xml:space="preserve"><value>Driver (ID {0}) belongs to depot #{1}, but vehicle (ID {2}) belongs to depot #{3}. A route can only be assigned within one depot.</value></data>
+  <data name="AutoDepotChangeForbiddenTemplate" xml:space="preserve"><value>The depot of the vehicle with id '{0}' cannot be changed because it has routes.</value></data>
+  <data name="DriverDepotChangeForbiddenTemplate" xml:space="preserve"><value>The depot of the driver with id '{0}' cannot be changed because the driver is assigned to routes.</value></data>
+  <data name="AutoArchivedTemplate" xml:space="preserve"><value>The vehicle with id '{0}' is archived.</value></data>
+  <data name="DriverArchivedTemplate" xml:space="preserve"><value>The driver with id '{0}' is archived.</value></data>
+  <data name="LocationsArchivedTemplate" xml:space="preserve"><value>The locations with ids '{0}' are archived.</value></data>
+  <data name="AutoHasActiveRoutesTemplate" xml:space="preserve"><value>The vehicle with id '{0}' cannot be deleted because it has planned or active routes.</value></data>
+  <data name="DriverHasActiveRoutesTemplate" xml:space="preserve"><value>The driver with id '{0}' cannot be deleted because the driver is assigned to planned or active routes.</value></data>
+  <data name="LocationHasActiveRoutesTemplate" xml:space="preserve"><value>The location with id '{0}' cannot be deleted because it is used in planned or active routes.</value></data>
+  <data name="EntityNotArchivedTemplate" xml:space="preserve"><value>{0} with id '{1}' is not archived.</value></data>
+  <data name="AccountDeactivated" xml:space="preserve"><value>The account is deactivated. Contact the administrator.</value></data>
+  <data name="OwnAccountDeactivationForbidden" xml:space="preserve"><value>You cannot deactivate your own account.</value></data>
+  <data name="UserNotDeactivatedTemplate" xml:space="preserve"><value>The user with id '{0}' is not deactivated.</value></data>
+  <data name="UserDeactivationFailedTemplate" xml:space="preserve"><value>Could not change the account state of the user with id '{0}': {1}</value></data>
+  <data name="PreferredLanguageUpdateFailedTemplate" xml:space="preserve"><value>Could not change the language of the user with id '{0}': {1}</value></data>
+  <data name="TooManyRequests" xml:space="preserve"><value>Too many requests. Wait a moment and try again.</value></data>
+  <data name="UnexpectedError" xml:space="preserve"><value>An unexpected error occurred.</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>One or more validation checks failed.</value></data>
+</root>

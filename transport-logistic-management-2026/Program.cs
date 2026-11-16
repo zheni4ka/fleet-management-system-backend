@@ -1,10 +1,12 @@
 using Asp.Versioning;
 using business_logic;
+using business_logic.Constants;
 using business_logic.Interfaces;
 using business_logic.Settings;
 using data_access;
 using data_access.Identity;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Localization;
 using Scalar.AspNetCore;
 using Serilog;
 using System.Text.Json.Serialization;
@@ -69,6 +71,14 @@ namespace transport_logistic_management_2026
             var app = builder.Build();
 
             app.UseForwardedHeaders();
+            app.UseRequestLocalization(requestLocalizationOptions =>
+            {
+                requestLocalizationOptions.SetDefaultCulture(SupportedLanguages.Default)
+                    .AddSupportedCultures([.. SupportedLanguages.All])
+                    .AddSupportedUICultures([.. SupportedLanguages.All]);
+                requestLocalizationOptions.ApplyCurrentCultureToResponseHeaders = true;
+                requestLocalizationOptions.RequestCultureProviders = [new AcceptLanguageHeaderRequestCultureProvider()];
+            });
             app.UseSerilogRequestLogging();
             app.UseExceptionHandler();
 

@@ -9,15 +9,15 @@ namespace business_logic.Validators.Account
         public UpdateUserDepotsRequestModelValidator()
         {
             RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .WithName("Ідентифікатор користувача");
 
             RuleFor(x => x.DepotIds)
-                .NotEmpty().WithMessage(ValidationMessages.DispatcherDepotsRequired)
+                .NotEmpty().WithMessage(_ => ValidationMessages.DispatcherDepotsRequired)
                 .WithName("Депо");
 
             RuleForEach(x => x.DepotIds)
-                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
                 .WithName("Депо");
         }
     }

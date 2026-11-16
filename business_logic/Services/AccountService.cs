@@ -35,6 +35,7 @@ namespace business_logic.Services
         private readonly IRepository<UserDepot> _userDepotRepository;
         private readonly IDepotService _depotService;
         private readonly IValidator<UpdateUserDepotsRequestModel> _updateUserDepotsValidator;
+        private readonly IValidator<UpdatePreferredLanguageRequestModel> _updatePreferredLanguageValidator;
         private readonly IValidator<GetPagedListRequestModel<DispatcherSortField>> _dispatchersPagedListRequestValidator;
 
         public AccountService(
@@ -58,6 +59,7 @@ namespace business_logic.Services
             IRepository<UserDepot> userDepotRepository,
             IDepotService depotService,
             IValidator<UpdateUserDepotsRequestModel> updateUserDepotsValidator,
+            IValidator<UpdatePreferredLanguageRequestModel> updatePreferredLanguageValidator,
             IValidator<GetPagedListRequestModel<DispatcherSortField>> dispatchersPagedListRequestValidator)
         {
             _userManager = userManager;
@@ -80,6 +82,7 @@ namespace business_logic.Services
             _userDepotRepository = userDepotRepository;
             _depotService = depotService;
             _updateUserDepotsValidator = updateUserDepotsValidator;
+            _updatePreferredLanguageValidator = updatePreferredLanguageValidator;
             _dispatchersPagedListRequestValidator = dispatchersPagedListRequestValidator;
         }
 
@@ -295,6 +298,27 @@ namespace business_logic.Services
             await _auditLogService.LogActionAsync(AuditAction.UserReactivated, id);
             await _unitOfWork.SaveChangesAsync();
             await userReactivationTransaction.CommitAsync();
+        }
+
+        public async Task UpdatePreferredLanguageAsync(UpdatePreferredLanguageRequestModel model)
+        {
+            await _updatePreferredLanguageValidator.ValidateAndThrowAsync(model);
+            var currentUserId = _currentUser.UserId ?? throw new UnauthorizedAccessException(ExceptionMessages.RefreshTokenInvalid);
+            var user = await _userManager.FindByIdAsync(currentUserId) ?? throw NotFoundException.For<IdentityUser>(currentUserId);
+
+            var preferredLanguageClaims = (await _userManager.GetClaimsAsync(user))
+                .Where(userClaim => userClaim.Type == AccountClaimTypes.PreferredLanguage)
+                .ToList();
+            if (preferredLanguageClaims.Count > 0)
+            {
+                EnsureIdentityOperationSucceeded(
+                    await _userManager.RemoveClaimsAsync(user, preferredLanguageClaims),
+                    identityErrorDescriptions => string.Format(ExceptionMessages.PreferredLanguageUpdateFailedTemplate, currentUserId, identityErrorDescriptions));
+            }
+
+            EnsureIdentityOperationSucceeded(
+                await _userManager.AddClaimAsync(user, new Claim(AccountClaimTypes.PreferredLanguage, model.Language!)),
+                identityErrorDescriptions => string.Format(ExceptionMessages.PreferredLanguageUpdateFailedTemplate, currentUserId, identityErrorDescriptions));
         }
 
         private static bool IsUserDeactivated(IdentityUser user)

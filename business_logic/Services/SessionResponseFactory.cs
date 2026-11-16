@@ -1,3 +1,4 @@
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Interfaces;
@@ -26,6 +27,8 @@ namespace business_logic.Services
         {
             var roles = (await _userManager.GetRolesAsync(user)).ToList();
             var depotIds = await _userDepotRepository.GetProjectedListBySpecAsync(new UserDepotSpecs.DepotIdsByUserId(user.Id));
+            var preferredLanguageClaim = (await _userManager.GetClaimsAsync(user))
+                .FirstOrDefault(userClaim => userClaim.Type == AccountClaimTypes.PreferredLanguage);
             var issuedAccessToken = _tokenService.CreateAccessToken(user, roles, depotIds);
 
             return new TSessionResponseModel
@@ -36,7 +39,8 @@ namespace business_logic.Services
                 RefreshTokenExpiresAtUtc = issuedRefreshToken.ExpiresAtUtc,
                 Username = user.UserName!,
                 Email = user.Email,
-                Roles = roles
+                Roles = roles,
+                PreferredLanguage = preferredLanguageClaim is null ? SupportedLanguages.Default : preferredLanguageClaim.Value
             };
         }
     }

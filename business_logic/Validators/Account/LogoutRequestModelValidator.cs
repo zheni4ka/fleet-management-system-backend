@@ -9,7 +9,7 @@ namespace business_logic.Validators.Account
         public LogoutRequestModelValidator()
         {
             RuleFor(x => x.RefreshToken)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .WithName("Токен оновлення");
         }
     }

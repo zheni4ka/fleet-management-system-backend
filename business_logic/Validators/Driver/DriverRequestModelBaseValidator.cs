@@ -9,29 +9,29 @@ namespace business_logic.Validators
         public DriverRequestModelBaseValidator()
         {
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .Matches(DriverNameFormat.Pattern).WithMessage(DriverNameFormat.InvalidFormatMessage)
-                .MaximumLength(DriverConstraints.NameMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .MaximumLength(DriverConstraints.NameMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Ім'я");
 
             RuleFor(x => x.Surname)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .Matches(DriverNameFormat.Pattern).WithMessage(DriverNameFormat.InvalidFormatMessage)
-                .MaximumLength(DriverConstraints.SurnameMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .MaximumLength(DriverConstraints.SurnameMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Прізвище");
 
             RuleFor(x => x.Patronymic)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .Matches(DriverNameFormat.Pattern).WithMessage(DriverNameFormat.InvalidFormatMessage)
-                .MaximumLength(DriverConstraints.PatronymicMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .MaximumLength(DriverConstraints.PatronymicMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("По батькові");
 
             RuleFor(x => x.DepotId)
-                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
                 .WithName("Депо");
 
             RuleFor(x => x.LicenseNumber)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .Matches(DriverLicenseNumberFormat.Pattern).WithMessage(DriverLicenseNumberFormat.InvalidFormatMessage)
                 .WithName("Посвідчення водія");
         }

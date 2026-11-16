@@ -93,6 +93,14 @@ namespace transport_logistic_management_2026.Controllers
             return Ok(await _accountService.GetDispatcherByIdAsync(id));
         }
 
+        [HttpPut("updatePreferredLanguage")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePreferredLanguage([FromBody] UpdatePreferredLanguageRequestModel model)
+        {
+            await _accountService.UpdatePreferredLanguageAsync(model);
+            return NoContent();
+        }
+
         [HttpPut("updateUserDepots")]
         [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> UpdateUserDepots([FromBody] UpdateUserDepotsRequestModel model)

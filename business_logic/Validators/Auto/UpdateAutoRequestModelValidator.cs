@@ -9,11 +9,11 @@ namespace business_logic.Validators.Auto
         public UpdateAutoRequestModelValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
                 .WithName("Ідентифікатор");
 
             RuleFor(x => x.RowVersion)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .WithName("Версія запису");
 
             Include(new AutoRequestModelBaseValidator());

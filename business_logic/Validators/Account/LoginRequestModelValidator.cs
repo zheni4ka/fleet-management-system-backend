@@ -9,11 +9,11 @@ namespace business_logic.Validators.Account
         public LoginRequestModelValidator()
         {
             RuleFor(x => x.Username)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .WithName("Логін або email");
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .WithName("Пароль");
         }
     }

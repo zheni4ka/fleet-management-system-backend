@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="EntityNotFoundTemplate" xml:space="preserve"><value>{0} з ідентифікатором &apos;{1}&apos; не знайдено.</value></data>
+  <data name="AutoNumberAlreadyExistsTemplate" xml:space="preserve"><value>Автомобіль з номером &apos;{0}&apos; вже існує.</value></data>
+  <data name="DriverLicenseNumberAlreadyExistsTemplate" xml:space="preserve"><value>Водій з посвідченням &apos;{0}&apos; вже існує.</value></data>
+  <data name="AutoUnderMaintenanceTemplate" xml:space="preserve"><value>Автомобіль з ідентифікатором &apos;{0}&apos; перебуває на техобслуговуванні.</value></data>
+  <data name="AutoAssignmentConflictTemplate" xml:space="preserve"><value>Автомобіль (ID {0}) вже призначено на маршрут #{1}, який перетинається з інтервалом {2}.</value></data>
+  <data name="DriverAssignmentConflictTemplate" xml:space="preserve"><value>Водія (ID {0}) вже призначено на маршрут #{1}, який перетинається з інтервалом {2}.</value></data>
+  <data name="MaintenanceAssignmentConflictTemplate" xml:space="preserve"><value>Для автомобіля (ID {0}) заплановано техобслуговування #{1}, яке припадає на інтервал {2}.</value></data>
+  <data name="SortFieldNotSupportedTemplate" xml:space="preserve"><value>Поле сортування &apos;{0}&apos; не підтримується.</value></data>
+  <data name="WrongUsernameOrPassword" xml:space="preserve"><value>Неправильне ім&apos;я користувача або пароль.</value></data>
+  <data name="UsernameAlreadyExistsTemplate" xml:space="preserve"><value>Користувач з логіном &apos;{0}&apos; вже існує.</value></data>
+  <data name="EmailAlreadyExistsTemplate" xml:space="preserve"><value>Користувач з email &apos;{0}&apos; вже існує.</value></data>
+  <data name="UserCreationFailedTemplate" xml:space="preserve"><value>Не вдалося створити користувача &apos;{0}&apos;: {1}</value></data>
+  <data name="RoleAssignmentFailedTemplate" xml:space="preserve"><value>Не вдалося призначити роль &apos;{0}&apos; користувачу &apos;{1}&apos;: {2}</value></data>
+  <data name="AccountLockedOut" xml:space="preserve"><value>Обліковий запис тимчасово заблоковано через забагато невдалих спроб входу. Спробуйте пізніше.</value></data>
+  <data name="PasswordChangeRequired" xml:space="preserve"><value>Потрібно змінити тимчасовий пароль перед входом у систему.</value></data>
+  <data name="RefreshTokenInvalid" xml:space="preserve"><value>Сесія недійсна або завершилась. Увійдіть у систему повторно.</value></data>
+  <data name="PasswordChangeFailedTemplate" xml:space="preserve"><value>Не вдалося змінити пароль користувача &apos;{0}&apos;: {1}</value></data>
+  <data name="PasswordResetFailedTemplate" xml:space="preserve"><value>Не вдалося скинути пароль користувача з ідентифікатором &apos;{0}&apos;: {1}</value></data>
+  <data name="ExternalIdentityNotConfigured" xml:space="preserve"><value>Вхід через корпоративний обліковий запис не налаштовано.</value></data>
+  <data name="ExternalIdentityTokenInvalid" xml:space="preserve"><value>Не вдалося підтвердити вхід через корпоративний обліковий запис.</value></data>
+  <data name="ExternalIdentityHasNoMappedGroupTemplate" xml:space="preserve"><value>Корпоративний обліковий запис &apos;{0}&apos; не входить до жодної групи з доступом до системи.</value></data>
+  <data name="ExternalIdentityUsernameMissingTemplate" xml:space="preserve"><value>Корпоративний обліковий запис &apos;{0}&apos; не містить імені користувача чи email.</value></data>
+  <data name="ConcurrencyConflictTemplate" xml:space="preserve"><value>{0} з ідентифікатором &apos;{1}&apos; змінив інший користувач. Оновіть дані та повторіть дію.</value></data>
+  <data name="ApplicationLockNotAcquiredTemplate" xml:space="preserve"><value>Інший запит саме змінює призначення для &apos;{0}&apos;. Спробуйте ще раз.</value></data>
+  <data name="ApplicationLockFailedTemplate" xml:space="preserve"><value>Не вдалося отримати блокування &apos;{0}&apos;: код {1}.</value></data>
+  <data name="DepotNameAlreadyExistsTemplate" xml:space="preserve"><value>Депо з назвою &apos;{0}&apos; вже існує.</value></data>
+  <data name="DepotInUseTemplate" xml:space="preserve"><value>Неможливо видалити депо з ідентифікатором &apos;{0}&apos;, оскільки до нього належать автомобілі, водії, маршрути або користувачі.</value></data>
+  <data name="DriverDepotMismatchTemplate" xml:space="preserve"><value>Водій (ID {0}) належить до депо #{1}, а автомобіль (ID {2}) — до депо #{3}. Маршрут можна призначити лише в межах одного депо.</value></data>
+  <data name="AutoDepotChangeForbiddenTemplate" xml:space="preserve"><value>Неможливо змінити депо автомобіля з ідентифікатором &apos;{0}&apos;, оскільки він має маршрути.</value></data>
+  <data name="DriverDepotChangeForbiddenTemplate" xml:space="preserve"><value>Неможливо змінити депо водія з ідентифікатором &apos;{0}&apos;, оскільки його призначено на маршрути.</value></data>
+  <data name="AutoArchivedTemplate" xml:space="preserve"><value>Автомобіль з ідентифікатором &apos;{0}&apos; перебуває в архіві.</value></data>
+  <data name="DriverArchivedTemplate" xml:space="preserve"><value>Водій з ідентифікатором &apos;{0}&apos; перебуває в архіві.</value></data>
+  <data name="LocationsArchivedTemplate" xml:space="preserve"><value>Локації з ідентифікаторами &apos;{0}&apos; перебувають в архіві.</value></data>
+  <data name="AutoHasActiveRoutesTemplate" xml:space="preserve"><value>Неможливо видалити автомобіль з ідентифікатором &apos;{0}&apos;, оскільки він має заплановані або активні маршрути.</value></data>
+  <data name="DriverHasActiveRoutesTemplate" xml:space="preserve"><value>Неможливо видалити водія з ідентифікатором &apos;{0}&apos;, оскільки його призначено на заплановані або активні маршрути.</value></data>
+  <data name="LocationHasActiveRoutesTemplate" xml:space="preserve"><value>Неможливо видалити локацію з ідентифікатором &apos;{0}&apos;, оскільки вона використовується в запланованих або активних маршрутах.</value></data>
+  <data name="EntityNotArchivedTemplate" xml:space="preserve"><value>{0} з ідентифікатором &apos;{1}&apos; не перебуває в архіві.</value></data>
+  <data name="AccountDeactivated" xml:space="preserve"><value>Обліковий запис деактивовано. Зверніться до адміністратора.</value></data>
+  <data name="OwnAccountDeactivationForbidden" xml:space="preserve"><value>Неможливо деактивувати власний обліковий запис.</value></data>
+  <data name="UserNotDeactivatedTemplate" xml:space="preserve"><value>Користувач з ідентифікатором &apos;{0}&apos; не деактивований.</value></data>
+  <data name="UserDeactivationFailedTemplate" xml:space="preserve"><value>Не вдалося змінити стан облікового запису користувача з ідентифікатором &apos;{0}&apos;: {1}</value></data>
+  <data name="PreferredLanguageUpdateFailedTemplate" xml:space="preserve"><value>Не вдалося змінити мову користувача з ідентифікатором '{0}': {1}</value></data>
+  <data name="TooManyRequests" xml:space="preserve"><value>Забагато запитів. Зачекайте трохи та спробуйте знову.</value></data>
+  <data name="UnexpectedError" xml:space="preserve"><value>Сталася неочікувана помилка.</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>Одна або кілька перевірок даних не пройдені.</value></data>
+</root>

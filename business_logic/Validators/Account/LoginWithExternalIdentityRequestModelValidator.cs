@@ -9,11 +9,11 @@ namespace business_logic.Validators.Account
         public LoginWithExternalIdentityRequestModelValidator()
         {
             RuleFor(x => x.IdToken)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .WithName("Токен ідентифікації");
 
             RuleFor(x => x.Nonce)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .WithName("Одноразове значення");
         }
     }

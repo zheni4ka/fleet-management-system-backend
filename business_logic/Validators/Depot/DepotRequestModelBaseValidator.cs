@@ -9,8 +9,8 @@ namespace business_logic.Validators.Depot
         public DepotRequestModelBaseValidator()
         {
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage(ValidationMessages.RequiredField)
-                .MaximumLength(DepotConstraints.NameMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
+                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
+                .MaximumLength(DepotConstraints.NameMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Назва депо");
         }
     }

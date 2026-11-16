@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RequiredField" xml:space="preserve"><value>Поле «{PropertyName}» є обов&apos;язковим.</value></data>
+  <data name="MaximumLengthExceeded" xml:space="preserve"><value>Поле «{PropertyName}» не може перевищувати {MaxLength} символів.</value></data>
+  <data name="PositiveNumberRequired" xml:space="preserve"><value>Поле «{PropertyName}» має бути більшим за 0.</value></data>
+  <data name="UnsupportedValue" xml:space="preserve"><value>Поле «{PropertyName}» має недопустиме значення.</value></data>
+  <data name="MinimumLengthRequired" xml:space="preserve"><value>Поле «{PropertyName}» має містити щонайменше {MinLength} символів.</value></data>
+  <data name="PasswordDigitRequired" xml:space="preserve"><value>Поле «{PropertyName}» має містити щонайменше одну цифру.</value></data>
+  <data name="PasswordUppercaseLetterRequired" xml:space="preserve"><value>Поле «{PropertyName}» має містити щонайменше одну велику латинську літеру.</value></data>
+  <data name="PasswordLowercaseLetterRequired" xml:space="preserve"><value>Поле «{PropertyName}» має містити щонайменше одну малу латинську літеру.</value></data>
+  <data name="NewPasswordMustDifferFromCurrent" xml:space="preserve"><value>Новий пароль має відрізнятися від поточного.</value></data>
+  <data name="DispatcherDepotsRequired" xml:space="preserve"><value>Диспетчеру потрібно призначити щонайменше одне депо.</value></data>
+  <data name="AdminDepotsForbidden" xml:space="preserve"><value>Адміністратор має доступ до всіх депо, тому депо йому не призначаються.</value></data>
+  <data name="UnknownTimeZoneId" xml:space="preserve"><value>Поле «{PropertyName}» має бути ідентифікатором часового поясу IANA, наприклад Europe/Kyiv.</value></data>
+  <data name="UtcTimeRequired" xml:space="preserve"><value>Поле «{PropertyName}» має бути часом UTC (із суфіксом Z).</value></data>
+</root>
