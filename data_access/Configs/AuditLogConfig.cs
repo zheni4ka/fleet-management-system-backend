@@ -13,6 +13,11 @@ namespace data_access.Configs
 
             builder.HasIndex(x => x.Time);
 
+            builder.Property(x => x.Time)
+                .HasConversion(
+                    utcTime => utcTime,
+                    persistedUtcTime => DateTime.SpecifyKind(persistedUtcTime, DateTimeKind.Utc));
+
             builder.Property(x => x.Action)
                 .HasConversion<string>()
                 .HasMaxLength(50)

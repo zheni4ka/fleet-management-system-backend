@@ -8,7 +8,7 @@ namespace business_logic.Entities
 
         public string? DispatcherId { get; set; }
         public IdentityUser? Dispatcher { get; set; }
-        public DateTime Time { get; set; } = DateTime.UtcNow;
+        public DateTime Time { get; set; }
         public AuditAction Action { get; set; }
         public string? EntityId { get; set; }
     }

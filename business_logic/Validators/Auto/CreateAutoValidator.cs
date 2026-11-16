@@ -1,4 +1,5 @@
-﻿using business_logic.DTOs;
+﻿using business_logic.Constants;
+using business_logic.DTOs;
 using FluentValidation;
 
 namespace business_logic.Validators.Auto
@@ -9,14 +10,15 @@ namespace business_logic.Validators.Auto
         {
             RuleFor(x => x.Mark)
                 .NotEmpty().WithMessage("Name of this car is required.")
-                .MaximumLength(16).WithMessage("Name of this car must be less than 16");
+                .MaximumLength(AutoConstraints.MarkMaxLength).WithMessage($"Name of this car must be less than {AutoConstraints.MarkMaxLength}");
 
             RuleFor(x => x.Model)
                 .NotEmpty().WithMessage("Model of this car is required.")
-                .MaximumLength(24).WithMessage("Model of this car must be less than 24");
+                .MaximumLength(AutoConstraints.ModelMaxLength).WithMessage($"Model of this car must be less than {AutoConstraints.ModelMaxLength}");
 
             RuleFor(x => x.Color)
-                .NotEmpty().WithMessage("Color of this car is required.");
+                .NotEmpty().WithMessage("Color of this car is required.")
+                .MaximumLength(AutoConstraints.ColorMaxLength).WithMessage($"Color of this car must be less than {AutoConstraints.ColorMaxLength}");
 
             RuleFor(x => x.Capacity)
                 .GreaterThan(0).WithMessage("Capacity must be greater than 0.");

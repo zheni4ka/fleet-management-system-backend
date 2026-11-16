@@ -12,6 +12,6 @@ namespace business_logic.DTOs
         public string Color { get; set; }
         public string Number { get; set; }
         public double Capacity { get; set; }
-        public string Status { get; set; }
+        public AutoStatus Status { get; set; }
     }
 }

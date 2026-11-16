@@ -163,7 +163,7 @@ namespace business_logic.Services
                 ? await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(model.AutoId)) ?? throw NotFoundException.For<Auto>(model.AutoId)
                 : await GetUsableAutoAsync(model.AutoId);
             await EnsureDriverExistsAsync(model.DriverId);
-            await EnsureLocationsExistAsync(model.StartLocationId!.Value, model.DestinationLocationId!.Value);
+            await EnsureLocationsExistAsync(model.StartLocationId, model.DestinationLocationId);
 
             if (RouteStatusGroups.Active.Contains(model.Status))
             {

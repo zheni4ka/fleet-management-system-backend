@@ -1,4 +1,6 @@
+using business_logic.Constants;
 using business_logic.DTOs;
+using business_logic.Helpers;
 using FluentValidation;
 
 namespace business_logic.Validators
@@ -13,14 +15,16 @@ namespace business_logic.Validators
 
             RuleFor(x => x.Name)
                 .NotEmpty()
-                .WithMessage("Maintenance name is required.");
+                .WithMessage("Maintenance name is required.")
+                .MaximumLength(AutoMaintenanceConstraints.NameMaxLength);
 
             RuleFor(x => x.Description)
                 .NotEmpty()
-                .WithMessage("Maintenance description is required.");
+                .WithMessage("Maintenance description is required.")
+                .MaximumLength(AutoMaintenanceConstraints.DescriptionMaxLength);
 
             RuleFor(x => x.ServiceDate)
-                .GreaterThanOrEqualTo(System.DateTime.UtcNow)
+                .GreaterThanOrEqualTo(_ => BusinessTimeZoneConverter.GetBusinessNowDateTime())
                 .WithMessage("Service date cannot be in the past.");
         }
     }

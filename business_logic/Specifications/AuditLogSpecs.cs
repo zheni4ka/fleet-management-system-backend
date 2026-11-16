@@ -1,6 +1,7 @@
 ﻿using Ardalis.Specification;
 using business_logic.DTOs;
 using business_logic.Entities;
+using business_logic.Helpers;
 using System.Linq.Expressions;
 
 namespace business_logic.Specifications
@@ -38,14 +39,14 @@ namespace business_logic.Specifications
 
                 if (searchFilter.TimeFromDate.HasValue)
                 {
-                    var timeFromDateTime = searchFilter.TimeFromDate.Value.ToDateTime(TimeOnly.MinValue);
-                    Query.Where(x => x.Time >= timeFromDateTime);
+                    var timeFromUtcDateTime = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(searchFilter.TimeFromDate.Value);
+                    Query.Where(x => x.Time >= timeFromUtcDateTime);
                 }
 
                 if (searchFilter.TimeToDate.HasValue)
                 {
-                    var timeToExclusiveDateTime = searchFilter.TimeToDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue);
-                    Query.Where(x => x.Time < timeToExclusiveDateTime);
+                    var timeToExclusiveUtcDateTime = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(searchFilter.TimeToDate.Value.AddDays(1));
+                    Query.Where(x => x.Time < timeToExclusiveUtcDateTime);
                 }
 
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))

@@ -66,7 +66,7 @@ namespace business_logic_tests
                         Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: null)));
 
             Assert.Equal(2, autosPage.TotalCount);
-            Assert.All(autosPage.Items, auto => Assert.Equal(AutoStatus.UnderMaintenance.ToString(), auto.Status));
+            Assert.All(autosPage.Items, auto => Assert.Equal(AutoStatus.UnderMaintenance, auto.Status));
         }
 
         [Fact]
@@ -140,13 +140,13 @@ namespace business_logic_tests
         }
 
         [Fact]
-        public async Task AuditLogGetPagedListAsync_DateRangeFilter_IncludesWholeEndDay()
+        public async Task AuditLogGetPagedListAsync_DateRangeFilter_IncludesWholeKyivEndDay()
         {
             await _testHost.SeedAsync(
-                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "1", Time = new DateTime(2030, 1, 1, 23, 59, 0) },
-                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "2", Time = new DateTime(2030, 1, 2, 0, 0, 0) },
-                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "3", Time = new DateTime(2030, 1, 3, 23, 59, 0) },
-                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "4", Time = new DateTime(2030, 1, 4, 0, 0, 0) });
+                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "1", Time = new DateTime(2030, 1, 1, 21, 59, 0, DateTimeKind.Utc) },
+                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "2", Time = new DateTime(2030, 1, 1, 22, 0, 0, DateTimeKind.Utc) },
+                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "3", Time = new DateTime(2030, 1, 3, 21, 59, 0, DateTimeKind.Utc) },
+                new AuditLog { Action = AuditAction.AutoCreated, EntityId = "4", Time = new DateTime(2030, 1, 3, 22, 0, 0, DateTimeKind.Utc) });
 
             var auditLogsPage = await _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<AuditLogDTO>>(
                 auditLogService => auditLogService.GetPagedListAsync(

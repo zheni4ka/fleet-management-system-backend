@@ -14,6 +14,10 @@ namespace data_access.Configs
 
             builder.HasIndex(r => r.DepartureTime);
 
+            builder.HasIndex(r => new { r.AutoId, r.Status, r.DepartureTime });
+
+            builder.HasIndex(r => new { r.DriverId, r.Status, r.DepartureTime });
+
             builder.HasOne(r => r.Auto)
                    .WithMany(a => a.Routes)
                    .HasForeignKey(r => r.AutoId).OnDelete(DeleteBehavior.Restrict);

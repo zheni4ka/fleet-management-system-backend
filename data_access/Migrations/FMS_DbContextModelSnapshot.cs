@@ -265,15 +265,18 @@ namespace data_access.Migrations
 
                     b.Property<string>("Color")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("Mark")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<string>("Model")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
 
                     b.Property<string>("Number")
                         .IsRequired()
@@ -305,21 +308,23 @@ namespace data_access.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("ServiceDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AutoId");
+                    b.HasIndex("AutoId", "IsCompleted", "ServiceDate");
 
                     b.ToTable("AutoMaintenance", (string)null);
                 });
@@ -338,15 +343,18 @@ namespace data_access.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Patronymic")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Surname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -638,13 +646,13 @@ namespace data_access.Migrations
                     b.Property<DateTime>("DepartureTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("DestinationLocationId")
+                    b.Property<int>("DestinationLocationId")
                         .HasColumnType("int");
 
                     b.Property<int>("DriverId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("StartLocationId")
+                    b.Property<int>("StartLocationId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -654,15 +662,15 @@ namespace data_access.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AutoId");
-
                     b.HasIndex("DepartureTime");
 
                     b.HasIndex("DestinationLocationId");
 
-                    b.HasIndex("DriverId");
-
                     b.HasIndex("StartLocationId");
+
+                    b.HasIndex("AutoId", "Status", "DepartureTime");
+
+                    b.HasIndex("DriverId", "Status", "DepartureTime");
 
                     b.ToTable("Routes", (string)null);
                 });
@@ -750,7 +758,8 @@ namespace data_access.Migrations
                     b.HasOne("business_logic.Entities.Location", "DestinationLocation")
                         .WithMany("DestinationRoutes")
                         .HasForeignKey("DestinationLocationId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("business_logic.Entities.Driver", "Driver")
                         .WithMany("Routes")
@@ -761,7 +770,8 @@ namespace data_access.Migrations
                     b.HasOne("business_logic.Entities.Location", "StartLocation")
                         .WithMany("StartRoutes")
                         .HasForeignKey("StartLocationId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Auto");
 

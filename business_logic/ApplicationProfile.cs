@@ -13,8 +13,7 @@ namespace business_logic
             CreateMap<CreateDriverModel, Driver>();
             CreateMap<EditDriverModel, Driver>();
 
-            CreateMap<Auto, AutoDTO>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            CreateMap<Auto, AutoDTO>();
             CreateMap<CreateAutoModel, Auto>();
             CreateMap<EditAutoModel, Auto>();
 
