@@ -27,6 +27,19 @@ namespace business_logic.Entities
 
         UserPasswordReset,
         UserPasswordChanged,
-        UserProvisioned
+        UserProvisioned,
+
+        DepotCreated,
+        DepotUpdated,
+        DepotDeleted,
+        UserDepotsUpdated,
+        UserDeactivated,
+        UserReactivated,
+        AutoArchived,
+        AutoRestored,
+        DriverArchived,
+        DriverRestored,
+        LocationArchived,
+        LocationRestored
     }
 }

@@ -10,6 +10,7 @@ namespace data_access.Configs
         {
             builder.HasKey(x => x.Id);
             builder.ToTable("Locations");
+            builder.ConfigureArchiving();
             builder.Property(x => x.City).IsRequired().HasMaxLength(200);
             builder.Property(x => x.Country).IsRequired().HasMaxLength(200);
         }

@@ -91,11 +91,27 @@ namespace transport_logistic_management_2026.Controllers
             return Ok(await _accountService.GetDispatcherByIdAsync(id));
         }
 
-        [HttpDelete("deleteUser/{id}")]
+        [HttpPut("updateUserDepots")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> DeleteUser([FromRoute] string id)
+        public async Task<IActionResult> UpdateUserDepots([FromBody] UpdateUserDepotsRequestModel model)
         {
-            await _accountService.DeleteUserAsync(id);
+            await _accountService.UpdateUserDepotsAsync(model);
+            return NoContent();
+        }
+
+        [HttpPost("deactivateUser/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> DeactivateUser([FromRoute] string id)
+        {
+            await _accountService.DeactivateUserAsync(id);
+            return NoContent();
+        }
+
+        [HttpPost("reactivateUser/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> ReactivateUser([FromRoute] string id)
+        {
+            await _accountService.ReactivateUserAsync(id);
             return NoContent();
         }
     }

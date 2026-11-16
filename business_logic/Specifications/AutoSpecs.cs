@@ -8,6 +8,46 @@ namespace business_logic.Specifications
 {
     public class AutoSpecs
     {
+        private static readonly Expression<Func<Auto, GetAutoResponseModel>> GetAutoResponseModelSelector = a => new GetAutoResponseModel
+        {
+            Id = a.Id,
+            Mark = a.Mark,
+            Model = a.Model,
+            Color = a.Color,
+            Number = a.Number,
+            Capacity = a.Capacity,
+            Status = a.Status,
+            DepotId = a.DepotId,
+            DepotName = a.Depot!.Name,
+            IsArchived = a.IsArchived,
+            RowVersion = a.RowVersion
+        };
+
+        public class ResponseModelById : Specification<Auto, GetAutoResponseModel>
+        {
+            public ResponseModelById(int id)
+            {
+                Query.Where(a => a.Id == id);
+                Query.Select(GetAutoResponseModelSelector);
+            }
+        }
+
+        public class ByDepotId : Specification<Auto>
+        {
+            public ByDepotId(int depotId)
+            {
+                Query.Where(a => a.DepotId == depotId);
+            }
+        }
+
+        public class Unarchived : Specification<Auto>
+        {
+            public Unarchived()
+            {
+                Query.Where(a => !a.IsArchived);
+            }
+        }
+
         public class ById : Specification<Auto>
         {
             public ById(int id)
@@ -44,6 +84,15 @@ namespace business_logic.Specifications
                 GetAutosBySearchFilterRequestModel searchFilter,
                 GetPagedListRequestModel<AutoSortField> pagedListRequest)
             {
+                var isArchivedSearched = searchFilter.IsArchived;
+                Query.Where(a => a.IsArchived == isArchivedSearched);
+
+                if (searchFilter.DepotId.HasValue)
+                {
+                    var searchedDepotId = searchFilter.DepotId.Value;
+                    Query.Where(a => a.DepotId == searchedDepotId);
+                }
+
                 if (searchFilter.Status.HasValue)
                 {
                     var searchedAutoStatus = searchFilter.Status.Value;
@@ -82,17 +131,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, a => a.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(a => new GetAutoResponseModel
-                {
-                    Id = a.Id,
-                    Mark = a.Mark,
-                    Model = a.Model,
-                    Color = a.Color,
-                    Number = a.Number,
-                    Capacity = a.Capacity,
-                    Status = a.Status,
-                    RowVersion = a.RowVersion
-                });
+                Query.Select(GetAutoResponseModelSelector);
             }
         }
 
@@ -118,6 +157,7 @@ namespace business_logic.Specifications
         {
             public LookupOptions()
             {
+                Query.Where(a => !a.IsArchived);
                 Query.OrderBy(a => a.Mark)
                     .ThenBy(a => a.Model)
                     .ThenBy(a => a.Number);
@@ -127,7 +167,8 @@ namespace business_logic.Specifications
                     Mark = a.Mark,
                     Model = a.Model,
                     Number = a.Number,
-                    Status = a.Status
+                    Status = a.Status,
+                    DepotId = a.DepotId
                 });
             }
         }

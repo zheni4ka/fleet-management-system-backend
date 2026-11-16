@@ -7,5 +7,6 @@ namespace business_logic.DTOs
         public string Color { get; init; }
         public string Number { get; init; }
         public double Capacity { get; init; }
+        public int DepotId { get; init; }
     }
 }

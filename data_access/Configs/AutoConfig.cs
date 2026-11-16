@@ -11,6 +11,8 @@ namespace data_access.Configs
         {
             builder.HasKey(x => x.Id);
             builder.Property(x => x.RowVersion).IsRowVersion();
+            builder.ConfigureDepotOwnership();
+            builder.ConfigureArchiving();
             builder.ToTable("Autos");
 
             builder.HasIndex(a => a.Number)

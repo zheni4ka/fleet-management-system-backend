@@ -17,5 +17,6 @@ namespace business_logic.Constants
         public const string TemporaryPasswordUppercaseLetters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
         public const string TemporaryPasswordLowercaseLetters = "abcdefghijkmnopqrstuvwxyz";
         public const string TemporaryPasswordDigits = "23456789";
+        public static readonly DateTimeOffset DeactivatedUserLockoutEnd = DateTimeOffset.MaxValue;
     }
 }

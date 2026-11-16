@@ -20,6 +20,7 @@ namespace business_logic.Specifications
         {
             public LookupOptions()
             {
+                Query.Where(l => !l.IsArchived);
                 Query.OrderBy(l => l.Country)
                     .ThenBy(l => l.City)
                     .ThenBy(l => l.Id);
@@ -32,12 +33,12 @@ namespace business_logic.Specifications
             }
         }
 
-        public class ExistingIdsByIds : Specification<Location, int>
+        public class ArchiveStatesByIds : Specification<Location, LocationArchiveStateModel>
         {
-            public ExistingIdsByIds(IReadOnlyCollection<int> locationIds)
+            public ArchiveStatesByIds(IReadOnlyCollection<int> locationIds)
             {
                 Query.Where(l => locationIds.Contains(l.Id));
-                Query.Select(l => l.Id);
+                Query.Select(l => new LocationArchiveStateModel(l.Id, l.IsArchived));
             }
         }
 
@@ -47,6 +48,9 @@ namespace business_logic.Specifications
                 GetLocationsBySearchFilterRequestModel searchFilter,
                 GetPagedListRequestModel<LocationSortField> pagedListRequest)
             {
+                var isArchivedSearched = searchFilter.IsArchived;
+                Query.Where(l => l.IsArchived == isArchivedSearched);
+
                 if (!string.IsNullOrWhiteSpace(searchFilter.Country))
                 {
                     var trimmedCountry = searchFilter.Country.Trim();
@@ -77,7 +81,8 @@ namespace business_logic.Specifications
                 {
                     Id = l.Id,
                     City = l.City,
-                    Country = l.Country
+                    Country = l.Country,
+                    IsArchived = l.IsArchived
                 });
             }
         }

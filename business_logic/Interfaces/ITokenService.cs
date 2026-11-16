@@ -5,6 +5,6 @@ namespace business_logic.Interfaces
 {
     public interface ITokenService
     {
-        IssuedAccessTokenModel CreateAccessToken(IdentityUser user, IEnumerable<string> roles);
+        IssuedAccessTokenModel CreateAccessToken(IdentityUser user, IReadOnlyCollection<string> roles, IReadOnlyCollection<int> depotIds);
     }
 }

@@ -23,8 +23,8 @@ namespace business_logic.Services
 
         public async Task<GetDashboardSummaryResponseModel> GetDashboardSummaryAsync()
         {
-            var autosCount = await _autoRepository.CountBySpecAsync(new AutoSpecs.All());
-            var driversCount = await _driverRepository.CountBySpecAsync(new DriverSpecs.All());
+            var autosCount = await _autoRepository.CountBySpecAsync(new AutoSpecs.Unarchived());
+            var driversCount = await _driverRepository.CountBySpecAsync(new DriverSpecs.Unarchived());
             var routesCount = await _routeRepository.CountBySpecAsync(new RouteSpecs.All());
             var activeRoutesCount = await _routeRepository.CountBySpecAsync(new RouteSpecs.Active());
 

@@ -9,12 +9,10 @@ namespace business_logic
     {
         public ApplicationProfile()
         {
-            CreateMap<Driver, GetDriverResponseModel>();
             CreateMap<CreateDriverRequestModel, Driver>();
             CreateMap<UpdateDriverRequestModel, Driver>()
                 .ForMember(driver => driver.RowVersion, mappingOptions => mappingOptions.Ignore());
 
-            CreateMap<Auto, GetAutoResponseModel>();
             CreateMap<CreateAutoRequestModel, Auto>();
             CreateMap<UpdateAutoRequestModel, Auto>()
                 .ForMember(auto => auto.RowVersion, mappingOptions => mappingOptions.Ignore());

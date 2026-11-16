@@ -40,6 +40,7 @@ namespace business_logic_tests.Infrastructure
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDatabaseApplicationLockService, TestDatabaseApplicationLockService>();
+            services.AddSingleton<TestCurrentUserScope>();
             services.AddScoped<ICurrentUserService, TestCurrentUserService>();
             services.AddScoped<ITokenService, TestTokenService>();
             services.AddAuthentication();
@@ -68,6 +69,8 @@ namespace business_logic_tests.Infrastructure
             serviceScope.ServiceProvider.GetRequiredService<FMS_DbContext>().Database.EnsureCreated();
         }
 
+        public TestCurrentUserScope CurrentUserScope => _serviceProvider.GetRequiredService<TestCurrentUserScope>();
+
         public async Task RunInNewScopeAsync<TService>(Func<TService, Task> serviceCall) where TService : notnull
         {
             using var serviceScope = _serviceProvider.CreateScope();
@@ -95,14 +98,14 @@ namespace business_logic_tests.Infrastructure
             return await dbContext.Set<Auto>().Where(auto => auto.Id == autoId).Select(auto => auto.Status).SingleAsync();
         }
 
-        public static Auto CreateAuto(string number, AutoStatus status = AutoStatus.Available, string mark = "Volvo")
+        public static Auto CreateAuto(string number, AutoStatus status = AutoStatus.Available, string mark = "Volvo", int depotId = DepotConstraints.DefaultDepotId)
         {
-            return new Auto { Mark = mark, Model = "FH16", Color = "Білий", Number = number, Capacity = 20, Status = status };
+            return new Auto { Mark = mark, Model = "FH16", Color = "Білий", Number = number, Capacity = 20, Status = status, DepotId = depotId };
         }
 
-        public static Driver CreateDriver(string licenseNumber, string surname = "Шевченко")
+        public static Driver CreateDriver(string licenseNumber, string surname = "Шевченко", int depotId = DepotConstraints.DefaultDepotId)
         {
-            return new Driver { Name = "Тарас", Surname = surname, Patronymic = "Григорович", LicenseNumber = licenseNumber };
+            return new Driver { Name = "Тарас", Surname = surname, Patronymic = "Григорович", LicenseNumber = licenseNumber, DepotId = depotId };
         }
 
         public static Route CreateRoute(Auto auto, Driver driver, DateTime departure, DateTime arrival, RouteStatus status = RouteStatus.Planned)
@@ -111,6 +114,7 @@ namespace business_logic_tests.Infrastructure
             {
                 Auto = auto,
                 Driver = driver,
+                DepotId = auto.DepotId,
                 StartLocationId = StartLocationId,
                 DestinationLocationId = DestinationLocationId,
                 DepartureTime = departure,

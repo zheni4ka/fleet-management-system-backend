@@ -3,6 +3,7 @@ using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
+using business_logic.Helpers;
 using business_logic.Interfaces;
 using business_logic.Specifications;
 using FluentValidation;
@@ -82,17 +83,36 @@ namespace business_logic.Services
             return _mapper.Map<GetLocationResponseModel>(location);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<DeleteLocationResponseModel> DeleteAsync(int id)
         {
             var location = await GetLocationOrThrowAsync(id);
 
-            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByLocationId(id)))
+            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ActiveByLocationId(id)))
             {
-                throw new BusinessRuleException(string.Format(ExceptionMessages.LocationUsedInRoutesTemplate, id));
+                throw new BusinessRuleException(string.Format(ExceptionMessages.LocationHasActiveRoutesTemplate, id));
             }
 
-            _locationRepository.Delete(location);
-            await _auditLogService.LogActionAsync(AuditAction.LocationDeleted, id);
+            var isLocationReferencedByRoutes = await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByLocationId(id));
+            if (isLocationReferencedByRoutes)
+            {
+                ArchivingHelper.ArchiveEntity(location);
+                await _auditLogService.LogActionAsync(AuditAction.LocationArchived, id);
+            }
+            else
+            {
+                _locationRepository.Delete(location);
+                await _auditLogService.LogActionAsync(AuditAction.LocationDeleted, id);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new DeleteLocationResponseModel { IsArchivedInsteadOfDeleted = isLocationReferencedByRoutes };
+        }
+
+        public async Task RestoreAsync(int id)
+        {
+            var location = await GetLocationOrThrowAsync(id);
+            ArchivingHelper.RestoreArchivedEntity(location, id);
+            await _auditLogService.LogActionAsync(AuditAction.LocationRestored, id);
             await _unitOfWork.SaveChangesAsync();
         }
 

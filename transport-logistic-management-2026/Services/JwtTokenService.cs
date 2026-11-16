@@ -1,8 +1,10 @@
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -19,7 +21,7 @@ namespace transport_logistic_management_2026.Services
             _settings = options.Value;
         }
 
-        public IssuedAccessTokenModel CreateAccessToken(IdentityUser user, IEnumerable<string> roles)
+        public IssuedAccessTokenModel CreateAccessToken(IdentityUser user, IReadOnlyCollection<string> roles, IReadOnlyCollection<int> depotIds)
         {
             var claims = new List<Claim>
             {
@@ -29,6 +31,7 @@ namespace transport_logistic_management_2026.Services
                 new(ClaimTypes.NameIdentifier, user.Id)
             };
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            claims.AddRange(depotIds.Select(depotId => new Claim(DepotClaimTypes.DepotId, depotId.ToString(CultureInfo.InvariantCulture))));
 
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
             var accessTokenExpiresAtUtc = DateTime.UtcNow.AddMinutes(_settings.AccessTokenExpiryInMinutes);

@@ -260,6 +260,9 @@ namespace data_access.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ArchivedAtUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<double>("Capacity")
                         .HasColumnType("float");
 
@@ -267,6 +270,12 @@ namespace data_access.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("DepotId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Mark")
                         .IsRequired()
@@ -294,6 +303,10 @@ namespace data_access.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DepotId");
+
+                    b.HasIndex("IsArchived");
 
                     b.HasIndex("Number")
                         .IsUnique()
@@ -342,6 +355,35 @@ namespace data_access.Migrations
                     b.ToTable("AutoMaintenance", (string)null);
                 });
 
+            modelBuilder.Entity("business_logic.Entities.Depot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Depots_Name");
+
+                    b.ToTable("Depots", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Основне депо"
+                        });
+                });
+
             modelBuilder.Entity("business_logic.Entities.Driver", b =>
                 {
                     b.Property<int>("Id")
@@ -349,6 +391,15 @@ namespace data_access.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ArchivedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DepotId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
@@ -377,6 +428,10 @@ namespace data_access.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DepotId");
+
+                    b.HasIndex("IsArchived");
+
                     b.HasIndex("LicenseNumber")
                         .IsUnique()
                         .HasDatabaseName("IX_Drivers_LicenseNumber");
@@ -392,6 +447,9 @@ namespace data_access.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ArchivedAtUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("City")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -402,7 +460,12 @@ namespace data_access.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("IsArchived");
 
                     b.ToTable("Locations", (string)null);
 
@@ -411,241 +474,281 @@ namespace data_access.Migrations
                         {
                             Id = 1,
                             City = "Kyiv",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 2,
                             City = "Lviv",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 3,
                             City = "Odessa",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 4,
                             City = "Kharkiv",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 5,
                             City = "Dnipro",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 6,
                             City = "Zaporizhzhia",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 7,
                             City = "Ivano-Frankivsk",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 8,
                             City = "Ternopil",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 9,
                             City = "Chernivtsi",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 10,
                             City = "Vinnytsia",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 11,
                             City = "Rivne",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 12,
                             City = "Lutsk",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 13,
                             City = "Poltava",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 14,
                             City = "Chernihiv",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 15,
                             City = "Cherkasy",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 16,
                             City = "Khmelnytskyi",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 17,
                             City = "Zhytomyr",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 18,
                             City = "Uzhhorod",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 19,
                             City = "Mykolaiv",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 20,
                             City = "Kherson",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 21,
                             City = "Sumy",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 22,
                             City = "Kropyvnytskyi",
-                            Country = "Ukraine"
+                            Country = "Ukraine",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 24,
                             City = "Warsaw",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 25,
                             City = "Krakow",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 26,
                             City = "Wroclaw",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 27,
                             City = "Gdansk",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 28,
                             City = "Poznan",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 29,
                             City = "Lodz",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 30,
                             City = "Katowice",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 31,
                             City = "Lublin",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 32,
                             City = "Rzeszow",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 33,
                             City = "Szczecin",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 34,
                             City = "Bydgoszcz",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 35,
                             City = "Gdynia",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 36,
                             City = "Bialystok",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 37,
                             City = "Czestochowa",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 38,
                             City = "Radom",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 39,
                             City = "Torun",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 40,
                             City = "Kielce",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         },
                         new
                         {
                             Id = 41,
                             City = "Gliwice",
-                            Country = "Poland"
+                            Country = "Poland",
+                            IsArchived = false
                         });
                 });
 
@@ -713,6 +816,9 @@ namespace data_access.Migrations
                     b.Property<DateTime>("DepartureTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("DepotId")
+                        .HasColumnType("int");
+
                     b.Property<int>("DestinationLocationId")
                         .HasColumnType("int");
 
@@ -737,6 +843,8 @@ namespace data_access.Migrations
 
                     b.HasIndex("DepartureTime");
 
+                    b.HasIndex("DepotId");
+
                     b.HasIndex("DestinationLocationId");
 
                     b.HasIndex("StartLocationId");
@@ -746,6 +854,21 @@ namespace data_access.Migrations
                     b.HasIndex("DriverId", "Status", "DepartureTime");
 
                     b.ToTable("Routes", (string)null);
+                });
+
+            modelBuilder.Entity("business_logic.Entities.UserDepot", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("DepotId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "DepotId");
+
+                    b.HasIndex("DepotId");
+
+                    b.ToTable("UserDepots", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -809,6 +932,17 @@ namespace data_access.Migrations
                     b.Navigation("Dispatcher");
                 });
 
+            modelBuilder.Entity("business_logic.Entities.Auto", b =>
+                {
+                    b.HasOne("business_logic.Entities.Depot", "Depot")
+                        .WithMany()
+                        .HasForeignKey("DepotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Depot");
+                });
+
             modelBuilder.Entity("business_logic.Entities.AutoMaintenance", b =>
                 {
                     b.HasOne("business_logic.Entities.Auto", "Auto")
@@ -818,6 +952,17 @@ namespace data_access.Migrations
                         .IsRequired();
 
                     b.Navigation("Auto");
+                });
+
+            modelBuilder.Entity("business_logic.Entities.Driver", b =>
+                {
+                    b.HasOne("business_logic.Entities.Depot", "Depot")
+                        .WithMany()
+                        .HasForeignKey("DepotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Depot");
                 });
 
             modelBuilder.Entity("business_logic.Entities.RefreshToken", b =>
@@ -836,6 +981,12 @@ namespace data_access.Migrations
                     b.HasOne("business_logic.Entities.Auto", "Auto")
                         .WithMany("Routes")
                         .HasForeignKey("AutoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("business_logic.Entities.Depot", "Depot")
+                        .WithMany()
+                        .HasForeignKey("DepotId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -859,11 +1010,32 @@ namespace data_access.Migrations
 
                     b.Navigation("Auto");
 
+                    b.Navigation("Depot");
+
                     b.Navigation("DestinationLocation");
 
                     b.Navigation("Driver");
 
                     b.Navigation("StartLocation");
+                });
+
+            modelBuilder.Entity("business_logic.Entities.UserDepot", b =>
+                {
+                    b.HasOne("business_logic.Entities.Depot", "Depot")
+                        .WithMany()
+                        .HasForeignKey("DepotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Depot");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("business_logic.Entities.Auto", b =>

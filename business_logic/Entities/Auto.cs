@@ -2,7 +2,7 @@ using business_logic.Interfaces;
 
 namespace business_logic.Entities
 {
-    public class Auto : IHasRowVersion
+    public class Auto : IHasRowVersion, IBelongsToDepot, IArchivable
     {
         public int Id { get; set; }
         public string Mark { get; set; }
@@ -13,6 +13,10 @@ namespace business_logic.Entities
         public IEnumerable<Route> Routes { get; set; }
         public IEnumerable<AutoMaintenance> Services { get; set; }
         public AutoStatus Status { get; set; } = AutoStatus.Available;
+        public int DepotId { get; set; }
+        public Depot? Depot { get; set; }
+        public bool IsArchived { get; set; }
+        public DateTime? ArchivedAtUtc { get; set; }
         public byte[] RowVersion { get; set; } = [];
     }
 }

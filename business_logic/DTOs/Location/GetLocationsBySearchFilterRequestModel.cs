@@ -1,5 +1,6 @@
 namespace business_logic.DTOs
 {
     public sealed record GetLocationsBySearchFilterRequestModel(
-        string? Country);
+        string? Country,
+        bool IsArchived);
 }

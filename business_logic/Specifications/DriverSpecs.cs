@@ -8,6 +8,53 @@ namespace business_logic.Specifications
 {
     public class DriverSpecs
     {
+        private static readonly Expression<Func<Driver, GetDriverResponseModel>> GetDriverResponseModelSelector = d => new GetDriverResponseModel
+        {
+            Id = d.Id,
+            Name = d.Name,
+            Surname = d.Surname,
+            Patronymic = d.Patronymic,
+            LicenseNumber = d.LicenseNumber,
+            DepotId = d.DepotId,
+            DepotName = d.Depot!.Name,
+            IsArchived = d.IsArchived,
+            RowVersion = d.RowVersion
+        };
+
+        public class ResponseModelById : Specification<Driver, GetDriverResponseModel>
+        {
+            public ResponseModelById(int id)
+            {
+                Query.Where(d => d.Id == id);
+                Query.Select(GetDriverResponseModelSelector);
+            }
+        }
+
+        public class AssignmentStateById : Specification<Driver, AssignmentStateModel>
+        {
+            public AssignmentStateById(int id)
+            {
+                Query.Where(d => d.Id == id);
+                Query.Select(d => new AssignmentStateModel(d.DepotId, d.IsArchived));
+            }
+        }
+
+        public class ByDepotId : Specification<Driver>
+        {
+            public ByDepotId(int depotId)
+            {
+                Query.Where(d => d.DepotId == depotId);
+            }
+        }
+
+        public class Unarchived : Specification<Driver>
+        {
+            public Unarchived()
+            {
+                Query.Where(d => !d.IsArchived);
+            }
+        }
+
         public class ById : Specification<Driver>
         {
             public ById(int id)
@@ -40,8 +87,19 @@ namespace business_logic.Specifications
 
         public class PagedList : Specification<Driver, GetDriverResponseModel>
         {
-            public PagedList(GetPagedListRequestModel<DriverSortField> pagedListRequest)
+            public PagedList(
+                GetDriversBySearchFilterRequestModel searchFilter,
+                GetPagedListRequestModel<DriverSortField> pagedListRequest)
             {
+                var isArchivedSearched = searchFilter.IsArchived;
+                Query.Where(d => d.IsArchived == isArchivedSearched);
+
+                if (searchFilter.DepotId.HasValue)
+                {
+                    var searchedDepotId = searchFilter.DepotId.Value;
+                    Query.Where(d => d.DepotId == searchedDepotId);
+                }
+
                 if (!string.IsNullOrWhiteSpace(pagedListRequest.Search))
                 {
                     var trimmedSearch = pagedListRequest.Search.Trim();
@@ -66,15 +124,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, d => d.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(d => new GetDriverResponseModel
-                {
-                    Id = d.Id,
-                    Name = d.Name,
-                    Surname = d.Surname,
-                    Patronymic = d.Patronymic,
-                    LicenseNumber = d.LicenseNumber,
-                    RowVersion = d.RowVersion
-                });
+                Query.Select(GetDriverResponseModelSelector);
             }
         }
 
@@ -102,6 +152,7 @@ namespace business_logic.Specifications
         {
             public LookupOptions()
             {
+                Query.Where(d => !d.IsArchived);
                 Query.OrderBy(d => d.Surname)
                     .ThenBy(d => d.Name)
                     .ThenBy(d => d.Id);
@@ -110,7 +161,8 @@ namespace business_logic.Specifications
                     Id = d.Id,
                     Name = d.Name,
                     Surname = d.Surname,
-                    LicenseNumber = d.LicenseNumber
+                    LicenseNumber = d.LicenseNumber,
+                    DepotId = d.DepotId
                 });
             }
         }

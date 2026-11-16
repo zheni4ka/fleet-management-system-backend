@@ -22,7 +22,7 @@ namespace business_logic_tests
 
             var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<GetAutoResponseModel>>(
                 autoService => autoService.GetPagedListAsync(
-                    new GetAutosBySearchFilterRequestModel(Status: null, Color: null),
+                    new GetAutosBySearchFilterRequestModel(Status: null, Color: null, IsArchived: false, DepotId: null),
                     new GetPagedListRequestModel<AutoSortField>(
                         Page: 2, PageSize: 10, Sort: AutoSortField.Number, SortDirection: SortDirection.Descending, Search: null)));
 
@@ -42,7 +42,7 @@ namespace business_logic_tests
 
             var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<GetAutoResponseModel>>(
                 autoService => autoService.GetPagedListAsync(
-                    new GetAutosBySearchFilterRequestModel(Status: null, Color: null),
+                    new GetAutosBySearchFilterRequestModel(Status: null, Color: null, IsArchived: false, DepotId: null),
                     new GetPagedListRequestModel<AutoSortField>(
                         Page: 1, PageSize: 1, Sort: null, SortDirection: null, Search: " Scania ")));
 
@@ -61,7 +61,7 @@ namespace business_logic_tests
 
             var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<GetAutoResponseModel>>(
                 autoService => autoService.GetPagedListAsync(
-                    new GetAutosBySearchFilterRequestModel(Status: AutoStatus.UnderMaintenance, Color: null),
+                    new GetAutosBySearchFilterRequestModel(Status: AutoStatus.UnderMaintenance, Color: null, IsArchived: false, DepotId: null),
                     new GetPagedListRequestModel<AutoSortField>(
                         Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: null)));
 
@@ -78,7 +78,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(seededDrivers);
 
             var driversPage = await _testHost.RunInNewScopeAsync<IDriverService, GetPagedListResponseModel<GetDriverResponseModel>>(
-                driverService => driverService.GetPagedListAsync(new GetPagedListRequestModel<DriverSortField>(
+                driverService => driverService.GetPagedListAsync(new GetDriversBySearchFilterRequestModel(IsArchived: false, DepotId: null), new GetPagedListRequestModel<DriverSortField>(
                     Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: "12")));
 
             Assert.Equal(1, driversPage.TotalCount);
@@ -92,7 +92,7 @@ namespace business_logic_tests
         public async Task DriverGetPagedListAsync_InvalidPaging_ThrowsValidationException(int page, int pageSize)
         {
             await Assert.ThrowsAsync<ValidationException>(() => _testHost.RunInNewScopeAsync<IDriverService, GetPagedListResponseModel<GetDriverResponseModel>>(
-                driverService => driverService.GetPagedListAsync(new GetPagedListRequestModel<DriverSortField>(
+                driverService => driverService.GetPagedListAsync(new GetDriversBySearchFilterRequestModel(IsArchived: false, DepotId: null), new GetPagedListRequestModel<DriverSortField>(
                     Page: page, PageSize: pageSize, Sort: null, SortDirection: null, Search: null))));
         }
 
@@ -181,7 +181,7 @@ namespace business_logic_tests
 
             var routesPage = await _testHost.RunInNewScopeAsync<IRouteService, GetPagedListResponseModel<GetRouteResponseModel>>(
                 routeService => routeService.GetRoutesPagedListBySearchFilterAsync(
-                    new GetRoutesBySearchFilterRequestModel(null, null, null, null, RouteStatus.Planned, null, null),
+                    new GetRoutesBySearchFilterRequestModel(null, null, null, null, RouteStatus.Planned, null, null, null),
                     new GetPagedListRequestModel<RouteSortField>(Page: 1, PageSize: 2, Sort: RouteSortField.DepartureTime, SortDirection: SortDirection.Descending, Search: null)));
 
             Assert.Equal(3, routesPage.TotalCount);

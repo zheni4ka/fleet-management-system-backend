@@ -20,9 +20,10 @@ namespace transport_logistic_management_2026.Controllers
 
         [HttpGet("getDriversPagedList")]
         public async Task<ActionResult<GetPagedListResponseModel<GetDriverResponseModel>>> GetDriversPagedList(
+            [FromQuery] GetDriversBySearchFilterRequestModel searchFilter,
             [FromQuery] GetPagedListRequestModel<DriverSortField> pagedListRequest)
         {
-            return Ok(await _driverService.GetPagedListAsync(pagedListRequest));
+            return Ok(await _driverService.GetPagedListAsync(searchFilter, pagedListRequest));
         }
 
         [HttpGet("getDriverLookupOptions")]
@@ -55,9 +56,16 @@ namespace transport_logistic_management_2026.Controllers
 
         [HttpDelete("deleteDriver/{id:int}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> DeleteDriver([FromRoute] int id)
+        public async Task<ActionResult<DeleteDriverResponseModel>> DeleteDriver([FromRoute] int id)
         {
-            await _driverService.DeleteAsync(id);
+            return Ok(await _driverService.DeleteAsync(id));
+        }
+
+        [HttpPost("restoreDriver/{id:int}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> RestoreDriver([FromRoute] int id)
+        {
+            await _driverService.RestoreAsync(id);
             return NoContent();
         }
     }

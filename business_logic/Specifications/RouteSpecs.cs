@@ -27,6 +27,8 @@ namespace business_logic.Specifications
             DriverName = r.Driver.Name,
             DriverSurname = r.Driver.Surname,
             Status = r.Status,
+            DepotId = r.DepotId,
+            DepotName = r.Depot!.Name,
             RowVersion = r.RowVersion
         };
 
@@ -60,6 +62,39 @@ namespace business_logic.Specifications
             public Active()
             {
                 Query.Where(r => RouteStatusGroups.Active.Contains(r.Status));
+            }
+        }
+
+        public class ByDepotId : Specification<Route>
+        {
+            public ByDepotId(int depotId)
+            {
+                Query.Where(r => r.DepotId == depotId);
+            }
+        }
+
+        public class ActiveByAutoId : Specification<Route>
+        {
+            public ActiveByAutoId(int autoId)
+            {
+                Query.Where(r => r.AutoId == autoId && RouteStatusGroups.Active.Contains(r.Status));
+            }
+        }
+
+        public class ActiveByDriverId : Specification<Route>
+        {
+            public ActiveByDriverId(int driverId)
+            {
+                Query.Where(r => r.DriverId == driverId && RouteStatusGroups.Active.Contains(r.Status));
+            }
+        }
+
+        public class ActiveByLocationId : Specification<Route>
+        {
+            public ActiveByLocationId(int locationId)
+            {
+                Query.Where(r => (r.StartLocationId == locationId || r.DestinationLocationId == locationId)
+                    && RouteStatusGroups.Active.Contains(r.Status));
             }
         }
 
@@ -231,6 +266,12 @@ namespace business_logic.Specifications
             {
                 var searchedAutoId = searchFilter.AutoId.Value;
                 routeQuery.Where(r => r.AutoId == searchedAutoId);
+            }
+
+            if (searchFilter.DepotId.HasValue)
+            {
+                var searchedDepotId = searchFilter.DepotId.Value;
+                routeQuery.Where(r => r.DepotId == searchedDepotId);
             }
         }
     }

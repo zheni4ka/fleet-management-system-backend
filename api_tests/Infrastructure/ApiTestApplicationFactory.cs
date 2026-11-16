@@ -25,7 +25,7 @@ namespace api_tests.Infrastructure
             _sqliteConnection = new SqliteConnection("DataSource=:memory:");
             _sqliteConnection.Open();
 
-            using var schemaDbContext = new FMS_DbContext(CreateSqliteDbContextOptions());
+            using var schemaDbContext = new FMS_DbContext(CreateSqliteDbContextOptions(), new SchemaCreationCurrentUserService());
             schemaDbContext.Database.EnsureCreated();
         }
 

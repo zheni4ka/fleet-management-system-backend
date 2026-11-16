@@ -134,8 +134,9 @@ namespace business_logic.Services
             {
                 await AcquireAssignmentLocksAsync(model.AutoId, model.DriverId);
                 var auto = await GetUsableAutoAsync(model.AutoId);
-                await EnsureDriverExistsAsync(model.DriverId);
-                await EnsureLocationsExistAsync(model.StartLocationId, model.DestinationLocationId);
+                await EnsureDriverIsAssignableWithAutoAsync(model.DriverId, auto, isDriverNewlyAssigned: true);
+                await EnsureLocationsAreAssignableAsync(model.StartLocationId, model.DestinationLocationId);
+                route.DepotId = auto.DepotId;
 
                 if (RouteStatusGroups.Active.Contains(model.Status))
                 {
@@ -164,10 +165,12 @@ namespace business_logic.Services
             var previousAutoId = route.AutoId;
 
             var assignedAuto = previousAutoId == model.AutoId
-                ? await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(model.AutoId)) ?? throw NotFoundException.For<Auto>(model.AutoId)
+                ? await GetAutoOrThrowAsync(model.AutoId)
                 : await GetUsableAutoAsync(model.AutoId);
-            await EnsureDriverExistsAsync(model.DriverId);
-            await EnsureLocationsExistAsync(model.StartLocationId, model.DestinationLocationId);
+            await EnsureDriverIsAssignableWithAutoAsync(model.DriverId, assignedAuto, isDriverNewlyAssigned: model.DriverId != route.DriverId);
+            var currentRouteLocationIds = new[] { route.StartLocationId, route.DestinationLocationId };
+            await EnsureLocationsAreAssignableAsync(
+                new[] { model.StartLocationId, model.DestinationLocationId }.Except(currentRouteLocationIds).ToArray());
 
             if (RouteStatusGroups.Active.Contains(model.Status))
             {
@@ -175,6 +178,7 @@ namespace business_logic.Services
             }
 
             _mapper.Map(model, route);
+            route.DepotId = assignedAuto.DepotId;
             await _auditLogService.LogActionAsync(AuditAction.RouteUpdated, route.Id);
             await _unitOfWork.SaveChangesAsync();
 
@@ -224,7 +228,12 @@ namespace business_logic.Services
 
         private async Task<Auto> GetUsableAutoAsync(int autoId)
         {
-            var auto = await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(autoId)) ?? throw NotFoundException.For<Auto>(autoId);
+            var auto = await GetAutoOrThrowAsync(autoId);
+            if (auto.IsArchived)
+            {
+                throw new BusinessRuleException(string.Format(ExceptionMessages.AutoArchivedTemplate, autoId));
+            }
+
             if (auto.Status == AutoStatus.UnderMaintenance)
             {
                 throw new BusinessRuleException(string.Format(ExceptionMessages.AutoUnderMaintenanceTemplate, autoId));
@@ -232,26 +241,51 @@ namespace business_logic.Services
             return auto;
         }
 
-        private async Task EnsureDriverExistsAsync(int driverId)
+        private async Task<Auto> GetAutoOrThrowAsync(int autoId)
         {
-            if (!await _driverRepository.AnyBySpecAsync(new DriverSpecs.ById(driverId)))
+            return await _autoRepository.GetItemBySpecAsync(new AutoSpecs.ById(autoId)) ?? throw NotFoundException.For<Auto>(autoId);
+        }
+
+        private async Task EnsureDriverIsAssignableWithAutoAsync(int driverId, Auto assignedAuto, bool isDriverNewlyAssigned)
+        {
+            var driverAssignmentState = await _driverRepository.GetProjectedItemBySpecAsync(new DriverSpecs.AssignmentStateById(driverId))
+                ?? throw NotFoundException.For<Driver>(driverId);
+            if (isDriverNewlyAssigned && driverAssignmentState.IsArchived)
             {
-                throw NotFoundException.For<Driver>(driverId);
+                throw new BusinessRuleException(string.Format(ExceptionMessages.DriverArchivedTemplate, driverId));
+            }
+
+            if (driverAssignmentState.DepotId != assignedAuto.DepotId)
+            {
+                throw new BusinessRuleException(string.Format(
+                    ExceptionMessages.DriverDepotMismatchTemplate, driverId, driverAssignmentState.DepotId, assignedAuto.Id, assignedAuto.DepotId));
             }
         }
 
-        private async Task EnsureLocationsExistAsync(params int[] locationIds)
+        private async Task EnsureLocationsAreAssignableAsync(params int[] newlyAssignedLocationIds)
         {
-            var distinctLocationIds = locationIds.Distinct().ToArray();
-            var existingLocationIds = await _locationRepository.GetProjectedListBySpecAsync(
-                new LocationSpecs.ExistingIdsByIds(distinctLocationIds));
-            if (existingLocationIds.Count == distinctLocationIds.Length)
+            var distinctLocationIds = newlyAssignedLocationIds.Distinct().ToArray();
+            if (distinctLocationIds.Length == 0)
             {
                 return;
             }
 
-            var missingLocationIds = distinctLocationIds.Except(existingLocationIds);
-            throw NotFoundException.For<Location>(string.Join(", ", missingLocationIds));
+            var locationArchiveStates = await _locationRepository.GetProjectedListBySpecAsync(
+                new LocationSpecs.ArchiveStatesByIds(distinctLocationIds));
+            var missingLocationIds = distinctLocationIds.Except(locationArchiveStates.Select(locationArchiveState => locationArchiveState.Id)).ToList();
+            if (missingLocationIds.Count > 0)
+            {
+                throw NotFoundException.For<Location>(string.Join(", ", missingLocationIds));
+            }
+
+            var archivedLocationIds = locationArchiveStates
+                .Where(locationArchiveState => locationArchiveState.IsArchived)
+                .Select(locationArchiveState => locationArchiveState.Id)
+                .ToList();
+            if (archivedLocationIds.Count > 0)
+            {
+                throw new BusinessRuleException(string.Format(ExceptionMessages.LocationsArchivedTemplate, string.Join(", ", archivedLocationIds)));
+            }
         }
 
         private async Task EnsureAssignmentHasNoConflictsAsync(int autoId, int driverId, DateTime departure, DateTime arrival, int? excludeRouteId = null)

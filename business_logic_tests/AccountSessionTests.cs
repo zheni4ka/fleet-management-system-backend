@@ -108,6 +108,23 @@ namespace business_logic_tests
             Assert.Equal(TestUsername, loginWithChangedPasswordResponse.Username);
         }
 
+        [Fact]
+        public async Task DeactivateUserAsync_RevokesSessionsAndRejectsLoginWithDeactivatedMessage()
+        {
+            var userId = await CreateTestUserAsync(_testHost);
+            var loginResponse = await LoginAsync(_testHost, TestPassword);
+
+            await _testHost.RunInNewScopeAsync<IAccountService>(accountService => accountService.DeactivateUserAsync(userId));
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => RefreshSessionAsync(_testHost, loginResponse.RefreshToken));
+            var deactivatedLoginException = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => LoginAsync(_testHost, TestPassword));
+            Assert.Equal(ExceptionMessages.AccountDeactivated, deactivatedLoginException.Message);
+
+            await _testHost.RunInNewScopeAsync<IAccountService>(accountService => accountService.ReactivateUserAsync(userId));
+            var reactivatedLoginResponse = await LoginAsync(_testHost, TestPassword);
+            Assert.Equal(TestUsername, reactivatedLoginResponse.Username);
+        }
+
         public void Dispose()
         {
             _testHost.Dispose();

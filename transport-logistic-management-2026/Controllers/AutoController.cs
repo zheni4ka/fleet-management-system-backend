@@ -56,9 +56,16 @@ namespace transport_logistic_management_2026.Controllers
 
         [HttpDelete("deleteAuto/{id:int}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> DeleteAuto([FromRoute] int id)
+        public async Task<ActionResult<DeleteAutoResponseModel>> DeleteAuto([FromRoute] int id)
         {
-            await _autoService.DeleteAsync(id);
+            return Ok(await _autoService.DeleteAsync(id));
+        }
+
+        [HttpPost("restoreAuto/{id:int}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> RestoreAuto([FromRoute] int id)
+        {
+            await _autoService.RestoreAsync(id);
             return NoContent();
         }
     }

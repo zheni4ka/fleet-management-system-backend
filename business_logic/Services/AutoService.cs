@@ -3,6 +3,7 @@ using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
+using business_logic.Helpers;
 using business_logic.Interfaces;
 using business_logic.Specifications;
 using FluentValidation;
@@ -13,6 +14,7 @@ namespace business_logic.Services
     {
         private readonly IRepository<Auto> _autoRepository;
         private readonly IRepository<Route> _routeRepository;
+        private readonly IDepotService _depotService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -24,6 +26,7 @@ namespace business_logic.Services
         public AutoService(
             IRepository<Auto> autoRepository,
             IRepository<Route> routeRepository,
+            IDepotService depotService,
             IAuditLogService auditLogService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
@@ -34,6 +37,7 @@ namespace business_logic.Services
         {
             _autoRepository = autoRepository;
             _routeRepository = routeRepository;
+            _depotService = depotService;
             _auditLogService = auditLogService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -66,24 +70,27 @@ namespace business_logic.Services
 
         public async Task<GetAutoResponseModel> GetAsync(int id)
         {
-            var auto = await GetAutoOrThrowAsync(id);
-            return _mapper.Map<GetAutoResponseModel>(auto);
+            return await _autoRepository.GetProjectedItemBySpecAsync(new AutoSpecs.ResponseModelById(id))
+                ?? throw NotFoundException.For<Auto>(id);
         }
 
         public async Task<GetAutoResponseModel> CreateAsync(CreateAutoRequestModel model)
         {
             await _createValidator.ValidateAndThrowAsync(model);
+            await _depotService.EnsureDepotsExistAsync([model.DepotId]);
             await EnsureNumberIsUniqueAsync(model.Number);
 
             var auto = _mapper.Map<Auto>(model);
-            await using var autoCreationTransaction = await _unitOfWork.BeginTransactionAsync();
-            await _autoRepository.InsertAsync(auto);
-            await _unitOfWork.SaveChangesAsync();
-            await _auditLogService.LogActionAsync(AuditAction.AutoCreated, auto.Id);
-            await _unitOfWork.SaveChangesAsync();
-            await autoCreationTransaction.CommitAsync();
+            await using (var autoCreationTransaction = await _unitOfWork.BeginTransactionAsync())
+            {
+                await _autoRepository.InsertAsync(auto);
+                await _unitOfWork.SaveChangesAsync();
+                await _auditLogService.LogActionAsync(AuditAction.AutoCreated, auto.Id);
+                await _unitOfWork.SaveChangesAsync();
+                await autoCreationTransaction.CommitAsync();
+            }
 
-            return _mapper.Map<GetAutoResponseModel>(auto);
+            return await GetAsync(auto.Id);
         }
 
         public async Task UpdateAsync(UpdateAutoRequestModel model)
@@ -93,23 +100,46 @@ namespace business_logic.Services
             var auto = await GetAutoOrThrowAsync(model.Id);
             _autoRepository.SetExpectedRowVersion(auto, model.RowVersion);
             await EnsureNumberIsUniqueAsync(model.Number, model.Id);
+            if (model.DepotId != auto.DepotId)
+            {
+                await EnsureDepotCanChangeAsync(auto.Id, model.DepotId);
+            }
 
             _mapper.Map(model, auto);
             await _auditLogService.LogActionAsync(AuditAction.AutoUpdated, auto.Id);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<DeleteAutoResponseModel> DeleteAsync(int id)
         {
             var auto = await GetAutoOrThrowAsync(id);
 
-            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByAutoId(id)))
+            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ActiveByAutoId(id)))
             {
-                throw new BusinessRuleException(string.Format(ExceptionMessages.AutoUsedInRoutesTemplate, id));
+                throw new BusinessRuleException(string.Format(ExceptionMessages.AutoHasActiveRoutesTemplate, id));
             }
 
-            _autoRepository.Delete(auto);
-            await _auditLogService.LogActionAsync(AuditAction.AutoDeleted, id);
+            var isAutoReferencedByRoutes = await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByAutoId(id));
+            if (isAutoReferencedByRoutes)
+            {
+                ArchivingHelper.ArchiveEntity(auto);
+                await _auditLogService.LogActionAsync(AuditAction.AutoArchived, id);
+            }
+            else
+            {
+                _autoRepository.Delete(auto);
+                await _auditLogService.LogActionAsync(AuditAction.AutoDeleted, id);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new DeleteAutoResponseModel { IsArchivedInsteadOfDeleted = isAutoReferencedByRoutes };
+        }
+
+        public async Task RestoreAsync(int id)
+        {
+            var auto = await GetAutoOrThrowAsync(id);
+            ArchivingHelper.RestoreArchivedEntity(auto, id);
+            await _auditLogService.LogActionAsync(AuditAction.AutoRestored, id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -123,6 +153,15 @@ namespace business_logic.Services
             if (await _autoRepository.AnyBySpecAsync(new AutoSpecs.ByNumber(number, excludedAutoId)))
             {
                 throw new BusinessRuleException(string.Format(ExceptionMessages.AutoNumberAlreadyExistsTemplate, number));
+            }
+        }
+
+        private async Task EnsureDepotCanChangeAsync(int autoId, int targetDepotId)
+        {
+            await _depotService.EnsureDepotsExistAsync([targetDepotId]);
+            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByAutoId(autoId)))
+            {
+                throw new BusinessRuleException(string.Format(ExceptionMessages.AutoDepotChangeForbiddenTemplate, autoId));
             }
         }
     }

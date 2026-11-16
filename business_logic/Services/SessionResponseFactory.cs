@@ -1,5 +1,7 @@
 using business_logic.DTOs;
+using business_logic.Entities;
 using business_logic.Interfaces;
+using business_logic.Specifications;
 using Microsoft.AspNetCore.Identity;
 
 namespace business_logic.Services
@@ -8,11 +10,13 @@ namespace business_logic.Services
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ITokenService _tokenService;
+        private readonly IRepository<UserDepot> _userDepotRepository;
 
-        public SessionResponseFactory(UserManager<IdentityUser> userManager, ITokenService tokenService)
+        public SessionResponseFactory(UserManager<IdentityUser> userManager, ITokenService tokenService, IRepository<UserDepot> userDepotRepository)
         {
             _userManager = userManager;
             _tokenService = tokenService;
+            _userDepotRepository = userDepotRepository;
         }
 
         public async Task<TSessionResponseModel> CreateSessionResponseModelAsync<TSessionResponseModel>(
@@ -20,8 +24,9 @@ namespace business_logic.Services
             IssuedRefreshTokenModel issuedRefreshToken)
             where TSessionResponseModel : SessionResponseModelBase, new()
         {
-            var roles = await _userManager.GetRolesAsync(user);
-            var issuedAccessToken = _tokenService.CreateAccessToken(user, roles);
+            var roles = (await _userManager.GetRolesAsync(user)).ToList();
+            var depotIds = await _userDepotRepository.GetProjectedListBySpecAsync(new UserDepotSpecs.DepotIdsByUserId(user.Id));
+            var issuedAccessToken = _tokenService.CreateAccessToken(user, roles, depotIds);
 
             return new TSessionResponseModel
             {
@@ -31,7 +36,7 @@ namespace business_logic.Services
                 RefreshTokenExpiresAtUtc = issuedRefreshToken.ExpiresAtUtc,
                 Username = user.UserName!,
                 Email = user.Email,
-                Roles = roles.ToList()
+                Roles = roles
             };
         }
     }

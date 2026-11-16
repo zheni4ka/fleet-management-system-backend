@@ -26,6 +26,10 @@ namespace business_logic.Validators
                 .MaximumLength(DriverConstraints.PatronymicMaxLength).WithMessage(ValidationMessages.MaximumLengthExceeded)
                 .WithName("По батькові");
 
+            RuleFor(x => x.DepotId)
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Депо");
+
             RuleFor(x => x.LicenseNumber)
                 .NotEmpty().WithMessage(ValidationMessages.RequiredField)
                 .Matches(DriverLicenseNumberFormat.Pattern).WithMessage(DriverLicenseNumberFormat.InvalidFormatMessage)

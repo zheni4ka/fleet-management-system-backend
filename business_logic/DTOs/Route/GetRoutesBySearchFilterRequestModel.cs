@@ -9,5 +9,6 @@ namespace business_logic.DTOs
         DateOnly? DepartureToDate,
         RouteStatus? Status,
         int? DriverId,
-        int? AutoId);
+        int? AutoId,
+        int? DepotId);
 }

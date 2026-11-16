@@ -73,6 +73,7 @@ namespace business_logic_tests
             {
                 Id = updatedAuto.Id,
                 RowVersion = updatedAuto.RowVersion,
+                DepotId = updatedAuto.DepotId,
                 Mark = updatedMark,
                 Model = "FH16",
                 Color = "Білий",
@@ -87,6 +88,7 @@ namespace business_logic_tests
             {
                 Id = updatedDriver.Id,
                 RowVersion = updatedDriver.RowVersion,
+                DepotId = updatedDriver.DepotId,
                 Name = "Тарас",
                 Surname = updatedSurname,
                 Patronymic = "Григорович",

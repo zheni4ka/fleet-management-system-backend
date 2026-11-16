@@ -16,6 +16,7 @@ namespace business_logic.Helpers
                 _ when entityType == typeof(Route) => EntityDisplayNames.Route,
                 _ when entityType == typeof(AutoMaintenance) => EntityDisplayNames.AutoMaintenance,
                 _ when entityType == typeof(IdentityUser) => EntityDisplayNames.User,
+                _ when entityType == typeof(Depot) => EntityDisplayNames.Depot,
                 _ => throw new InvalidOperationException($"Entity type '{entityType.Name}' has no display name.")
             };
         }

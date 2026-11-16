@@ -48,9 +48,16 @@ namespace transport_logistic_management_2026.Controllers
 
         [HttpDelete("deleteLocation/{id:int}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> DeleteLocation([FromRoute] int id)
+        public async Task<ActionResult<DeleteLocationResponseModel>> DeleteLocation([FromRoute] int id)
         {
-            await _locationService.DeleteAsync(id);
+            return Ok(await _locationService.DeleteAsync(id));
+        }
+
+        [HttpPost("restoreLocation/{id:int}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> RestoreLocation([FromRoute] int id)
+        {
+            await _locationService.RestoreAsync(id);
             return NoContent();
         }
     }

@@ -21,7 +21,8 @@ namespace data_access.Repository
         private static readonly IReadOnlyDictionary<string, string> UniqueIndexViolationMessageTemplates = new Dictionary<string, string>
         {
             [UniqueIndexNames.AutoNumber] = ExceptionMessages.AutoNumberAlreadyExistsTemplate,
-            [UniqueIndexNames.DriverLicenseNumber] = ExceptionMessages.DriverLicenseNumberAlreadyExistsTemplate
+            [UniqueIndexNames.DriverLicenseNumber] = ExceptionMessages.DriverLicenseNumberAlreadyExistsTemplate,
+            [UniqueIndexNames.DepotName] = ExceptionMessages.DepotNameAlreadyExistsTemplate
         };
 
         private readonly FMS_DbContext _context;

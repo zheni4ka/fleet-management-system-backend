@@ -12,6 +12,8 @@ namespace business_logic.Interfaces
         Task<GetDispatcherResponseModel> RegisterAsync(RegisterAccountRequestModel model);
         Task<GetPagedListResponseModel<GetDispatcherResponseModel>> GetDispatchersPagedListAsync(GetPagedListRequestModel<DispatcherSortField> pagedListRequest);
         Task<GetDispatcherResponseModel> GetDispatcherByIdAsync(string id);
-        Task DeleteUserAsync(string id);
+        Task UpdateUserDepotsAsync(UpdateUserDepotsRequestModel model);
+        Task DeactivateUserAsync(string id);
+        Task ReactivateUserAsync(string id);
     }
 }

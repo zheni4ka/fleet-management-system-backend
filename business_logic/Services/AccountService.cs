@@ -32,6 +32,9 @@ namespace business_logic.Services
         private readonly IRepository<IdentityRole> _roleRepository;
         private readonly IRepository<IdentityUser> _userRepository;
         private readonly IRepository<IdentityUserRole<string>> _userRoleRepository;
+        private readonly IRepository<UserDepot> _userDepotRepository;
+        private readonly IDepotService _depotService;
+        private readonly IValidator<UpdateUserDepotsRequestModel> _updateUserDepotsValidator;
         private readonly IValidator<GetPagedListRequestModel<DispatcherSortField>> _dispatchersPagedListRequestValidator;
 
         public AccountService(
@@ -52,6 +55,9 @@ namespace business_logic.Services
             IRepository<IdentityRole> roleRepository,
             IRepository<IdentityUser> userRepository,
             IRepository<IdentityUserRole<string>> userRoleRepository,
+            IRepository<UserDepot> userDepotRepository,
+            IDepotService depotService,
+            IValidator<UpdateUserDepotsRequestModel> updateUserDepotsValidator,
             IValidator<GetPagedListRequestModel<DispatcherSortField>> dispatchersPagedListRequestValidator)
         {
             _userManager = userManager;
@@ -71,6 +77,9 @@ namespace business_logic.Services
             _roleRepository = roleRepository;
             _userRepository = userRepository;
             _userRoleRepository = userRoleRepository;
+            _userDepotRepository = userDepotRepository;
+            _depotService = depotService;
+            _updateUserDepotsValidator = updateUserDepotsValidator;
             _dispatchersPagedListRequestValidator = dispatchersPagedListRequestValidator;
         }
 
@@ -78,12 +87,10 @@ namespace business_logic.Services
         {
             await _dispatchersPagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
-            var dispatcherRoleIdsQuery = _roleRepository.GetProjectedQueryBySpec(
-                new IdentityRoleSpecs.IdsByName(UserRoles.Dispatcher));
-            var dispatcherUserIdsQuery = _userRoleRepository.GetProjectedQueryBySpec(
-                new IdentityUserRoleSpecs.UserIdsByRoleIds(dispatcherRoleIdsQuery));
-
-            var dispatchersPagedListSpecification = new IdentityUserSpecs.DispatchersPagedList(dispatcherUserIdsQuery, pagedListRequest);
+            var dispatchersPagedListSpecification = new IdentityUserSpecs.DispatchersPagedList(
+                CreateDispatcherUserIdsQuery(),
+                CreateUserDepotsQuery(),
+                pagedListRequest);
             var dispatchersPage = await _userRepository.GetProjectedListBySpecAsync(dispatchersPagedListSpecification);
             var dispatchersTotalCount = await _userRepository.CountBySpecAsync(dispatchersPagedListSpecification);
 
@@ -161,9 +168,12 @@ namespace business_logic.Services
             EnsureIdentityOperationSucceeded(
                 await _userManager.ResetAccessFailedCountAsync(user),
                 identityErrorDescriptions => string.Format(ExceptionMessages.PasswordResetFailedTemplate, model.UserId, identityErrorDescriptions));
-            EnsureIdentityOperationSucceeded(
-                await _userManager.SetLockoutEndDateAsync(user, null),
-                identityErrorDescriptions => string.Format(ExceptionMessages.PasswordResetFailedTemplate, model.UserId, identityErrorDescriptions));
+            if (!IsUserDeactivated(user))
+            {
+                EnsureIdentityOperationSucceeded(
+                    await _userManager.SetLockoutEndDateAsync(user, null),
+                    identityErrorDescriptions => string.Format(ExceptionMessages.PasswordResetFailedTemplate, model.UserId, identityErrorDescriptions));
+            }
             await AddPasswordChangeRequirementAsync(user);
             await _refreshTokenService.RevokeAllUserRefreshTokensAsync(user.Id, RefreshTokenRevocationReason.PasswordReset);
 
@@ -195,6 +205,8 @@ namespace business_logic.Services
                 EmailConfirmed = true
             };
 
+            await _depotService.EnsureDepotsExistAsync(model.DepotIds);
+
             await using var accountRegistrationTransaction = await _unitOfWork.BeginTransactionAsync();
             EnsureIdentityOperationSucceeded(
                 await _userManager.CreateAsync(user, model.Password),
@@ -202,42 +214,103 @@ namespace business_logic.Services
             EnsureIdentityOperationSucceeded(
                 await _userManager.AddToRoleAsync(user, model.Role),
                 identityErrorDescriptions => string.Format(ExceptionMessages.RoleAssignmentFailedTemplate, model.Role, model.Username, identityErrorDescriptions));
+            foreach (var depotId in model.DepotIds.Distinct())
+            {
+                await _userDepotRepository.InsertAsync(new UserDepot { UserId = user.Id, DepotId = depotId });
+            }
 
             await _auditLogService.LogActionAsync(AuditAction.UserRegistered, user.Id);
             await _unitOfWork.SaveChangesAsync();
             await accountRegistrationTransaction.CommitAsync();
 
-            return _mapper.Map<GetDispatcherResponseModel>(user);
+            return _mapper.Map<GetDispatcherResponseModel>(user) with { DepotIds = model.DepotIds.Distinct().Order().ToList() };
         }
 
         public async Task<GetDispatcherResponseModel> GetDispatcherByIdAsync(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null || !await _userManager.IsInRoleAsync(user, UserRoles.Dispatcher))
-            {
-                throw NotFoundException.For<IdentityUser>(id);
-            }
-
-            return _mapper.Map<GetDispatcherResponseModel>(user);
+            return await _userRepository.GetProjectedItemBySpecAsync(
+                new IdentityUserSpecs.DispatcherById(id, CreateDispatcherUserIdsQuery(), CreateUserDepotsQuery()))
+                ?? throw NotFoundException.For<IdentityUser>(id);
         }
 
-        public async Task DeleteUserAsync(string id)
+        public async Task UpdateUserDepotsAsync(UpdateUserDepotsRequestModel model)
+        {
+            await _updateUserDepotsValidator.ValidateAndThrowAsync(model);
+            await GetDispatcherByIdAsync(model.UserId);
+            await _depotService.EnsureDepotsExistAsync(model.DepotIds);
+
+            await using var userDepotsUpdateTransaction = await _unitOfWork.BeginTransactionAsync();
+            foreach (var removedUserDepot in await _userDepotRepository.GetListBySpecAsync(new UserDepotSpecs.ByUserId(model.UserId)))
+            {
+                _userDepotRepository.Delete(removedUserDepot);
+            }
+            await _unitOfWork.SaveChangesAsync();
+
+            foreach (var depotId in model.DepotIds.Distinct())
+            {
+                await _userDepotRepository.InsertAsync(new UserDepot { UserId = model.UserId, DepotId = depotId });
+            }
+
+            await _auditLogService.LogActionAsync(AuditAction.UserDepotsUpdated, model.UserId);
+            await _unitOfWork.SaveChangesAsync();
+            await userDepotsUpdateTransaction.CommitAsync();
+        }
+
+        public async Task DeactivateUserAsync(string id)
         {
             var user = await _userManager.FindByIdAsync(id) ?? throw NotFoundException.For<IdentityUser>(id);
 
             if (_currentUser.UserId == id)
             {
-                throw new BusinessRuleException(ExceptionMessages.OwnAccountDeletionForbidden);
+                throw new BusinessRuleException(ExceptionMessages.OwnAccountDeactivationForbidden);
             }
 
-            await using var userDeletionTransaction = await _unitOfWork.BeginTransactionAsync();
+            await using var userDeactivationTransaction = await _unitOfWork.BeginTransactionAsync();
             EnsureIdentityOperationSucceeded(
-                await _userManager.DeleteAsync(user),
-                identityErrorDescriptions => string.Format(ExceptionMessages.UserDeletionFailedTemplate, id, identityErrorDescriptions));
+                await _userManager.SetLockoutEndDateAsync(user, AccountConstraints.DeactivatedUserLockoutEnd),
+                identityErrorDescriptions => string.Format(ExceptionMessages.UserDeactivationFailedTemplate, id, identityErrorDescriptions));
+            await _refreshTokenService.RevokeAllUserRefreshTokensAsync(id, RefreshTokenRevocationReason.UserDeactivated);
 
-            await _auditLogService.LogActionAsync(AuditAction.UserDeleted, id);
+            await _auditLogService.LogActionAsync(AuditAction.UserDeactivated, id);
             await _unitOfWork.SaveChangesAsync();
-            await userDeletionTransaction.CommitAsync();
+            await userDeactivationTransaction.CommitAsync();
+        }
+
+        public async Task ReactivateUserAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id) ?? throw NotFoundException.For<IdentityUser>(id);
+            if (!IsUserDeactivated(user))
+            {
+                throw new BusinessRuleException(string.Format(ExceptionMessages.UserNotDeactivatedTemplate, id));
+            }
+
+            await using var userReactivationTransaction = await _unitOfWork.BeginTransactionAsync();
+            EnsureIdentityOperationSucceeded(
+                await _userManager.SetLockoutEndDateAsync(user, null),
+                identityErrorDescriptions => string.Format(ExceptionMessages.UserDeactivationFailedTemplate, id, identityErrorDescriptions));
+            EnsureIdentityOperationSucceeded(
+                await _userManager.ResetAccessFailedCountAsync(user),
+                identityErrorDescriptions => string.Format(ExceptionMessages.UserDeactivationFailedTemplate, id, identityErrorDescriptions));
+
+            await _auditLogService.LogActionAsync(AuditAction.UserReactivated, id);
+            await _unitOfWork.SaveChangesAsync();
+            await userReactivationTransaction.CommitAsync();
+        }
+
+        private static bool IsUserDeactivated(IdentityUser user)
+        {
+            return user.LockoutEnd == AccountConstraints.DeactivatedUserLockoutEnd;
+        }
+
+        private IQueryable<string> CreateDispatcherUserIdsQuery()
+        {
+            var dispatcherRoleIdsQuery = _roleRepository.GetProjectedQueryBySpec(new IdentityRoleSpecs.IdsByName(UserRoles.Dispatcher));
+            return _userRoleRepository.GetProjectedQueryBySpec(new IdentityUserRoleSpecs.UserIdsByRoleIds(dispatcherRoleIdsQuery));
+        }
+
+        private IQueryable<UserDepot> CreateUserDepotsQuery()
+        {
+            return _userDepotRepository.GetProjectedQueryBySpec(new UserDepotSpecs.AllUserDepots());
         }
 
         private async Task<IdentityUser> GetUserWithCheckedPasswordAsync(string usernameOrEmail, string password)
@@ -249,7 +322,9 @@ namespace business_logic.Services
             var passwordSignInResult = await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true);
             if (passwordSignInResult.IsLockedOut)
             {
-                throw new UnauthorizedAccessException(ExceptionMessages.AccountLockedOut);
+                throw new UnauthorizedAccessException(IsUserDeactivated(user)
+                    ? ExceptionMessages.AccountDeactivated
+                    : ExceptionMessages.AccountLockedOut);
             }
 
             if (!passwordSignInResult.Succeeded)

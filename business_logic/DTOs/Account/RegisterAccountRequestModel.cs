@@ -6,5 +6,6 @@ namespace business_logic.DTOs
         public string Email { get; init; } = string.Empty;
         public string Password { get; init; } = string.Empty;
         public string Role { get; init; } = string.Empty;
+        public IReadOnlyList<int> DepotIds { get; init; } = [];
     }
 }

@@ -11,6 +11,9 @@ namespace business_logic.DTOs
         public string Number { get; init; }
         public double Capacity { get; init; }
         public AutoStatus Status { get; init; }
+        public int DepotId { get; init; }
+        public string DepotName { get; init; } = string.Empty;
+        public bool IsArchived { get; init; }
         public byte[] RowVersion { get; init; } = [];
     }
 }

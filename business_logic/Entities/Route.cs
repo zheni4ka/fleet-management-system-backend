@@ -2,7 +2,7 @@ using business_logic.Interfaces;
 
 namespace business_logic.Entities
 {
-    public class Route : IHasRowVersion
+    public class Route : IHasRowVersion, IBelongsToDepot
     {
         public int Id { get; set; }
 
@@ -17,6 +17,8 @@ namespace business_logic.Entities
         public int AutoId { get; set; }
         public Driver Driver { get; set; }
         public int DriverId { get; set; }
+        public int DepotId { get; set; }
+        public Depot? Depot { get; set; }
         public byte[] RowVersion { get; set; } = [];
     }
 }

@@ -23,6 +23,15 @@ namespace business_logic.Validators.Account
                 .MustSatisfyPasswordPolicy()
                 .WithName("Пароль");
 
+            RuleFor(x => x.DepotIds)
+                .NotEmpty().When(x => x.Role == UserRoles.Dispatcher).WithMessage(ValidationMessages.DispatcherDepotsRequired)
+                .Empty().When(x => x.Role == UserRoles.Admin).WithMessage(ValidationMessages.AdminDepotsForbidden)
+                .WithName("Депо");
+
+            RuleForEach(x => x.DepotIds)
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Депо");
+
             RuleFor(x => x.Role)
                 .NotEmpty().WithMessage(ValidationMessages.RequiredField)
                 .Must(role => UserRoles.All.Contains(role))

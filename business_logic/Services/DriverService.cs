@@ -3,6 +3,7 @@ using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using business_logic.Exceptions;
+using business_logic.Helpers;
 using business_logic.Interfaces;
 using business_logic.Specifications;
 using FluentValidation;
@@ -13,6 +14,7 @@ namespace business_logic.Services
     {
         private readonly IRepository<Driver> _driverRepository;
         private readonly IRepository<Route> _routeRepository;
+        private readonly IDepotService _depotService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -23,6 +25,7 @@ namespace business_logic.Services
         public DriverService(
             IRepository<Driver> driverRepository,
             IRepository<Route> routeRepository,
+            IDepotService depotService,
             IAuditLogService auditLogService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
@@ -32,6 +35,7 @@ namespace business_logic.Services
         {
             _driverRepository = driverRepository;
             _routeRepository = routeRepository;
+            _depotService = depotService;
             _auditLogService = auditLogService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -40,11 +44,13 @@ namespace business_logic.Services
             _pagedListRequestValidator = pagedListRequestValidator;
         }
 
-        public async Task<GetPagedListResponseModel<GetDriverResponseModel>> GetPagedListAsync(GetPagedListRequestModel<DriverSortField> pagedListRequest)
+        public async Task<GetPagedListResponseModel<GetDriverResponseModel>> GetPagedListAsync(
+            GetDriversBySearchFilterRequestModel searchFilter,
+            GetPagedListRequestModel<DriverSortField> pagedListRequest)
         {
             await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
-            var driversPagedListSpecification = new DriverSpecs.PagedList(pagedListRequest);
+            var driversPagedListSpecification = new DriverSpecs.PagedList(searchFilter, pagedListRequest);
             var driversPage = await _driverRepository.GetProjectedListBySpecAsync(driversPagedListSpecification);
             var driversTotalCount = await _driverRepository.CountBySpecAsync(driversPagedListSpecification);
 
@@ -60,24 +66,27 @@ namespace business_logic.Services
 
         public async Task<GetDriverResponseModel> GetAsync(int id)
         {
-            var driver = await GetDriverOrThrowAsync(id);
-            return _mapper.Map<GetDriverResponseModel>(driver);
+            return await _driverRepository.GetProjectedItemBySpecAsync(new DriverSpecs.ResponseModelById(id))
+                ?? throw NotFoundException.For<Driver>(id);
         }
 
         public async Task<GetDriverResponseModel> CreateAsync(CreateDriverRequestModel model)
         {
             await _createValidator.ValidateAndThrowAsync(model);
+            await _depotService.EnsureDepotsExistAsync([model.DepotId]);
             await EnsureLicenseIsUniqueAsync(model.LicenseNumber);
 
             var driver = _mapper.Map<Driver>(model);
-            await using var driverCreationTransaction = await _unitOfWork.BeginTransactionAsync();
-            await _driverRepository.InsertAsync(driver);
-            await _unitOfWork.SaveChangesAsync();
-            await _auditLogService.LogActionAsync(AuditAction.DriverCreated, driver.Id);
-            await _unitOfWork.SaveChangesAsync();
-            await driverCreationTransaction.CommitAsync();
+            await using (var driverCreationTransaction = await _unitOfWork.BeginTransactionAsync())
+            {
+                await _driverRepository.InsertAsync(driver);
+                await _unitOfWork.SaveChangesAsync();
+                await _auditLogService.LogActionAsync(AuditAction.DriverCreated, driver.Id);
+                await _unitOfWork.SaveChangesAsync();
+                await driverCreationTransaction.CommitAsync();
+            }
 
-            return _mapper.Map<GetDriverResponseModel>(driver);
+            return await GetAsync(driver.Id);
         }
 
         public async Task UpdateAsync(UpdateDriverRequestModel model)
@@ -87,23 +96,46 @@ namespace business_logic.Services
             var driver = await GetDriverOrThrowAsync(model.Id);
             _driverRepository.SetExpectedRowVersion(driver, model.RowVersion);
             await EnsureLicenseIsUniqueAsync(model.LicenseNumber, model.Id);
+            if (model.DepotId != driver.DepotId)
+            {
+                await EnsureDepotCanChangeAsync(driver.Id, model.DepotId);
+            }
 
             _mapper.Map(model, driver);
             await _auditLogService.LogActionAsync(AuditAction.DriverUpdated, driver.Id);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<DeleteDriverResponseModel> DeleteAsync(int id)
         {
             var driver = await GetDriverOrThrowAsync(id);
 
-            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByDriverId(id)))
+            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ActiveByDriverId(id)))
             {
-                throw new BusinessRuleException(string.Format(ExceptionMessages.DriverAssignedToRoutesTemplate, id));
+                throw new BusinessRuleException(string.Format(ExceptionMessages.DriverHasActiveRoutesTemplate, id));
             }
 
-            _driverRepository.Delete(driver);
-            await _auditLogService.LogActionAsync(AuditAction.DriverDeleted, id);
+            var isDriverReferencedByRoutes = await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByDriverId(id));
+            if (isDriverReferencedByRoutes)
+            {
+                ArchivingHelper.ArchiveEntity(driver);
+                await _auditLogService.LogActionAsync(AuditAction.DriverArchived, id);
+            }
+            else
+            {
+                _driverRepository.Delete(driver);
+                await _auditLogService.LogActionAsync(AuditAction.DriverDeleted, id);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new DeleteDriverResponseModel { IsArchivedInsteadOfDeleted = isDriverReferencedByRoutes };
+        }
+
+        public async Task RestoreAsync(int id)
+        {
+            var driver = await GetDriverOrThrowAsync(id);
+            ArchivingHelper.RestoreArchivedEntity(driver, id);
+            await _auditLogService.LogActionAsync(AuditAction.DriverRestored, id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -117,6 +149,15 @@ namespace business_logic.Services
             if (await _driverRepository.AnyBySpecAsync(new DriverSpecs.ByLicenseNumber(licenseNumber, excludedDriverId)))
             {
                 throw new BusinessRuleException(string.Format(ExceptionMessages.DriverLicenseNumberAlreadyExistsTemplate, licenseNumber));
+            }
+        }
+
+        private async Task EnsureDepotCanChangeAsync(int driverId, int targetDepotId)
+        {
+            await _depotService.EnsureDepotsExistAsync([targetDepotId]);
+            if (await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByDriverId(driverId)))
+            {
+                throw new BusinessRuleException(string.Format(ExceptionMessages.DriverDepotChangeForbiddenTemplate, driverId));
             }
         }
     }

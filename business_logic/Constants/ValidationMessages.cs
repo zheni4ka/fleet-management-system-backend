@@ -11,5 +11,7 @@ namespace business_logic.Constants
         public const string PasswordUppercaseLetterRequired = "Поле «{PropertyName}» має містити щонайменше одну велику латинську літеру.";
         public const string PasswordLowercaseLetterRequired = "Поле «{PropertyName}» має містити щонайменше одну малу латинську літеру.";
         public const string NewPasswordMustDifferFromCurrent = "Новий пароль має відрізнятися від поточного.";
+        public const string DispatcherDepotsRequired = "Диспетчеру потрібно призначити щонайменше одне депо.";
+        public const string AdminDepotsForbidden = "Адміністратор має доступ до всіх депо, тому депо йому не призначаються.";
     }
 }

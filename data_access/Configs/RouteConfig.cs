@@ -11,6 +11,7 @@ namespace data_access.Configs
         {
             builder.HasKey(x => x.Id);
             builder.Property(x => x.RowVersion).IsRowVersion();
+            builder.ConfigureDepotOwnership();
             builder.ToTable("Routes");
 
             builder.HasIndex(r => r.DepartureTime);

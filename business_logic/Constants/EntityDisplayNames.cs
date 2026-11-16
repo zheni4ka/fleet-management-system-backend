@@ -8,5 +8,6 @@ namespace business_logic.Constants
         public const string Route = "Маршрут";
         public const string AutoMaintenance = "Техобслуговування";
         public const string User = "Користувача";
+        public const string Depot = "Депо";
     }
 }

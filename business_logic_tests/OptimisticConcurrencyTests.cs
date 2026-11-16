@@ -21,6 +21,7 @@ namespace business_logic_tests
                 {
                     Id = auto.Id,
                     RowVersion = staleRowVersion,
+                    DepotId = auto.DepotId,
                     Mark = "Scania",
                     Model = auto.Model,
                     Color = auto.Color,

@@ -9,5 +9,6 @@ namespace business_logic.DTOs
         public string Model { get; init; }
         public string Number { get; init; }
         public AutoStatus Status { get; init; }
+        public int DepotId { get; init; }
     }
 }

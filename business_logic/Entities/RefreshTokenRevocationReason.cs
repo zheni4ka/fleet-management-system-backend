@@ -6,6 +6,7 @@ namespace business_logic.Entities
         Logout,
         ReuseDetected,
         PasswordChanged,
-        PasswordReset
+        PasswordReset,
+        UserDeactivated
     }
 }

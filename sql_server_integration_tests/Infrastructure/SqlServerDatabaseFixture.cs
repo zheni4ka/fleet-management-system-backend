@@ -42,6 +42,7 @@ namespace sql_server_integration_tests.Infrastructure
             services.AddBusinessLogicServices();
             services.AddDataAccessServices(_testDatabaseConnectionString);
             services.AddAuthentication();
+            services.AddSingleton<TestCurrentUserScope>();
             services.AddScoped<ICurrentUserService, TestCurrentUserService>();
             services.AddScoped<ITokenService, TestTokenService>();
             services.AddSingleton<IExternalIdentityTokenValidator, TestExternalIdentityTokenValidator>();
@@ -72,6 +73,8 @@ namespace sql_server_integration_tests.Infrastructure
                 await _sqlServerContainer.DisposeAsync();
             }
         }
+
+        public TestCurrentUserScope CurrentUserScope => GetServiceProvider().GetRequiredService<TestCurrentUserScope>();
 
         public async Task RunInNewScopeAsync(Func<IServiceProvider, Task> scopedServicesCall)
         {
@@ -114,7 +117,7 @@ namespace sql_server_integration_tests.Infrastructure
 
             try
             {
-                _sqlServerContainer = new MsSqlBuilder().WithImage(SqlServerContainerImage).Build();
+                _sqlServerContainer = new MsSqlBuilder(SqlServerContainerImage).Build();
                 await _sqlServerContainer.StartAsync();
                 return _sqlServerContainer.GetConnectionString();
             }

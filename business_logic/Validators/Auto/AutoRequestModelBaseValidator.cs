@@ -27,6 +27,10 @@ namespace business_logic.Validators.Auto
                 .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
                 .WithName("Місткість");
 
+            RuleFor(x => x.DepotId)
+                .GreaterThan(0).WithMessage(ValidationMessages.PositiveNumberRequired)
+                .WithName("Депо");
+
             RuleFor(x => x.Number)
                 .NotEmpty().WithMessage(ValidationMessages.RequiredField)
                 .Matches(AutoNumberFormat.Pattern).WithMessage(AutoNumberFormat.InvalidFormatMessage)

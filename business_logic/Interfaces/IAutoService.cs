@@ -11,6 +11,7 @@ namespace business_logic.Interfaces
         Task<GetAutoResponseModel> GetAsync(int id);
         Task<GetAutoResponseModel> CreateAsync(CreateAutoRequestModel model);
         Task UpdateAsync(UpdateAutoRequestModel model);
-        Task DeleteAsync(int id);
+        Task<DeleteAutoResponseModel> DeleteAsync(int id);
+        Task RestoreAsync(int id);
     }
 }

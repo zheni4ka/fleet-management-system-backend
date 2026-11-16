@@ -10,6 +10,7 @@ namespace business_logic.Interfaces
         Task<IReadOnlyList<GetLocationLookupOptionResponseModel>> GetLookupOptionsAsync();
         Task<GetLocationResponseModel> GetAsync(int id);
         Task<GetLocationResponseModel> CreateAsync(CreateLocationRequestModel model);
-        Task DeleteAsync(int id);
+        Task<DeleteLocationResponseModel> DeleteAsync(int id);
+        Task RestoreAsync(int id);
     }
 }
