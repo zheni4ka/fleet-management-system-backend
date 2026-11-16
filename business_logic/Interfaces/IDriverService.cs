@@ -1,14 +1,14 @@
-﻿using business_logic.DTOs;
+using business_logic.DTOs;
 
 namespace business_logic.Interfaces
 {
     public interface IDriverService
     {
-        Task<IEnumerable<DriverDTO>> GetAllAsync();
-        Task<GetPagedListResponseModel<DriverDTO>> GetPagedListAsync(GetPagedListRequestModel<DriverSortField> pagedListRequest);
-        Task<DriverDTO> GetAsync(int id);
-        Task<DriverDTO> CreateAsync(CreateDriverModel model);
-        Task EditAsync(EditDriverModel model);
+        Task<GetPagedListResponseModel<GetDriverResponseModel>> GetPagedListAsync(GetPagedListRequestModel<DriverSortField> pagedListRequest);
+        Task<IReadOnlyList<GetDriverLookupOptionResponseModel>> GetLookupOptionsAsync();
+        Task<GetDriverResponseModel> GetAsync(int id);
+        Task<GetDriverResponseModel> CreateAsync(CreateDriverRequestModel model);
+        Task UpdateAsync(UpdateDriverRequestModel model);
         Task DeleteAsync(int id);
     }
 }

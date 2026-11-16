@@ -1,14 +1,13 @@
-﻿using business_logic.DTOs;
+using business_logic.DTOs;
 
 namespace business_logic.Interfaces
 {
     public interface IAutoMaintenanceService
     {
-        Task<IEnumerable<AutoMaintenanceDTO>> GetAllAsync();
-        Task<AutoMaintenanceDTO> GetAsync(int id);
-        Task<IEnumerable<AutoMaintenanceDTO>> GetByAutoIdAsync(int autoId);
-        Task<AutoMaintenanceDTO> CreateAsync(CreateAutoMaintenanceModel model);
-        Task UpdateAsync(EditAutoMaintenanceModel model);
+        Task<GetAutoMaintenanceResponseModel> GetAsync(int id);
+        Task<IEnumerable<GetAutoMaintenanceResponseModel>> GetByAutoIdAsync(int autoId);
+        Task<GetAutoMaintenanceResponseModel> CreateAsync(CreateAutoMaintenanceRequestModel model);
+        Task UpdateAsync(UpdateAutoMaintenanceRequestModel model);
         Task DeleteAsync(int id);
     }
 }

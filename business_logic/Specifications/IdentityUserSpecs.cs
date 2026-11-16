@@ -7,7 +7,7 @@ namespace business_logic.Specifications
 {
     public class IdentityUserSpecs
     {
-        public class DispatchersPagedList : Specification<IdentityUser, UserDTO>
+        public class DispatchersPagedList : Specification<IdentityUser, GetDispatcherResponseModel>
         {
             public DispatchersPagedList(
                 IQueryable<string> dispatcherUserIdsQuery,
@@ -34,7 +34,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, u => u.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(u => new UserDTO
+                Query.Select(u => new GetDispatcherResponseModel
                 {
                     Id = u.Id,
                     Username = u.UserName!,

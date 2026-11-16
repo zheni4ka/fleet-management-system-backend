@@ -1,18 +1,16 @@
-﻿using business_logic.DTOs;
-using business_logic.Entities;
+using business_logic.DTOs;
 
 namespace business_logic.Interfaces
 {
     public interface IAutoService
     {
-        Task<IEnumerable<AutoDTO>> GetAllAsync();
-        Task<GetPagedListResponseModel<AutoDTO>> GetPagedListAsync(
+        Task<GetPagedListResponseModel<GetAutoResponseModel>> GetPagedListAsync(
             GetAutosBySearchFilterRequestModel searchFilter,
             GetPagedListRequestModel<AutoSortField> pagedListRequest);
-        Task<AutoDTO> GetAsync(int id);
-        Task<AutoDTO> CreateAsync(CreateAutoModel model);
-        Task EditAsync(EditAutoModel model);
+        Task<IReadOnlyList<GetAutoLookupOptionResponseModel>> GetLookupOptionsAsync();
+        Task<GetAutoResponseModel> GetAsync(int id);
+        Task<GetAutoResponseModel> CreateAsync(CreateAutoRequestModel model);
+        Task UpdateAsync(UpdateAutoRequestModel model);
         Task DeleteAsync(int id);
-        Task UpdateStatusAsync(int autoId, AutoStatus newStatus);
     }
 }

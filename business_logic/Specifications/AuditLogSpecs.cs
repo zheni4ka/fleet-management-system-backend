@@ -25,7 +25,7 @@ namespace business_logic.Specifications
             }
         }
 
-        public class PagedList : Specification<AuditLog, AuditLogDTO>
+        public class PagedList : Specification<AuditLog, GetAuditLogResponseModel>
         {
             public PagedList(
                 GetAuditLogsBySearchFilterRequestModel searchFilter,
@@ -69,7 +69,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, x => x.Id, pagedListRequest.SortDirection ?? defaultSortDirection);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(x => new AuditLogDTO
+                Query.Select(x => new GetAuditLogResponseModel
                 {
                     Id = x.Id,
                     DispatcherId = x.DispatcherId,

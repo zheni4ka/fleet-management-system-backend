@@ -45,7 +45,7 @@ namespace business_logic.Specifications
             }
         }
 
-        public class PagedList : Specification<Driver, DriverDTO>
+        public class PagedList : Specification<Driver, GetDriverResponseModel>
         {
             public PagedList(GetPagedListRequestModel<DriverSortField> pagedListRequest)
             {
@@ -73,7 +73,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, d => d.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(d => new DriverDTO
+                Query.Select(d => new GetDriverResponseModel
                 {
                     Id = d.Id,
                     Name = d.Name,
@@ -94,10 +94,29 @@ namespace business_logic.Specifications
                 Query.Select(d => new GetRoutesPeriodReportDriverSummaryResponseModel
                 {
                     DriverId = d.Id,
+                    DriverName = d.Name,
+                    DriverSurname = d.Surname,
                     RoutesCount = d.Routes.Count(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime),
                     CompletedRoutesCount = d.Routes.Count(r => r.DepartureTime >= periodStartDateTime
                         && r.DepartureTime < periodEndExclusiveDateTime
                         && r.Status == RouteStatus.Completed)
+                });
+            }
+        }
+
+        public class LookupOptions : Specification<Driver, GetDriverLookupOptionResponseModel>
+        {
+            public LookupOptions()
+            {
+                Query.OrderBy(d => d.Surname)
+                    .ThenBy(d => d.Name)
+                    .ThenBy(d => d.Id);
+                Query.Select(d => new GetDriverLookupOptionResponseModel
+                {
+                    Id = d.Id,
+                    Name = d.Name,
+                    Surname = d.Surname,
+                    LicenseNumber = d.LicenseNumber
                 });
             }
         }

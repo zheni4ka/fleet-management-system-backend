@@ -69,7 +69,7 @@ namespace business_logic.Specifications
             }
         }
 
-        public class PagedList : Specification<Auto, AutoDTO>
+        public class PagedList : Specification<Auto, GetAutoResponseModel>
         {
             public PagedList(
                 GetAutosBySearchFilterRequestModel searchFilter,
@@ -113,7 +113,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, a => a.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(a => new AutoDTO
+                Query.Select(a => new GetAutoResponseModel
                 {
                     Id = a.Id,
                     Mark = a.Mark,
@@ -141,6 +141,24 @@ namespace business_logic.Specifications
                 Query.Where(a => a.Status != AutoStatus.UnderMaintenance
                     && a.Services.Any(am => !am.IsCompleted && am.ServiceDate < dueMaintenanceEndExclusiveDateTime)
                     && !a.Routes.Any(r => r.Status == RouteStatus.InProgress));
+            }
+        }
+
+        public class LookupOptions : Specification<Auto, GetAutoLookupOptionResponseModel>
+        {
+            public LookupOptions()
+            {
+                Query.OrderBy(a => a.Mark)
+                    .ThenBy(a => a.Model)
+                    .ThenBy(a => a.Number);
+                Query.Select(a => new GetAutoLookupOptionResponseModel
+                {
+                    Id = a.Id,
+                    Mark = a.Mark,
+                    Model = a.Model,
+                    Number = a.Number,
+                    Status = a.Status
+                });
             }
         }
     }

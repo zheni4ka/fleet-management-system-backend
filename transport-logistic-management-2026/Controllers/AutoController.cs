@@ -1,6 +1,5 @@
-﻿using business_logic.Constants;
+using business_logic.Constants;
 using business_logic.DTOs;
-using business_logic.Entities;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,53 +18,45 @@ namespace transport_logistic_management_2026.Controllers
             _autoService = autoService;
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<AutoDTO>>> GetAll()
-        {
-            return Ok(await _autoService.GetAllAsync());
-        }
-
-        [HttpGet("pagedList")]
-        public async Task<ActionResult<GetPagedListResponseModel<AutoDTO>>> GetAutosPagedList(
+        [HttpGet("getAutosPagedList")]
+        public async Task<ActionResult<GetPagedListResponseModel<GetAutoResponseModel>>> GetAutosPagedList(
             [FromQuery] GetAutosBySearchFilterRequestModel searchFilter,
             [FromQuery] GetPagedListRequestModel<AutoSortField> pagedListRequest)
         {
             return Ok(await _autoService.GetPagedListAsync(searchFilter, pagedListRequest));
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<AutoDTO>> GetById([FromRoute] int id)
+        [HttpGet("getAutoLookupOptions")]
+        public async Task<ActionResult<IReadOnlyList<GetAutoLookupOptionResponseModel>>> GetAutoLookupOptions()
+        {
+            return Ok(await _autoService.GetLookupOptionsAsync());
+        }
+
+        [HttpGet("getAutoById/{id:int}")]
+        public async Task<ActionResult<GetAutoResponseModel>> GetAutoById([FromRoute] int id)
         {
             return Ok(await _autoService.GetAsync(id));
         }
 
-        [HttpPost]
+        [HttpPost("createAuto")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<AutoDTO>> Create([FromBody] CreateAutoModel model)
+        public async Task<ActionResult<GetAutoResponseModel>> CreateAuto([FromBody] CreateAutoRequestModel model)
         {
             var auto = await _autoService.CreateAsync(model);
-            return CreatedAtAction(nameof(GetById), new { id = auto.Id }, auto);
+            return CreatedAtAction(nameof(GetAutoById), new { id = auto.Id }, auto);
         }
 
-        [HttpPut]
+        [HttpPut("updateAuto")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> Edit([FromBody] EditAutoModel model)
+        public async Task<IActionResult> UpdateAuto([FromBody] UpdateAutoRequestModel model)
         {
-            await _autoService.EditAsync(model);
+            await _autoService.UpdateAsync(model);
             return NoContent();
         }
 
-        [HttpPatch("{id:int}/status")]
-        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
-        public async Task<IActionResult> UpdateStatus([FromRoute] int id, [FromBody] AutoStatus newStatus)
-        {
-            await _autoService.UpdateStatusAsync(id, newStatus);
-            return NoContent();
-        }
-
-        [HttpDelete("{id:int}")]
+        [HttpDelete("deleteAuto/{id:int}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAuto([FromRoute] int id)
         {
             await _autoService.DeleteAsync(id);
             return NoContent();

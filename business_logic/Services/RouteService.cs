@@ -20,8 +20,8 @@ namespace business_logic.Services
         private readonly IAutoStatusSyncService _autoStatusSyncService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IValidator<CreateRouteModel> _createValidator;
-        private readonly IValidator<EditRouteModel> _editValidator;
+        private readonly IValidator<CreateRouteRequestModel> _createValidator;
+        private readonly IValidator<UpdateRouteRequestModel> _editValidator;
         private readonly IValidator<GetRoutesBySearchFilterRequestModel> _searchFilterValidator;
         private readonly IValidator<GetRoutesPeriodReportRequestModel> _periodReportValidator;
         private readonly IValidator<GetPagedListRequestModel<RouteSortField>> _pagedListRequestValidator;
@@ -36,8 +36,8 @@ namespace business_logic.Services
             IAutoStatusSyncService autoStatusSyncService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<CreateRouteModel> createValidator,
-            IValidator<EditRouteModel> editValidator,
+            IValidator<CreateRouteRequestModel> createValidator,
+            IValidator<UpdateRouteRequestModel> editValidator,
             IValidator<GetRoutesBySearchFilterRequestModel> searchFilterValidator,
             IValidator<GetRoutesPeriodReportRequestModel> periodReportValidator,
             IValidator<GetPagedListRequestModel<RouteSortField>> pagedListRequestValidator)
@@ -58,27 +58,13 @@ namespace business_logic.Services
             _pagedListRequestValidator = pagedListRequestValidator;
         }
 
-        public async Task<IEnumerable<RouteDTO>> GetAllAsync()
+        public async Task<GetRouteResponseModel> GetAsync(int id)
         {
-            var routes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.All());
-            return _mapper.Map<IEnumerable<RouteDTO>>(routes);
+            return await _routeRepository.GetProjectedItemBySpecAsync(new RouteSpecs.ResponseModelById(id))
+                ?? throw NotFoundException.For<Route>(id);
         }
 
-        public async Task<RouteDTO> GetAsync(int id)
-        {
-            var route = await GetRouteOrThrowAsync(id);
-            return _mapper.Map<RouteDTO>(route);
-        }
-
-        public async Task<IEnumerable<RouteDTO>> GetRoutesBySearchFilterAsync(GetRoutesBySearchFilterRequestModel searchFilter)
-        {
-            await _searchFilterValidator.ValidateAndThrowAsync(searchFilter);
-
-            var filteredRoutes = await _routeRepository.GetListBySpecAsync(new RouteSpecs.BySearchFilter(searchFilter));
-            return _mapper.Map<IEnumerable<RouteDTO>>(filteredRoutes);
-        }
-
-        public async Task<GetPagedListResponseModel<RouteDTO>> GetRoutesPagedListBySearchFilterAsync(
+        public async Task<GetPagedListResponseModel<GetRouteResponseModel>> GetRoutesPagedListBySearchFilterAsync(
             GetRoutesBySearchFilterRequestModel searchFilter,
             GetPagedListRequestModel<RouteSortField> pagedListRequest)
         {
@@ -89,7 +75,7 @@ namespace business_logic.Services
             var routesPage = await _routeRepository.GetProjectedListBySpecAsync(routesPagedListSpecification);
             var routesTotalCount = await _routeRepository.CountBySpecAsync(routesPagedListSpecification);
 
-            return new GetPagedListResponseModel<RouteDTO>(
+            return new GetPagedListResponseModel<GetRouteResponseModel>(
                 Items: routesPage,
                 TotalCount: routesTotalCount);
         }
@@ -135,7 +121,7 @@ namespace business_logic.Services
                 Routes: periodRoutes);
         }
 
-        public async Task<RouteDTO> CreateAsync(CreateRouteModel model)
+        public async Task<GetRouteResponseModel> CreateAsync(CreateRouteRequestModel model)
         {
             await _createValidator.ValidateAndThrowAsync(model);
 
@@ -156,10 +142,10 @@ namespace business_logic.Services
             await _autoStatusSyncService.SyncAutoStatusAsync(auto);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<RouteDTO>(route);
+            return await GetAsync(route.Id);
         }
 
-        public async Task UpdateAsync(EditRouteModel model)
+        public async Task UpdateAsync(UpdateRouteRequestModel model)
         {
             await _editValidator.ValidateAndThrowAsync(model);
 
@@ -202,7 +188,7 @@ namespace business_logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        private static double GetDrivingHours(IEnumerable<RouteDTO> routes)
+        private static double GetDrivingHours(IEnumerable<GetRouteResponseModel> routes)
         {
             var drivingHours = routes.Sum(route => (route.ArrivalTime - route.DepartureTime).TotalHours);
             return Math.Round(drivingHours, 1);

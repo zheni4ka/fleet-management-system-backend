@@ -17,8 +17,8 @@ namespace business_logic.Services
         private readonly IAutoStatusSyncService _autoStatusSyncService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IValidator<CreateAutoMaintenanceModel> _createValidator;
-        private readonly IValidator<EditAutoMaintenanceModel> _editValidator;
+        private readonly IValidator<CreateAutoMaintenanceRequestModel> _createValidator;
+        private readonly IValidator<UpdateAutoMaintenanceRequestModel> _editValidator;
 
         public AutoMaintenanceService(
             IRepository<AutoMaintenance> maintenanceRepository,
@@ -28,8 +28,8 @@ namespace business_logic.Services
             IAutoStatusSyncService autoStatusSyncService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<CreateAutoMaintenanceModel> createValidator,
-            IValidator<EditAutoMaintenanceModel> editValidator)
+            IValidator<CreateAutoMaintenanceRequestModel> createValidator,
+            IValidator<UpdateAutoMaintenanceRequestModel> editValidator)
         {
             _maintenanceRepository = maintenanceRepository;
             _autoRepository = autoRepository;
@@ -42,25 +42,19 @@ namespace business_logic.Services
             _editValidator = editValidator;
         }
 
-        public async Task<IEnumerable<AutoMaintenanceDTO>> GetAllAsync()
-        {
-            var items = await _maintenanceRepository.GetListBySpecAsync(new AutoMaintenanceSpecs.All());
-            return _mapper.Map<IEnumerable<AutoMaintenanceDTO>>(items);
-        }
-
-        public async Task<AutoMaintenanceDTO> GetAsync(int id)
+        public async Task<GetAutoMaintenanceResponseModel> GetAsync(int id)
         {
             var item = await GetMaintenanceOrThrowAsync(id);
-            return _mapper.Map<AutoMaintenanceDTO>(item);
+            return _mapper.Map<GetAutoMaintenanceResponseModel>(item);
         }
 
-        public async Task<IEnumerable<AutoMaintenanceDTO>> GetByAutoIdAsync(int autoId)
+        public async Task<IEnumerable<GetAutoMaintenanceResponseModel>> GetByAutoIdAsync(int autoId)
         {
             var items = await _maintenanceRepository.GetListBySpecAsync(new AutoMaintenanceSpecs.ByAutoId(autoId));
-            return _mapper.Map<IEnumerable<AutoMaintenanceDTO>>(items);
+            return _mapper.Map<IEnumerable<GetAutoMaintenanceResponseModel>>(items);
         }
 
-        public async Task<AutoMaintenanceDTO> CreateAsync(CreateAutoMaintenanceModel model)
+        public async Task<GetAutoMaintenanceResponseModel> CreateAsync(CreateAutoMaintenanceRequestModel model)
         {
             await _createValidator.ValidateAndThrowAsync(model);
 
@@ -80,10 +74,10 @@ namespace business_logic.Services
             await _autoStatusSyncService.SyncAutoStatusAsync(auto);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<AutoMaintenanceDTO>(maintenance);
+            return _mapper.Map<GetAutoMaintenanceResponseModel>(maintenance);
         }
 
-        public async Task UpdateAsync(EditAutoMaintenanceModel model)
+        public async Task UpdateAsync(UpdateAutoMaintenanceRequestModel model)
         {
             await _editValidator.ValidateAndThrowAsync(model);
 

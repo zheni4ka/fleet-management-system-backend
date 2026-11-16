@@ -12,5 +12,5 @@ namespace business_logic.DTOs
         int InvolvedAutosCount,
         int InvolvedDriversCount,
         IReadOnlyList<GetRoutesPeriodReportDriverSummaryResponseModel> DriverSummaries,
-        IReadOnlyList<RouteDTO> Routes);
+        IReadOnlyList<GetRouteResponseModel> Routes);
 }

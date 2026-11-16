@@ -18,43 +18,44 @@ namespace transport_logistic_management_2026.Controllers
             _driverService = driverService;
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<DriverDTO>>> GetAll()
-        {
-            return Ok(await _driverService.GetAllAsync());
-        }
-
-        [HttpGet("pagedList")]
-        public async Task<ActionResult<GetPagedListResponseModel<DriverDTO>>> GetDriversPagedList([FromQuery] GetPagedListRequestModel<DriverSortField> pagedListRequest)
+        [HttpGet("getDriversPagedList")]
+        public async Task<ActionResult<GetPagedListResponseModel<GetDriverResponseModel>>> GetDriversPagedList(
+            [FromQuery] GetPagedListRequestModel<DriverSortField> pagedListRequest)
         {
             return Ok(await _driverService.GetPagedListAsync(pagedListRequest));
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<DriverDTO>> GetById([FromRoute] int id)
+        [HttpGet("getDriverLookupOptions")]
+        public async Task<ActionResult<IReadOnlyList<GetDriverLookupOptionResponseModel>>> GetDriverLookupOptions()
+        {
+            return Ok(await _driverService.GetLookupOptionsAsync());
+        }
+
+        [HttpGet("getDriverById/{id:int}")]
+        public async Task<ActionResult<GetDriverResponseModel>> GetDriverById([FromRoute] int id)
         {
             return Ok(await _driverService.GetAsync(id));
         }
 
-        [HttpPost]
+        [HttpPost("createDriver")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<DriverDTO>> Create([FromBody] CreateDriverModel model)
+        public async Task<ActionResult<GetDriverResponseModel>> CreateDriver([FromBody] CreateDriverRequestModel model)
         {
             var driver = await _driverService.CreateAsync(model);
-            return CreatedAtAction(nameof(GetById), new { id = driver.Id }, driver);
+            return CreatedAtAction(nameof(GetDriverById), new { id = driver.Id }, driver);
         }
 
-        [HttpPut]
+        [HttpPut("updateDriver")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> Edit([FromBody] EditDriverModel model)
+        public async Task<IActionResult> UpdateDriver([FromBody] UpdateDriverRequestModel model)
         {
-            await _driverService.EditAsync(model);
+            await _driverService.UpdateAsync(model);
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("deleteDriver/{id:int}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteDriver([FromRoute] int id)
         {
             await _driverService.DeleteAsync(id);
             return NoContent();

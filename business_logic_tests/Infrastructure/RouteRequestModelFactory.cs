@@ -5,9 +5,9 @@ namespace business_logic_tests.Infrastructure
 {
     public static class RouteRequestModelFactory
     {
-        public static CreateRouteModel CreateRouteModelFor(int autoId, int driverId, DateTime departure, DateTime arrival)
+        public static CreateRouteRequestModel CreateRouteRequestModelFor(int autoId, int driverId, DateTime departure, DateTime arrival)
         {
-            return new CreateRouteModel
+            return new CreateRouteRequestModel
             {
                 AutoId = autoId,
                 DriverId = driverId,
@@ -19,9 +19,9 @@ namespace business_logic_tests.Infrastructure
             };
         }
 
-        public static EditRouteModel CreateEditRouteModelFor(int routeId, int autoId, int driverId, RouteStatus status)
+        public static UpdateRouteRequestModel CreateUpdateRouteRequestModelFor(int routeId, int autoId, int driverId, RouteStatus status)
         {
-            return new EditRouteModel
+            return new UpdateRouteRequestModel
             {
                 Id = routeId,
                 AutoId = autoId,

@@ -20,7 +20,7 @@ namespace business_logic_tests
                 .ToArray<object>();
             await _testHost.SeedAsync(seededAutos);
 
-            var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<AutoDTO>>(
+            var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<GetAutoResponseModel>>(
                 autoService => autoService.GetPagedListAsync(
                     new GetAutosBySearchFilterRequestModel(Status: null, Color: null),
                     new GetPagedListRequestModel<AutoSortField>(
@@ -40,7 +40,7 @@ namespace business_logic_tests
                 BusinessLogicTestHost.CreateAuto("АА0002АА", mark: "Scania"),
                 BusinessLogicTestHost.CreateAuto("АА0003АА", mark: "Scania"));
 
-            var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<AutoDTO>>(
+            var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<GetAutoResponseModel>>(
                 autoService => autoService.GetPagedListAsync(
                     new GetAutosBySearchFilterRequestModel(Status: null, Color: null),
                     new GetPagedListRequestModel<AutoSortField>(
@@ -59,7 +59,7 @@ namespace business_logic_tests
                 BusinessLogicTestHost.CreateAuto("АА0002АА", AutoStatus.UnderMaintenance),
                 BusinessLogicTestHost.CreateAuto("АА0003АА", AutoStatus.UnderMaintenance));
 
-            var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<AutoDTO>>(
+            var autosPage = await _testHost.RunInNewScopeAsync<IAutoService, GetPagedListResponseModel<GetAutoResponseModel>>(
                 autoService => autoService.GetPagedListAsync(
                     new GetAutosBySearchFilterRequestModel(Status: AutoStatus.UnderMaintenance, Color: null),
                     new GetPagedListRequestModel<AutoSortField>(
@@ -77,7 +77,7 @@ namespace business_logic_tests
                 .ToArray<object>();
             await _testHost.SeedAsync(seededDrivers);
 
-            var driversPage = await _testHost.RunInNewScopeAsync<IDriverService, GetPagedListResponseModel<DriverDTO>>(
+            var driversPage = await _testHost.RunInNewScopeAsync<IDriverService, GetPagedListResponseModel<GetDriverResponseModel>>(
                 driverService => driverService.GetPagedListAsync(new GetPagedListRequestModel<DriverSortField>(
                     Page: 1, PageSize: 10, Sort: null, SortDirection: null, Search: "12")));
 
@@ -91,7 +91,7 @@ namespace business_logic_tests
         [InlineData(1, PagedListConstraints.MaxPageSize + 1)]
         public async Task DriverGetPagedListAsync_InvalidPaging_ThrowsValidationException(int page, int pageSize)
         {
-            await Assert.ThrowsAsync<ValidationException>(() => _testHost.RunInNewScopeAsync<IDriverService, GetPagedListResponseModel<DriverDTO>>(
+            await Assert.ThrowsAsync<ValidationException>(() => _testHost.RunInNewScopeAsync<IDriverService, GetPagedListResponseModel<GetDriverResponseModel>>(
                 driverService => driverService.GetPagedListAsync(new GetPagedListRequestModel<DriverSortField>(
                     Page: page, PageSize: pageSize, Sort: null, SortDirection: null, Search: null))));
         }
@@ -113,7 +113,7 @@ namespace business_logic_tests
                 await CreateUserInRoleAsync(userManager, "admin_user", UserRoles.Admin);
             });
 
-            var dispatchersPage = await _testHost.RunInNewScopeAsync<IAccountService, GetPagedListResponseModel<UserDTO>>(
+            var dispatchersPage = await _testHost.RunInNewScopeAsync<IAccountService, GetPagedListResponseModel<GetDispatcherResponseModel>>(
                 accountService => accountService.GetDispatchersPagedListAsync(new GetPagedListRequestModel<DispatcherSortField>(
                     Page: 1, PageSize: 10, Sort: DispatcherSortField.Username, SortDirection: SortDirection.Ascending, Search: null)));
 
@@ -129,7 +129,7 @@ namespace business_logic_tests
                 new AuditLog { Action = AuditAction.AutoCreated, EntityId = "2", Time = new DateTime(2030, 1, 2, 10, 0, 0) },
                 new AuditLog { Action = AuditAction.RouteCreated, EntityId = "3", Time = new DateTime(2030, 1, 3, 10, 0, 0) });
 
-            var auditLogsPage = await _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<AuditLogDTO>>(
+            var auditLogsPage = await _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<GetAuditLogResponseModel>>(
                 auditLogService => auditLogService.GetPagedListAsync(
                     new GetAuditLogsBySearchFilterRequestModel(Action: AuditAction.AutoCreated, TimeFromDate: null, TimeToDate: null),
                     new GetPagedListRequestModel<AuditLogSortField>(
@@ -148,7 +148,7 @@ namespace business_logic_tests
                 new AuditLog { Action = AuditAction.AutoCreated, EntityId = "3", Time = new DateTime(2030, 1, 3, 21, 59, 0, DateTimeKind.Utc) },
                 new AuditLog { Action = AuditAction.AutoCreated, EntityId = "4", Time = new DateTime(2030, 1, 3, 22, 0, 0, DateTimeKind.Utc) });
 
-            var auditLogsPage = await _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<AuditLogDTO>>(
+            var auditLogsPage = await _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<GetAuditLogResponseModel>>(
                 auditLogService => auditLogService.GetPagedListAsync(
                     new GetAuditLogsBySearchFilterRequestModel(Action: null, TimeFromDate: new DateOnly(2030, 1, 2), TimeToDate: new DateOnly(2030, 1, 3)),
                     new GetPagedListRequestModel<AuditLogSortField>(
@@ -160,7 +160,7 @@ namespace business_logic_tests
         [Fact]
         public async Task AuditLogGetPagedListAsync_ReversedDateRange_ThrowsValidationException()
         {
-            await Assert.ThrowsAsync<ValidationException>(() => _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<AuditLogDTO>>(
+            await Assert.ThrowsAsync<ValidationException>(() => _testHost.RunInNewScopeAsync<IAuditLogService, GetPagedListResponseModel<GetAuditLogResponseModel>>(
                 auditLogService => auditLogService.GetPagedListAsync(
                     new GetAuditLogsBySearchFilterRequestModel(Action: null, TimeFromDate: new DateOnly(2030, 1, 5), TimeToDate: new DateOnly(2030, 1, 3)),
                     new GetPagedListRequestModel<AuditLogSortField>(
@@ -179,7 +179,7 @@ namespace business_logic_tests
                 .ToArray<object>();
             await _testHost.SeedAsync(seededRoutes);
 
-            var routesPage = await _testHost.RunInNewScopeAsync<IRouteService, GetPagedListResponseModel<RouteDTO>>(
+            var routesPage = await _testHost.RunInNewScopeAsync<IRouteService, GetPagedListResponseModel<GetRouteResponseModel>>(
                 routeService => routeService.GetRoutesPagedListBySearchFilterAsync(
                     new GetRoutesBySearchFilterRequestModel(null, null, null, null, RouteStatus.Planned, null, null),
                     new GetPagedListRequestModel<RouteSortField>(Page: 1, PageSize: 2, Sort: RouteSortField.DepartureTime, SortDirection: SortDirection.Descending, Search: null)));

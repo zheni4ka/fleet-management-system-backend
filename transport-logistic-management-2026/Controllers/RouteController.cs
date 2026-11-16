@@ -1,4 +1,4 @@
-﻿using business_logic.Constants;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,65 +18,48 @@ namespace transport_logistic_management_2026.Controllers
             _routeService = routeService;
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<RouteDTO>>> GetAll()
-        {
-            return Ok(await _routeService.GetAllAsync());
-        }
-
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<RouteDTO>> GetById([FromRoute] int id)
-        {
-            return Ok(await _routeService.GetAsync(id));
-        }
-
-        [HttpGet("search")]
+        [HttpGet("getRoutesPagedList")]
         [Authorize(Roles = UserRoles.AdminOrDispatcher)]
-        public async Task<ActionResult<IEnumerable<RouteDTO>>> GetRoutesBySearchFilter([FromQuery] GetRoutesBySearchFilterRequestModel searchFilter)
-        {
-            return Ok(await _routeService.GetRoutesBySearchFilterAsync(searchFilter));
-        }
-
-        [HttpGet("pagedList")]
-        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
-        public async Task<ActionResult<GetPagedListResponseModel<RouteDTO>>> GetRoutesPagedListBySearchFilter(
+        public async Task<ActionResult<GetPagedListResponseModel<GetRouteResponseModel>>> GetRoutesPagedList(
             [FromQuery] GetRoutesBySearchFilterRequestModel searchFilter,
             [FromQuery] GetPagedListRequestModel<RouteSortField> pagedListRequest)
         {
             return Ok(await _routeService.GetRoutesPagedListBySearchFilterAsync(searchFilter, pagedListRequest));
         }
 
-        [HttpGet("periodReport")]
+        [HttpGet("getRoutesPeriodReport")]
         [Authorize(Roles = UserRoles.AdminOrDispatcher)]
-        public async Task<ActionResult<GetRoutesPeriodReportResponseModel>> GetRoutesPeriodReport([FromQuery] GetRoutesPeriodReportRequestModel periodReportRequest)
+        public async Task<ActionResult<GetRoutesPeriodReportResponseModel>> GetRoutesPeriodReport(
+            [FromQuery] GetRoutesPeriodReportRequestModel periodReportRequest)
         {
             return Ok(await _routeService.GetRoutesPeriodReportAsync(periodReportRequest));
         }
 
-        [HttpPost]
-        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
-        public async Task<ActionResult<RouteDTO>> Create([FromBody] CreateRouteModel model)
+        [HttpGet("getRouteById/{id:int}")]
+        public async Task<ActionResult<GetRouteResponseModel>> GetRouteById([FromRoute] int id)
         {
-            var route = await _routeService.CreateAsync(model);
-            return CreatedAtAction(nameof(GetById), new { id = route.Id }, route);
+            return Ok(await _routeService.GetAsync(id));
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPost("createRoute")]
         [Authorize(Roles = UserRoles.AdminOrDispatcher)]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] EditRouteModel model)
+        public async Task<ActionResult<GetRouteResponseModel>> CreateRoute([FromBody] CreateRouteRequestModel model)
         {
-            if (id != model.Id)
-            {
-                return BadRequest(new ProblemDetails { Title = "Bad Request", Detail = "Route id in URL and body do not match." });
-            }
+            var route = await _routeService.CreateAsync(model);
+            return CreatedAtAction(nameof(GetRouteById), new { id = route.Id }, route);
+        }
 
+        [HttpPut("updateRoute")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<IActionResult> UpdateRoute([FromBody] UpdateRouteRequestModel model)
+        {
             await _routeService.UpdateAsync(model);
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("deleteRoute/{id:int}")]
         [Authorize(Roles = UserRoles.AdminOrDispatcher)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteRoute([FromRoute] int id)
         {
             await _routeService.DeleteAsync(id);
             return NoContent();

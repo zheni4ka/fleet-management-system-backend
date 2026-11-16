@@ -18,37 +18,37 @@ namespace transport_logistic_management_2026.Controllers
             _locationService = locationService;
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<LocationDTO>>> GetAll()
-        {
-            return Ok(await _locationService.GetAllAsync());
-        }
-
-        [HttpGet("pagedList")]
-        public async Task<ActionResult<GetPagedListResponseModel<LocationDTO>>> GetLocationsPagedList(
+        [HttpGet("getLocationsPagedList")]
+        public async Task<ActionResult<GetPagedListResponseModel<GetLocationResponseModel>>> GetLocationsPagedList(
             [FromQuery] GetLocationsBySearchFilterRequestModel searchFilter,
             [FromQuery] GetPagedListRequestModel<LocationSortField> pagedListRequest)
         {
             return Ok(await _locationService.GetPagedListAsync(searchFilter, pagedListRequest));
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<LocationDTO>> GetById([FromRoute] int id)
+        [HttpGet("getLocationLookupOptions")]
+        public async Task<ActionResult<IReadOnlyList<GetLocationLookupOptionResponseModel>>> GetLocationLookupOptions()
+        {
+            return Ok(await _locationService.GetLookupOptionsAsync());
+        }
+
+        [HttpGet("getLocationById/{id:int}")]
+        public async Task<ActionResult<GetLocationResponseModel>> GetLocationById([FromRoute] int id)
         {
             return Ok(await _locationService.GetAsync(id));
         }
 
-        [HttpPost]
+        [HttpPost("createLocation")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<LocationDTO>> Create([FromBody] CreateLocationModel model)
+        public async Task<ActionResult<GetLocationResponseModel>> CreateLocation([FromBody] CreateLocationRequestModel model)
         {
             var location = await _locationService.CreateAsync(model);
-            return CreatedAtAction(nameof(GetById), new { id = location.Id }, location);
+            return CreatedAtAction(nameof(GetLocationById), new { id = location.Id }, location);
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("deleteLocation/{id:int}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteLocation([FromRoute] int id)
         {
             await _locationService.DeleteAsync(id);
             return NoContent();

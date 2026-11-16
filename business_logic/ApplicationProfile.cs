@@ -9,29 +9,25 @@ namespace business_logic
     {
         public ApplicationProfile()
         {
-            CreateMap<Driver, DriverDTO>();
-            CreateMap<CreateDriverModel, Driver>();
-            CreateMap<EditDriverModel, Driver>();
+            CreateMap<Driver, GetDriverResponseModel>();
+            CreateMap<CreateDriverRequestModel, Driver>();
+            CreateMap<UpdateDriverRequestModel, Driver>();
 
-            CreateMap<Auto, AutoDTO>();
-            CreateMap<CreateAutoModel, Auto>();
-            CreateMap<EditAutoModel, Auto>();
+            CreateMap<Auto, GetAutoResponseModel>();
+            CreateMap<CreateAutoRequestModel, Auto>();
+            CreateMap<UpdateAutoRequestModel, Auto>();
 
-            CreateMap<Route, RouteDTO>();
-            CreateMap<CreateRouteModel, Route>();
-            CreateMap<EditRouteModel, Route>();
+            CreateMap<CreateRouteRequestModel, Route>();
+            CreateMap<UpdateRouteRequestModel, Route>();
 
-            CreateMap<Location, LocationDTO>();
-            CreateMap<CreateLocationModel, Location>();
+            CreateMap<Location, GetLocationResponseModel>();
+            CreateMap<CreateLocationRequestModel, Location>();
 
-            CreateMap<AutoMaintenance, AutoMaintenanceDTO>();
-            CreateMap<CreateAutoMaintenanceModel, AutoMaintenance>();
-            CreateMap<EditAutoMaintenanceModel, AutoMaintenance>();
+            CreateMap<AutoMaintenance, GetAutoMaintenanceResponseModel>();
+            CreateMap<CreateAutoMaintenanceRequestModel, AutoMaintenance>();
+            CreateMap<UpdateAutoMaintenanceRequestModel, AutoMaintenance>();
 
-            CreateMap<AuditLog, AuditLogDTO>()
-                .ForMember(dest => dest.DispatcherUsername, opt => opt.MapFrom(src => src.Dispatcher != null ? src.Dispatcher.UserName : null));
-
-            CreateMap<IdentityUser, UserDTO>()
+            CreateMap<IdentityUser, GetDispatcherResponseModel>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
         }

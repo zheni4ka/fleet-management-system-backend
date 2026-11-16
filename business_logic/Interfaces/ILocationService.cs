@@ -4,12 +4,12 @@ namespace business_logic.Interfaces
 {
     public interface ILocationService
     {
-        Task<IEnumerable<LocationDTO>> GetAllAsync();
-        Task<GetPagedListResponseModel<LocationDTO>> GetPagedListAsync(
+        Task<GetPagedListResponseModel<GetLocationResponseModel>> GetPagedListAsync(
             GetLocationsBySearchFilterRequestModel searchFilter,
             GetPagedListRequestModel<LocationSortField> pagedListRequest);
-        Task<LocationDTO> GetAsync(int id);
-        Task<LocationDTO> CreateAsync(CreateLocationModel model);
+        Task<IReadOnlyList<GetLocationLookupOptionResponseModel>> GetLookupOptionsAsync();
+        Task<GetLocationResponseModel> GetAsync(int id);
+        Task<GetLocationResponseModel> CreateAsync(CreateLocationRequestModel model);
         Task DeleteAsync(int id);
     }
 }

@@ -18,8 +18,8 @@ namespace business_logic.Services
         private readonly IAuditLogService _auditLogService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IValidator<LoginModel> _loginValidator;
-        private readonly IValidator<RegisterModel> _registerValidator;
+        private readonly IValidator<LoginRequestModel> _loginValidator;
+        private readonly IValidator<RegisterAccountRequestModel> _registerValidator;
         private readonly IRepository<IdentityRole> _roleRepository;
         private readonly IRepository<IdentityUser> _userRepository;
         private readonly IRepository<IdentityUserRole<string>> _userRoleRepository;
@@ -32,8 +32,8 @@ namespace business_logic.Services
             IAuditLogService auditLogService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<LoginModel> loginValidator,
-            IValidator<RegisterModel> registerValidator,
+            IValidator<LoginRequestModel> loginValidator,
+            IValidator<RegisterAccountRequestModel> registerValidator,
             IRepository<IdentityRole> roleRepository,
             IRepository<IdentityUser> userRepository,
             IRepository<IdentityUserRole<string>> userRoleRepository,
@@ -53,7 +53,7 @@ namespace business_logic.Services
             _dispatchersPagedListRequestValidator = dispatchersPagedListRequestValidator;
         }
 
-        public async Task<GetPagedListResponseModel<UserDTO>> GetDispatchersPagedListAsync(GetPagedListRequestModel<DispatcherSortField> pagedListRequest)
+        public async Task<GetPagedListResponseModel<GetDispatcherResponseModel>> GetDispatchersPagedListAsync(GetPagedListRequestModel<DispatcherSortField> pagedListRequest)
         {
             await _dispatchersPagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
@@ -66,12 +66,12 @@ namespace business_logic.Services
             var dispatchersPage = await _userRepository.GetProjectedListBySpecAsync(dispatchersPagedListSpecification);
             var dispatchersTotalCount = await _userRepository.CountBySpecAsync(dispatchersPagedListSpecification);
 
-            return new GetPagedListResponseModel<UserDTO>(
+            return new GetPagedListResponseModel<GetDispatcherResponseModel>(
                 Items: dispatchersPage,
                 TotalCount: dispatchersTotalCount);
         }
 
-        public async Task<ResponseAuth> LoginAsync(LoginModel model)
+        public async Task<LoginResponseModel> LoginAsync(LoginRequestModel model)
         {
             await _loginValidator.ValidateAndThrowAsync(model);
 
@@ -85,16 +85,14 @@ namespace business_logic.Services
 
             var roles = await _userManager.GetRolesAsync(user);
 
-            return new ResponseAuth
-            {
-                Token = _tokenService.CreateToken(user, roles),
-                Username = user.UserName,
-                Email = user.Email,
-                Roles = roles
-            };
+            return new LoginResponseModel(
+                Token: _tokenService.CreateToken(user, roles),
+                Username: user.UserName,
+                Email: user.Email,
+                Roles: roles.ToList());
         }
 
-        public async Task<UserDTO> RegisterAsync(RegisterModel model)
+        public async Task<GetDispatcherResponseModel> RegisterAsync(RegisterAccountRequestModel model)
         {
             await _registerValidator.ValidateAndThrowAsync(model);
 
@@ -121,16 +119,10 @@ namespace business_logic.Services
             await _auditLogService.LogActionAsync(AuditAction.UserRegistered, user.Id);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<UserDTO>(user);
+            return _mapper.Map<GetDispatcherResponseModel>(user);
         }
 
-        public async Task<IEnumerable<UserDTO>> GetDispatchersAsync()
-        {
-            var dispatchers = await _userManager.GetUsersInRoleAsync(UserRoles.Dispatcher);
-            return _mapper.Map<IEnumerable<UserDTO>>(dispatchers);
-        }
-
-        public async Task<UserDTO> GetDispatcherByIdAsync(string id)
+        public async Task<GetDispatcherResponseModel> GetDispatcherByIdAsync(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null || !await _userManager.IsInRoleAsync(user, UserRoles.Dispatcher))
@@ -138,7 +130,7 @@ namespace business_logic.Services
                 throw new NotFoundException($"Dispatcher with id '{id}' was not found.");
             }
 
-            return _mapper.Map<UserDTO>(user);
+            return _mapper.Map<GetDispatcherResponseModel>(user);
         }
 
         public async Task DeleteUserAsync(string id)

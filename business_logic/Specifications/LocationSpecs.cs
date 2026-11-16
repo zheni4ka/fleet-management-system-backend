@@ -15,11 +15,19 @@ namespace business_logic.Specifications
             }
         }
 
-        public class All : Specification<Location>
+        public class LookupOptions : Specification<Location, GetLocationLookupOptionResponseModel>
         {
-            public All()
+            public LookupOptions()
             {
-                Query.OrderBy(l => l.Id);
+                Query.OrderBy(l => l.Country)
+                    .ThenBy(l => l.City)
+                    .ThenBy(l => l.Id);
+                Query.Select(l => new GetLocationLookupOptionResponseModel
+                {
+                    Id = l.Id,
+                    City = l.City,
+                    Country = l.Country
+                });
             }
         }
 
@@ -32,7 +40,7 @@ namespace business_logic.Specifications
             }
         }
 
-        public class PagedList : Specification<Location, LocationDTO>
+        public class PagedList : Specification<Location, GetLocationResponseModel>
         {
             public PagedList(
                 GetLocationsBySearchFilterRequestModel searchFilter,
@@ -64,7 +72,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, l => l.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(l => new LocationDTO
+                Query.Select(l => new GetLocationResponseModel
                 {
                     Id = l.Id,
                     City = l.City,

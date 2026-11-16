@@ -1,4 +1,4 @@
-﻿using business_logic.Constants;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,14 +18,8 @@ namespace transport_logistic_management_2026.Controllers
             _auditLogService = auditLogService;
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<AuditLogDTO>>> GetAll()
-        {
-            return Ok(await _auditLogService.GetLogsAsync());
-        }
-
-        [HttpGet("pagedList")]
-        public async Task<ActionResult<GetPagedListResponseModel<AuditLogDTO>>> GetAuditLogsPagedList(
+        [HttpGet("getAuditLogsPagedList")]
+        public async Task<ActionResult<GetPagedListResponseModel<GetAuditLogResponseModel>>> GetAuditLogsPagedList(
             [FromQuery] GetAuditLogsBySearchFilterRequestModel searchFilter,
             [FromQuery] GetPagedListRequestModel<AuditLogSortField> pagedListRequest)
         {

@@ -23,7 +23,7 @@ namespace business_logic_tests
                 BusinessLogicTestHost.CreateRoute(busyAuto, busyDriver, ExistingRouteDeparture, ExistingRouteArrival));
 
             var conflictException = await Assert.ThrowsAsync<AssignmentConflictException>(() => _testHost.RunInNewScopeAsync<IRouteService>(
-                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteModelFor(busyAuto.Id, freeDriver.Id, ExistingRouteDeparture.AddHours(2), ExistingRouteArrival.AddHours(2)))));
+                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteRequestModelFor(busyAuto.Id, freeDriver.Id, ExistingRouteDeparture.AddHours(2), ExistingRouteArrival.AddHours(2)))));
 
             Assert.Contains($"ID {busyAuto.Id}", conflictException.Message);
         }
@@ -38,7 +38,7 @@ namespace business_logic_tests
                 BusinessLogicTestHost.CreateRoute(busyAuto, busyDriver, ExistingRouteDeparture, ExistingRouteArrival, RouteStatus.InProgress));
 
             var conflictException = await Assert.ThrowsAsync<AssignmentConflictException>(() => _testHost.RunInNewScopeAsync<IRouteService>(
-                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteModelFor(freeAuto.Id, busyDriver.Id, ExistingRouteDeparture.AddHours(-2), ExistingRouteDeparture.AddHours(1)))));
+                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteRequestModelFor(freeAuto.Id, busyDriver.Id, ExistingRouteDeparture.AddHours(-2), ExistingRouteDeparture.AddHours(1)))));
 
             Assert.Contains($"ID {busyDriver.Id}", conflictException.Message);
         }
@@ -53,8 +53,8 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver,
                 BusinessLogicTestHost.CreateRoute(auto, driver, ExistingRouteDeparture, ExistingRouteArrival, inactiveRouteStatus));
 
-            var createdRoute = await _testHost.RunInNewScopeAsync<IRouteService, RouteDTO>(
-                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteModelFor(auto.Id, driver.Id, ExistingRouteDeparture, ExistingRouteArrival)));
+            var createdRoute = await _testHost.RunInNewScopeAsync<IRouteService, GetRouteResponseModel>(
+                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteRequestModelFor(auto.Id, driver.Id, ExistingRouteDeparture, ExistingRouteArrival)));
 
             Assert.True(createdRoute.Id > 0);
         }
@@ -67,8 +67,8 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver,
                 BusinessLogicTestHost.CreateRoute(auto, driver, ExistingRouteDeparture, ExistingRouteArrival));
 
-            var createdRoute = await _testHost.RunInNewScopeAsync<IRouteService, RouteDTO>(
-                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteModelFor(auto.Id, driver.Id, ExistingRouteArrival, ExistingRouteArrival.AddHours(5))));
+            var createdRoute = await _testHost.RunInNewScopeAsync<IRouteService, GetRouteResponseModel>(
+                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteRequestModelFor(auto.Id, driver.Id, ExistingRouteArrival, ExistingRouteArrival.AddHours(5))));
 
             Assert.True(createdRoute.Id > 0);
         }
@@ -82,7 +82,7 @@ namespace business_logic_tests
                 BusinessLogicTestHost.CreateMaintenance(auto, ExistingRouteDeparture.Date));
 
             var conflictException = await Assert.ThrowsAsync<AssignmentConflictException>(() => _testHost.RunInNewScopeAsync<IRouteService>(
-                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteModelFor(auto.Id, driver.Id, ExistingRouteDeparture, ExistingRouteArrival))));
+                routeService => routeService.CreateAsync(RouteRequestModelFactory.CreateRouteRequestModelFor(auto.Id, driver.Id, ExistingRouteDeparture, ExistingRouteArrival))));
 
             Assert.Contains("техобслуговування", conflictException.Message);
         }
@@ -97,9 +97,9 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver, firstRoute, overlappingRoute);
 
             await _testHost.RunInNewScopeAsync<IRouteService>(routeService => routeService.UpdateAsync(
-                RouteRequestModelFactory.CreateEditRouteModelFor(overlappingRoute.Id, auto.Id, driver.Id, RouteStatus.Cancelled)));
+                RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(overlappingRoute.Id, auto.Id, driver.Id, RouteStatus.Cancelled)));
 
-            var updatedRoute = await _testHost.RunInNewScopeAsync<IRouteService, RouteDTO>(routeService => routeService.GetAsync(overlappingRoute.Id));
+            var updatedRoute = await _testHost.RunInNewScopeAsync<IRouteService, GetRouteResponseModel>(routeService => routeService.GetAsync(overlappingRoute.Id));
             Assert.Equal(RouteStatus.Cancelled, updatedRoute.Status);
         }
 
@@ -113,7 +113,7 @@ namespace business_logic_tests
             await _testHost.SeedAsync(auto, driver, activeRoute, cancelledRoute);
 
             await Assert.ThrowsAsync<AssignmentConflictException>(() => _testHost.RunInNewScopeAsync<IRouteService>(
-                routeService => routeService.UpdateAsync(RouteRequestModelFactory.CreateEditRouteModelFor(cancelledRoute.Id, auto.Id, driver.Id, RouteStatus.Planned))));
+                routeService => routeService.UpdateAsync(RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(cancelledRoute.Id, auto.Id, driver.Id, RouteStatus.Planned))));
         }
 
         public void Dispose()

@@ -1,4 +1,5 @@
 ﻿using Ardalis.Specification;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Entities;
 using System.Linq.Expressions;
@@ -7,15 +8,24 @@ namespace business_logic.Specifications
 {
     public class RouteSpecs
     {
-        private static readonly Expression<Func<Route, RouteDTO>> RouteDTOSelector = r => new RouteDTO
+        private static readonly Expression<Func<Route, GetRouteResponseModel>> GetRouteResponseModelSelector = r => new GetRouteResponseModel
         {
             Id = r.Id,
             StartLocationId = r.StartLocationId,
+            StartLocationCity = r.StartLocation.City,
+            StartLocationCountry = r.StartLocation.Country,
             DestinationLocationId = r.DestinationLocationId,
+            DestinationLocationCity = r.DestinationLocation.City,
+            DestinationLocationCountry = r.DestinationLocation.Country,
             DepartureTime = r.DepartureTime,
             ArrivalTime = r.ArrivalTime,
             AutoId = r.AutoId,
+            AutoMark = r.Auto.Mark,
+            AutoModel = r.Auto.Model,
+            AutoNumber = r.Auto.Number,
             DriverId = r.DriverId,
+            DriverName = r.Driver.Name,
+            DriverSurname = r.Driver.Surname,
             Status = r.Status
         };
 
@@ -27,11 +37,28 @@ namespace business_logic.Specifications
             }
         }
 
+        public class ResponseModelById : Specification<Route, GetRouteResponseModel>
+        {
+            public ResponseModelById(int id)
+            {
+                Query.Where(r => r.Id == id);
+                Query.Select(GetRouteResponseModelSelector);
+            }
+        }
+
         public class All : Specification<Route>
         {
             public All()
             {
                 Query.OrderBy(r => r.Id);
+            }
+        }
+
+        public class Active : Specification<Route>
+        {
+            public Active()
+            {
+                Query.Where(r => RouteStatusGroups.Active.Contains(r.Status));
             }
         }
 
@@ -101,16 +128,7 @@ namespace business_logic.Specifications
             }
         }
 
-        public class BySearchFilter : Specification<Route>
-        {
-            public BySearchFilter(GetRoutesBySearchFilterRequestModel searchFilter)
-            {
-                ApplySearchFilterCriteria(Query, searchFilter);
-                Query.OrderBy(r => r.DepartureTime);
-            }
-        }
-
-        public class PagedListBySearchFilter : Specification<Route, RouteDTO>
+        public class PagedListBySearchFilter : Specification<Route, GetRouteResponseModel>
         {
             public PagedListBySearchFilter(
                 GetRoutesBySearchFilterRequestModel searchFilter,
@@ -141,7 +159,7 @@ namespace business_logic.Specifications
 
                 Query.OrderBySortDirection(sortKeySelector, r => r.Id, pagedListRequest.SortDirection ?? SortDirection.Ascending);
                 Query.ApplyPage(pagedListRequest.Page, pagedListRequest.PageSize);
-                Query.Select(RouteDTOSelector);
+                Query.Select(GetRouteResponseModelSelector);
             }
         }
 
@@ -198,14 +216,14 @@ namespace business_logic.Specifications
             }
         }
 
-        public class ByDeparturePeriod : Specification<Route, RouteDTO>
+        public class ByDeparturePeriod : Specification<Route, GetRouteResponseModel>
         {
             public ByDeparturePeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
             {
                 Query.Where(r => r.DepartureTime >= periodStartDateTime && r.DepartureTime < periodEndExclusiveDateTime)
                     .OrderBy(r => r.DepartureTime)
                     .ThenBy(r => r.Id);
-                Query.Select(RouteDTOSelector);
+                Query.Select(GetRouteResponseModelSelector);
             }
         }
 

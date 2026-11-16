@@ -1,18 +1,16 @@
-﻿using business_logic.DTOs;
+using business_logic.DTOs;
 
 namespace business_logic.Interfaces
 {
     public interface IRouteService
     {
-        Task<IEnumerable<RouteDTO>> GetAllAsync();
-        Task<RouteDTO> GetAsync(int id);
-        Task<IEnumerable<RouteDTO>> GetRoutesBySearchFilterAsync(GetRoutesBySearchFilterRequestModel searchFilter);
-        Task<GetPagedListResponseModel<RouteDTO>> GetRoutesPagedListBySearchFilterAsync(
+        Task<GetRouteResponseModel> GetAsync(int id);
+        Task<GetPagedListResponseModel<GetRouteResponseModel>> GetRoutesPagedListBySearchFilterAsync(
             GetRoutesBySearchFilterRequestModel searchFilter,
             GetPagedListRequestModel<RouteSortField> pagedListRequest);
         Task<GetRoutesPeriodReportResponseModel> GetRoutesPeriodReportAsync(GetRoutesPeriodReportRequestModel periodReportRequest);
-        Task<RouteDTO> CreateAsync(CreateRouteModel model);
-        Task UpdateAsync(EditRouteModel model);
+        Task<GetRouteResponseModel> CreateAsync(CreateRouteRequestModel model);
+        Task UpdateAsync(UpdateRouteRequestModel model);
         Task DeleteAsync(int id);
     }
 }

@@ -1,4 +1,4 @@
-﻿using business_logic.Constants;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -19,41 +19,35 @@ namespace transport_logistic_management_2026.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<ResponseAuth>> Login([FromBody] LoginModel model)
+        public async Task<ActionResult<LoginResponseModel>> Login([FromBody] LoginRequestModel model)
         {
             return Ok(await _accountService.LoginAsync(model));
         }
 
-        [HttpPost("register")]
+        [HttpPost("registerAccount")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<UserDTO>> Register([FromBody] RegisterModel model)
+        public async Task<ActionResult<GetDispatcherResponseModel>> RegisterAccount([FromBody] RegisterAccountRequestModel model)
         {
-            var user = await _accountService.RegisterAsync(model);
-            return CreatedAtAction(nameof(GetDispatcherById), new { id = user.Id }, user);
+            var account = await _accountService.RegisterAsync(model);
+            return CreatedAtAction(nameof(GetDispatcherById), new { id = account.Id }, account);
         }
 
-        [HttpGet("all")]
+        [HttpGet("getDispatchersPagedList")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAllUsers()
-        {
-            return Ok(await _accountService.GetDispatchersAsync());
-        }
-
-        [HttpGet("dispatchersPagedList")]
-        [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<GetPagedListResponseModel<UserDTO>>> GetDispatchersPagedList([FromQuery] GetPagedListRequestModel<DispatcherSortField> pagedListRequest)
+        public async Task<ActionResult<GetPagedListResponseModel<GetDispatcherResponseModel>>> GetDispatchersPagedList(
+            [FromQuery] GetPagedListRequestModel<DispatcherSortField> pagedListRequest)
         {
             return Ok(await _accountService.GetDispatchersPagedListAsync(pagedListRequest));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("getDispatcherById/{id}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<UserDTO>> GetDispatcherById([FromRoute] string id)
+        public async Task<ActionResult<GetDispatcherResponseModel>> GetDispatcherById([FromRoute] string id)
         {
             return Ok(await _accountService.GetDispatcherByIdAsync(id));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("deleteUser/{id}")]
         [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> DeleteUser([FromRoute] string id)
         {

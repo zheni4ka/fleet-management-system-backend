@@ -42,6 +42,7 @@ namespace business_logic
             services.AddScoped<IAutoMaintenanceService, AutoMaintenanceService>();
             services.AddScoped<IAuditLogService, AuditLogService>();
             services.AddScoped<IAutoStatusSyncService, AutoStatusSyncService>();
+            services.AddScoped<IDashboardService, DashboardService>();
         }
     }
 }

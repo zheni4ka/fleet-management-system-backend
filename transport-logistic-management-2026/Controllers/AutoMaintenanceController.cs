@@ -1,4 +1,4 @@
-﻿using business_logic.Constants;
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,43 +18,37 @@ namespace transport_logistic_management_2026.Controllers
             _maintenanceService = maintenanceService;
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<AutoMaintenanceDTO>>> GetAll()
-        {
-            return Ok(await _maintenanceService.GetAllAsync());
-        }
-
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<AutoMaintenanceDTO>> GetById([FromRoute] int id)
+        [HttpGet("getAutoMaintenanceById/{id:int}")]
+        public async Task<ActionResult<GetAutoMaintenanceResponseModel>> GetAutoMaintenanceById([FromRoute] int id)
         {
             return Ok(await _maintenanceService.GetAsync(id));
         }
 
-        [HttpGet("auto/{id:int}")]
-        public async Task<ActionResult<IEnumerable<AutoMaintenanceDTO>>> GetByAutoId([FromRoute] int id)
+        [HttpGet("getAutoMaintenancesByAutoId/{autoId:int}")]
+        public async Task<ActionResult<IEnumerable<GetAutoMaintenanceResponseModel>>> GetAutoMaintenancesByAutoId([FromRoute] int autoId)
         {
-            return Ok(await _maintenanceService.GetByAutoIdAsync(id));
+            return Ok(await _maintenanceService.GetByAutoIdAsync(autoId));
         }
 
-        [HttpPost]
+        [HttpPost("createAutoMaintenance")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<AutoMaintenanceDTO>> Create([FromBody] CreateAutoMaintenanceModel model)
+        public async Task<ActionResult<GetAutoMaintenanceResponseModel>> CreateAutoMaintenance([FromBody] CreateAutoMaintenanceRequestModel model)
         {
             var maintenance = await _maintenanceService.CreateAsync(model);
-            return CreatedAtAction(nameof(GetById), new { id = maintenance.Id }, maintenance);
+            return CreatedAtAction(nameof(GetAutoMaintenanceById), new { id = maintenance.Id }, maintenance);
         }
 
-        [HttpPut]
+        [HttpPut("updateAutoMaintenance")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> Edit([FromBody] EditAutoMaintenanceModel model)
+        public async Task<IActionResult> UpdateAutoMaintenance([FromBody] UpdateAutoMaintenanceRequestModel model)
         {
             await _maintenanceService.UpdateAsync(model);
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("deleteAutoMaintenance/{id:int}")]
         [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAutoMaintenance([FromRoute] int id)
         {
             await _maintenanceService.DeleteAsync(id);
             return NoContent();

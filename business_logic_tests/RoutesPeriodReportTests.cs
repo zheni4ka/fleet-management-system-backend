@@ -46,8 +46,18 @@ namespace business_logic_tests
                 new[] { firstCompletedRoute.Id, secondCompletedRoute.Id, plannedRoute.Id, cancelledRoute.Id },
                 periodReport.Routes.Select(route => route.Id));
 
+            var firstPeriodRoute = periodReport.Routes[0];
+            Assert.Equal("Kyiv", firstPeriodRoute.StartLocationCity);
+            Assert.Equal("Ukraine", firstPeriodRoute.StartLocationCountry);
+            Assert.Equal("Lviv", firstPeriodRoute.DestinationLocationCity);
+            Assert.Equal(firstAuto.Mark, firstPeriodRoute.AutoMark);
+            Assert.Equal(firstAuto.Number, firstPeriodRoute.AutoNumber);
+            Assert.Equal(busyDriver.Surname, firstPeriodRoute.DriverSurname);
+
             var busyDriverSummary = periodReport.DriverSummaries[0];
             Assert.Equal(busyDriver.Id, busyDriverSummary.DriverId);
+            Assert.Equal(busyDriver.Name, busyDriverSummary.DriverName);
+            Assert.Equal(busyDriver.Surname, busyDriverSummary.DriverSurname);
             Assert.Equal(3, busyDriverSummary.RoutesCount);
             Assert.Equal(2, busyDriverSummary.CompletedRoutesCount);
             Assert.Equal(6.5, busyDriverSummary.CompletedRoutesDrivingHours);

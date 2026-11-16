@@ -15,8 +15,8 @@ namespace business_logic.Services
         private readonly IAuditLogService _auditLogService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IValidator<CreateAutoModel> _createValidator;
-        private readonly IValidator<EditAutoModel> _editValidator;
+        private readonly IValidator<CreateAutoRequestModel> _createValidator;
+        private readonly IValidator<UpdateAutoRequestModel> _editValidator;
         private readonly IValidator<GetPagedListRequestModel<AutoSortField>> _pagedListRequestValidator;
         private readonly IValidator<GetAutosBySearchFilterRequestModel> _searchFilterValidator;
 
@@ -26,8 +26,8 @@ namespace business_logic.Services
             IAuditLogService auditLogService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<CreateAutoModel> createValidator,
-            IValidator<EditAutoModel> editValidator,
+            IValidator<CreateAutoRequestModel> createValidator,
+            IValidator<UpdateAutoRequestModel> editValidator,
             IValidator<GetPagedListRequestModel<AutoSortField>> pagedListRequestValidator,
             IValidator<GetAutosBySearchFilterRequestModel> searchFilterValidator)
         {
@@ -42,13 +42,7 @@ namespace business_logic.Services
             _searchFilterValidator = searchFilterValidator;
         }
 
-        public async Task<IEnumerable<AutoDTO>> GetAllAsync()
-        {
-            var autos = await _autoRepository.GetListBySpecAsync(new AutoSpecs.All());
-            return _mapper.Map<IEnumerable<AutoDTO>>(autos);
-        }
-
-        public async Task<GetPagedListResponseModel<AutoDTO>> GetPagedListAsync(
+        public async Task<GetPagedListResponseModel<GetAutoResponseModel>> GetPagedListAsync(
             GetAutosBySearchFilterRequestModel searchFilter,
             GetPagedListRequestModel<AutoSortField> pagedListRequest)
         {
@@ -59,18 +53,23 @@ namespace business_logic.Services
             var autosPage = await _autoRepository.GetProjectedListBySpecAsync(autosPagedListSpecification);
             var autosTotalCount = await _autoRepository.CountBySpecAsync(autosPagedListSpecification);
 
-            return new GetPagedListResponseModel<AutoDTO>(
+            return new GetPagedListResponseModel<GetAutoResponseModel>(
                 Items: autosPage,
                 TotalCount: autosTotalCount);
         }
 
-        public async Task<AutoDTO> GetAsync(int id)
+        public async Task<IReadOnlyList<GetAutoLookupOptionResponseModel>> GetLookupOptionsAsync()
         {
-            var auto = await GetAutoOrThrowAsync(id);
-            return _mapper.Map<AutoDTO>(auto);
+            return await _autoRepository.GetProjectedListBySpecAsync(new AutoSpecs.LookupOptions());
         }
 
-        public async Task<AutoDTO> CreateAsync(CreateAutoModel model)
+        public async Task<GetAutoResponseModel> GetAsync(int id)
+        {
+            var auto = await GetAutoOrThrowAsync(id);
+            return _mapper.Map<GetAutoResponseModel>(auto);
+        }
+
+        public async Task<GetAutoResponseModel> CreateAsync(CreateAutoRequestModel model)
         {
             await _createValidator.ValidateAndThrowAsync(model);
             await EnsureNumberIsUniqueAsync(model.Number);
@@ -81,10 +80,10 @@ namespace business_logic.Services
             await _auditLogService.LogActionAsync(AuditAction.AutoCreated, auto.Id);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<AutoDTO>(auto);
+            return _mapper.Map<GetAutoResponseModel>(auto);
         }
 
-        public async Task EditAsync(EditAutoModel model)
+        public async Task UpdateAsync(UpdateAutoRequestModel model)
         {
             await _editValidator.ValidateAndThrowAsync(model);
 
@@ -107,19 +106,6 @@ namespace business_logic.Services
 
             _autoRepository.Delete(auto);
             await _auditLogService.LogActionAsync(AuditAction.AutoDeleted, id);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task UpdateStatusAsync(int autoId, AutoStatus newStatus)
-        {
-            if (!Enum.IsDefined(newStatus))
-            {
-                throw new BusinessRuleException("Unknown auto status.");
-            }
-
-            var auto = await GetAutoOrThrowAsync(autoId);
-            auto.Status = newStatus;
-            await _auditLogService.LogActionAsync(AuditAction.AutoStatusChanged, auto.Id);
             await _unitOfWork.SaveChangesAsync();
         }
 

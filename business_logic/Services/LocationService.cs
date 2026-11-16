@@ -15,7 +15,7 @@ namespace business_logic.Services
         private readonly IAuditLogService _auditLogService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IValidator<CreateLocationModel> _createValidator;
+        private readonly IValidator<CreateLocationRequestModel> _createValidator;
         private readonly IValidator<GetPagedListRequestModel<LocationSortField>> _pagedListRequestValidator;
         private readonly IValidator<GetLocationsBySearchFilterRequestModel> _searchFilterValidator;
 
@@ -25,7 +25,7 @@ namespace business_logic.Services
             IAuditLogService auditLogService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<CreateLocationModel> createValidator,
+            IValidator<CreateLocationRequestModel> createValidator,
             IValidator<GetPagedListRequestModel<LocationSortField>> pagedListRequestValidator,
             IValidator<GetLocationsBySearchFilterRequestModel> searchFilterValidator)
         {
@@ -39,12 +39,7 @@ namespace business_logic.Services
             _searchFilterValidator = searchFilterValidator;
         }
 
-        public async Task<IEnumerable<LocationDTO>> GetAllAsync()
-        {
-            return _mapper.Map<IEnumerable<LocationDTO>>(await _locationRepository.GetListBySpecAsync(new LocationSpecs.All()));
-        }
-
-        public async Task<GetPagedListResponseModel<LocationDTO>> GetPagedListAsync(
+        public async Task<GetPagedListResponseModel<GetLocationResponseModel>> GetPagedListAsync(
             GetLocationsBySearchFilterRequestModel searchFilter,
             GetPagedListRequestModel<LocationSortField> pagedListRequest)
         {
@@ -55,18 +50,23 @@ namespace business_logic.Services
             var locationsPage = await _locationRepository.GetProjectedListBySpecAsync(locationsPagedListSpecification);
             var locationsTotalCount = await _locationRepository.CountBySpecAsync(locationsPagedListSpecification);
 
-            return new GetPagedListResponseModel<LocationDTO>(
+            return new GetPagedListResponseModel<GetLocationResponseModel>(
                 Items: locationsPage,
                 TotalCount: locationsTotalCount);
         }
 
-        public async Task<LocationDTO> GetAsync(int id)
+        public async Task<IReadOnlyList<GetLocationLookupOptionResponseModel>> GetLookupOptionsAsync()
         {
-            var location = await GetLocationOrThrowAsync(id);
-            return _mapper.Map<LocationDTO>(location);
+            return await _locationRepository.GetProjectedListBySpecAsync(new LocationSpecs.LookupOptions());
         }
 
-        public async Task<LocationDTO> CreateAsync(CreateLocationModel model)
+        public async Task<GetLocationResponseModel> GetAsync(int id)
+        {
+            var location = await GetLocationOrThrowAsync(id);
+            return _mapper.Map<GetLocationResponseModel>(location);
+        }
+
+        public async Task<GetLocationResponseModel> CreateAsync(CreateLocationRequestModel model)
         {
             await _createValidator.ValidateAndThrowAsync(model);
 
@@ -76,7 +76,7 @@ namespace business_logic.Services
             await _auditLogService.LogActionAsync(AuditAction.LocationCreated, location.Id);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<LocationDTO>(location);
+            return _mapper.Map<GetLocationResponseModel>(location);
         }
 
         public async Task DeleteAsync(int id)

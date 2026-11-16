@@ -15,8 +15,8 @@ namespace business_logic.Services
         private readonly IAuditLogService _auditLogService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IValidator<CreateDriverModel> _createValidator;
-        private readonly IValidator<EditDriverModel> _editValidator;
+        private readonly IValidator<CreateDriverRequestModel> _createValidator;
+        private readonly IValidator<UpdateDriverRequestModel> _editValidator;
         private readonly IValidator<GetPagedListRequestModel<DriverSortField>> _pagedListRequestValidator;
 
         public DriverService(
@@ -25,8 +25,8 @@ namespace business_logic.Services
             IAuditLogService auditLogService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<CreateDriverModel> createValidator,
-            IValidator<EditDriverModel> editValidator,
+            IValidator<CreateDriverRequestModel> createValidator,
+            IValidator<UpdateDriverRequestModel> editValidator,
             IValidator<GetPagedListRequestModel<DriverSortField>> pagedListRequestValidator)
         {
             _driverRepository = driverRepository;
@@ -39,13 +39,7 @@ namespace business_logic.Services
             _pagedListRequestValidator = pagedListRequestValidator;
         }
 
-        public async Task<IEnumerable<DriverDTO>> GetAllAsync()
-        {
-            var drivers = await _driverRepository.GetListBySpecAsync(new DriverSpecs.All());
-            return _mapper.Map<IEnumerable<DriverDTO>>(drivers);
-        }
-
-        public async Task<GetPagedListResponseModel<DriverDTO>> GetPagedListAsync(GetPagedListRequestModel<DriverSortField> pagedListRequest)
+        public async Task<GetPagedListResponseModel<GetDriverResponseModel>> GetPagedListAsync(GetPagedListRequestModel<DriverSortField> pagedListRequest)
         {
             await _pagedListRequestValidator.ValidateAndThrowAsync(pagedListRequest);
 
@@ -53,18 +47,23 @@ namespace business_logic.Services
             var driversPage = await _driverRepository.GetProjectedListBySpecAsync(driversPagedListSpecification);
             var driversTotalCount = await _driverRepository.CountBySpecAsync(driversPagedListSpecification);
 
-            return new GetPagedListResponseModel<DriverDTO>(
+            return new GetPagedListResponseModel<GetDriverResponseModel>(
                 Items: driversPage,
                 TotalCount: driversTotalCount);
         }
 
-        public async Task<DriverDTO> GetAsync(int id)
+        public async Task<IReadOnlyList<GetDriverLookupOptionResponseModel>> GetLookupOptionsAsync()
         {
-            var driver = await GetDriverOrThrowAsync(id);
-            return _mapper.Map<DriverDTO>(driver);
+            return await _driverRepository.GetProjectedListBySpecAsync(new DriverSpecs.LookupOptions());
         }
 
-        public async Task<DriverDTO> CreateAsync(CreateDriverModel model)
+        public async Task<GetDriverResponseModel> GetAsync(int id)
+        {
+            var driver = await GetDriverOrThrowAsync(id);
+            return _mapper.Map<GetDriverResponseModel>(driver);
+        }
+
+        public async Task<GetDriverResponseModel> CreateAsync(CreateDriverRequestModel model)
         {
             await _createValidator.ValidateAndThrowAsync(model);
             await EnsureLicenseIsUniqueAsync(model.LicenseNumber);
@@ -75,10 +74,10 @@ namespace business_logic.Services
             await _auditLogService.LogActionAsync(AuditAction.DriverCreated, driver.Id);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<DriverDTO>(driver);
+            return _mapper.Map<GetDriverResponseModel>(driver);
         }
 
-        public async Task EditAsync(EditDriverModel model)
+        public async Task UpdateAsync(UpdateDriverRequestModel model)
         {
             await _editValidator.ValidateAndThrowAsync(model);
 
