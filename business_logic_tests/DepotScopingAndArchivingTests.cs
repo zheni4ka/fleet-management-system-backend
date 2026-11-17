@@ -111,6 +111,32 @@ namespace business_logic_tests
             await Assert.ThrowsAsync<BusinessRuleException>(() => CreateRouteAsync(auto.Id, archivedDriver.Id));
         }
 
+        [Fact]
+        public async Task GetByAutoIdAsync_DispatcherScopedToOtherDepot_HidesMaintenanceOfForeignAuto()
+        {
+            var otherDepot = new Depot { Name = "Львівське депо" };
+            await _testHost.SeedAsync(otherDepot);
+            var ownDepotAuto = BusinessLogicTestHost.CreateAuto("АА1111АА");
+            var otherDepotAuto = BusinessLogicTestHost.CreateAuto("ВС2222ВС", depotId: otherDepot.Id);
+            await _testHost.SeedAsync(ownDepotAuto, otherDepotAuto);
+            var foreignAutoMaintenance = new AutoMaintenance
+            {
+                Name = "Заміна мастила",
+                Description = "Планове ТО",
+                ServiceDate = DateTime.Today,
+                AutoId = otherDepotAuto.Id,
+            };
+            await _testHost.SeedAsync(foreignAutoMaintenance);
+            ScopeCurrentUserToDepots(ownDepotAuto.DepotId);
+
+            var foreignAutoMaintenances = await _testHost.RunInNewScopeAsync<IAutoMaintenanceService, IEnumerable<GetAutoMaintenanceResponseModel>>(
+                autoMaintenanceService => autoMaintenanceService.GetByAutoIdAsync(otherDepotAuto.Id));
+
+            Assert.Empty(foreignAutoMaintenances);
+            await Assert.ThrowsAsync<NotFoundException>(() => _testHost.RunInNewScopeAsync<IAutoMaintenanceService, GetAutoMaintenanceResponseModel>(
+                autoMaintenanceService => autoMaintenanceService.GetAsync(foreignAutoMaintenance.Id)));
+        }
+
         public void Dispose()
         {
             _testHost.Dispose();
