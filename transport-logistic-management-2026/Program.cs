@@ -4,9 +4,11 @@ using business_logic.Constants;
 using business_logic.Interfaces;
 using business_logic.Settings;
 using data_access;
+using data_access.data;
 using data_access.Identity;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
@@ -21,7 +23,8 @@ namespace transport_logistic_management_2026
     {
         public static async Task Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            var isDemoSeedCommand = args.Contains(DemoSeedSettings.CommandName);
+            var builder = WebApplication.CreateBuilder(args.Where(commandLineArgument => commandLineArgument != DemoSeedSettings.CommandName).ToArray());
             if (!builder.Environment.IsDevelopment())
             {
                 builder.Configuration.AddUserSecrets<Program>(optional: true);
@@ -117,7 +120,38 @@ namespace transport_logistic_management_2026
                 app.Services,
                 app.Configuration.GetSection(SeedAdminSettings.SectionName).Get<SeedAdminSettings>());
 
+            if (isDemoSeedCommand)
+            {
+                await RunDemoSeedCommandAsync(app);
+                return;
+            }
+
             await app.RunAsync();
+        }
+
+        private static async Task RunDemoSeedCommandAsync(WebApplication app)
+        {
+            if (!app.Environment.IsDevelopment())
+            {
+                throw new InvalidOperationException(
+                    $"The '{DemoSeedSettings.CommandName}' command runs only in the Development environment, but the environment is '{app.Environment.EnvironmentName}'.");
+            }
+
+            using (var migrationCheckScope = app.Services.CreateScope())
+            {
+                var pendingMigrations = (await migrationCheckScope.ServiceProvider.GetRequiredService<FMS_DbContext>().Database.GetPendingMigrationsAsync()).ToList();
+                if (pendingMigrations.Count > 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Apply pending migrations before the demo seed: {string.Join(", ", pendingMigrations)}.");
+                }
+            }
+
+            var demoDataSeedSummary = await DemoDataSeeder.SeedAsync(
+                app.Services,
+                app.Configuration.GetSection(DemoSeedSettings.SectionName).Get<DemoSeedSettings>(),
+                DateTime.UtcNow);
+            app.Logger.LogInformation("Demo data seeded: {DemoDataSeedSummary}", demoDataSeedSummary);
         }
     }
 }

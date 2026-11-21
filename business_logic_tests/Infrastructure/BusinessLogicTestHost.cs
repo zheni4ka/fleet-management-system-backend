@@ -85,6 +85,8 @@ namespace business_logic_tests.Infrastructure
 
         public TestCurrentUserScope CurrentUserScope => _serviceProvider.GetRequiredService<TestCurrentUserScope>();
 
+        public IServiceProvider Services => _serviceProvider;
+
         public TSingletonService GetRequiredSingletonService<TSingletonService>() where TSingletonService : notnull
         {
             return _serviceProvider.GetRequiredService<TSingletonService>();

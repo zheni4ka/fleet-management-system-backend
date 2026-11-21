@@ -27,6 +27,17 @@ REST API системи обліку автопарку й логістики м
 
 Поза середовищем Development значення передаються змінними середовища (`Section__Key`), наприклад `JwtSettings__Secret`, `SeedAdmin__Password`, `CorsSettings__AllowedOrigins__0`.
 
+### Демонстраційні дані
+
+Команда `seed-demo` заповнює **порожній** автопарк даними для показу: 3 депо, 12 авто, 15 водіїв, координати 25 міст, близько 150 маршрутів за останні 60 днів і наступний тиждень у різних статусах (із фактичним часом виконаних рейсів), 4 записи ТО (завершені, поточне без кінця й заплановане) та журнал дій зі змінами «було → стало». Додаються диспетчери `dispatcher.kyiv`, `dispatcher.lviv`, `dispatcher.odesa` — кожен зі своїм депо. Дані детерміновані (фіксоване зерно генератора) і прив'язані до поточної дати.
+
+```bash
+dotnet user-secrets set "DemoSeed:DispatcherPassword" "<пароль диспетчерів>" --project transport-logistic-management-2026
+dotnet run --project transport-logistic-management-2026 --launch-profile http -- seed-demo
+```
+
+Команда працює лише в середовищі Development, вимагає застосованих міграцій і відмовляється запускатися, якщо в БД уже є хоча б одне авто. Для чистого показу зручно створити окрему БД (`dotnet ef database update --connection "...;Database=FleetDemo;..."`) і передати її рядок підключення через `ConnectionStrings__connectionString`.
+
 ### Docker Compose
 
 `docker-compose.yml` піднімає SQL Server, застосовує міграції bundle-ом, запускає API (порт 5196) і фронтенд (порт 3000). Скопіюйте `docker.env.example` у `.env`, заповніть секрети й шлях до репозиторію фронтенду, потім:
@@ -89,6 +100,7 @@ docker compose up --build
 | `ObservabilitySettings:ServiceName` | так | ім'я сервісу в журналах і трасах |
 | `ObservabilitySettings:OtlpEndpoint` | ні | порожнє — OpenTelemetry вимкнено |
 | `SeedAdmin:Password` | лише для порожньої БД | пароль адміністратора за замовчуванням |
+| `DemoSeed:DispatcherPassword` | ні (лише для `seed-demo` у Development) | пароль демонстраційних диспетчерів |
 
 Усі налаштування перевіряються під час старту: відсутнє або некоректне значення зупиняє застосунок із назвою ключа й значенням у повідомленні.
 
