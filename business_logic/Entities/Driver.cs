@@ -9,7 +9,10 @@ namespace business_logic.Entities
         public string Surname { get; set; }
         public string Patronymic { get; set; }
         public string LicenseNumber { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Email { get; set; }
         public IEnumerable<Route> Routes { get; set; }
+        public IEnumerable<DriverTrip> Trips { get; set; }
         public int DepotId { get; set; }
         public Depot? Depot { get; set; }
         public bool IsArchived { get; set; }

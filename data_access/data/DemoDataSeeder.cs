@@ -49,7 +49,7 @@ namespace data_access.data
 
             await using var demoSeedTransaction = await dbContext.Database.BeginTransactionAsync();
 
-            await FillMissingCityCoordinatesAsync(dbContext);
+            var demoLocationsById = (await FillMissingCityCoordinatesAsync(dbContext)).ToDictionary(location => location.Id);
             var depots = DemoDataCatalog.Depots.Select(depotDefinition => new Depot { Name = depotDefinition.Name }).ToList();
             dbContext.AddRange(depots);
             await dbContext.SaveChangesAsync();
@@ -63,12 +63,14 @@ namespace data_access.data
                 Capacity = autoDefinition.Capacity,
                 DepotId = depots[autoDefinition.DepotIndex].Id
             }).ToList();
-            var drivers = DemoDataCatalog.Drivers.Select(driverDefinition => new Driver
+            var drivers = DemoDataCatalog.Drivers.Select((driverDefinition, driverIndex) => new Driver
             {
                 Name = driverDefinition.Name,
                 Surname = driverDefinition.Surname,
                 Patronymic = driverDefinition.Patronymic,
                 LicenseNumber = driverDefinition.LicenseNumber,
+                PhoneNumber = string.Format(CultureInfo.InvariantCulture, DemoDataCatalog.DriverPhoneNumberTemplate, driverIndex + 1),
+                Email = string.Format(CultureInfo.InvariantCulture, DemoDataCatalog.DriverEmailTemplate, driverDefinition.LicenseNumber.Replace(" ", string.Empty).ToLowerInvariant()),
                 DepotId = depots[driverDefinition.DepotIndex].Id
             }).ToList();
             dbContext.AddRange(autos);
@@ -103,6 +105,13 @@ namespace data_access.data
                 auditLogs.AddRange(CreateRouteAuditLogs(route, dispatcherUserIdsByDepotId[route.DepotId], historyStartUtc, nowUtc, random));
             }
 
+            var autosById = autos.ToDictionary(auto => auto.Id);
+            var driverTrips = routes
+                .Where(route => route.Status == RouteStatus.Completed)
+                .Select(route => CreateDriverTrip(route, autosById[route.AutoId], demoLocationsById))
+                .ToList();
+            dbContext.AddRange(driverTrips);
+
             foreach (var auto in autos)
             {
                 auto.Status = GetDemoAutoStatus(auto, routes, maintenances, nowUtc);
@@ -119,11 +128,12 @@ namespace data_access.data
                 DispatchersCount: dispatcherUserIdsByDepotId.Count,
                 LocationsCount: DemoDataCatalog.CityCoordinates.Count,
                 RoutesCount: routes.Count,
+                DriverTripsCount: driverTrips.Count,
                 MaintenancesCount: maintenances.Count,
                 AuditLogsCount: auditLogs.Count);
         }
 
-        private static async Task FillMissingCityCoordinatesAsync(FMS_DbContext dbContext)
+        private static async Task<IReadOnlyList<Location>> FillMissingCityCoordinatesAsync(FMS_DbContext dbContext)
         {
             var demoLocationIds = DemoDataCatalog.CityCoordinates.Select(cityCoordinates => cityCoordinates.LocationId).ToList();
             var demoLocations = await dbContext.Set<Location>().IgnoreQueryFilters()
@@ -142,6 +152,38 @@ namespace data_access.data
                 demoLocation.Latitude = cityCoordinates.Latitude;
                 demoLocation.Longitude = cityCoordinates.Longitude;
             }
+
+            return demoLocations;
+        }
+
+        private static DriverTrip CreateDriverTrip(Route completedRoute, Auto routeAuto, IReadOnlyDictionary<int, Location> demoLocationsById)
+        {
+            var startLocation = demoLocationsById[completedRoute.StartLocationId];
+            var destinationLocation = demoLocationsById[completedRoute.DestinationLocationId];
+            var tripStartedAtUtc = completedRoute.ActualDepartureTimeUtc ?? completedRoute.DepartureTimeUtc;
+            var tripEndedAtUtc = completedRoute.ActualArrivalTimeUtc ?? completedRoute.ArrivalTimeUtc;
+            return new DriverTrip
+            {
+                DriverId = completedRoute.DriverId,
+                RouteId = completedRoute.Id,
+                AutoId = routeAuto.Id,
+                AutoMark = routeAuto.Mark,
+                AutoModel = routeAuto.Model,
+                AutoNumber = routeAuto.Number,
+                StartLocationCity = startLocation.City,
+                StartLocationCountry = startLocation.Country,
+                StartLocationTimeZoneId = startLocation.TimeZoneId,
+                DestinationLocationCity = destinationLocation.City,
+                DestinationLocationCountry = destinationLocation.Country,
+                DestinationLocationTimeZoneId = destinationLocation.TimeZoneId,
+                PlannedDepartureTimeUtc = completedRoute.DepartureTimeUtc,
+                PlannedArrivalTimeUtc = completedRoute.ArrivalTimeUtc,
+                StartedAtUtc = tripStartedAtUtc,
+                EndedAtUtc = tripEndedAtUtc,
+                DrivingMinutes = Math.Max(0, (int)Math.Round((tripEndedAtUtc - tripStartedAtUtc).TotalMinutes)),
+                FinalStatus = completedRoute.Status,
+                DepotId = completedRoute.DepotId
+            };
         }
 
         private static async Task<IReadOnlyDictionary<int, string>> CreateDispatchersAsync(

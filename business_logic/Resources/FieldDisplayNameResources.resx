@@ -48,4 +48,5 @@
   <data name="SortDirection" xml:space="preserve"><value>Напрям сортування</value></data>
   <data name="SearchQuery" xml:space="preserve"><value>Пошуковий запит</value></data>
   <data name="Country" xml:space="preserve"><value>Країна</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>Номер телефону</value></data>
 </root>

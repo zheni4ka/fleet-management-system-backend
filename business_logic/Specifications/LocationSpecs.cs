@@ -34,6 +34,21 @@ namespace business_logic.Specifications
             }
         }
 
+        public class LookupOptionsByIds : Specification<Location, GetLocationLookupOptionResponseModel>
+        {
+            public LookupOptionsByIds(IReadOnlyCollection<int> locationIds)
+            {
+                Query.Where(l => locationIds.Contains(l.Id));
+                Query.Select(l => new GetLocationLookupOptionResponseModel
+                {
+                    Id = l.Id,
+                    City = l.City,
+                    Country = l.Country,
+                    TimeZoneId = l.TimeZoneId
+                });
+            }
+        }
+
         public class ArchiveStatesByIds : Specification<Location, LocationArchiveStateModel>
         {
             public ArchiveStatesByIds(IReadOnlyCollection<int> locationIds)

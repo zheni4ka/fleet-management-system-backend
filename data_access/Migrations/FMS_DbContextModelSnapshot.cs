@@ -404,6 +404,10 @@ namespace data_access.Migrations
                     b.Property<int>("DepotId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<bool>("IsArchived")
                         .HasColumnType("bit");
 
@@ -420,6 +424,10 @@ namespace data_access.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -443,6 +451,102 @@ namespace data_access.Migrations
                         .HasDatabaseName("IX_Drivers_LicenseNumber");
 
                     b.ToTable("Drivers", (string)null);
+                });
+
+            modelBuilder.Entity("business_logic.Entities.DriverTrip", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AutoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AutoMark")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("AutoModel")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<string>("AutoNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("DepotId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DestinationLocationCity")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("DestinationLocationCountry")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("DestinationLocationTimeZoneId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("DriverId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DrivingMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FinalStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PlannedArrivalTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PlannedDepartureTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("RouteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StartLocationCity")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("StartLocationCountry")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("StartLocationTimeZoneId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("StartedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepotId");
+
+                    b.HasIndex("RouteId")
+                        .IsUnique()
+                        .HasFilter("[RouteId] IS NOT NULL");
+
+                    b.HasIndex("DriverId", "StartedAtUtc");
+
+                    b.ToTable("DriverTrips", (string)null);
                 });
 
             modelBuilder.Entity("business_logic.Entities.Location", b =>
@@ -1036,6 +1140,32 @@ namespace data_access.Migrations
                     b.Navigation("Depot");
                 });
 
+            modelBuilder.Entity("business_logic.Entities.DriverTrip", b =>
+                {
+                    b.HasOne("business_logic.Entities.Depot", "Depot")
+                        .WithMany()
+                        .HasForeignKey("DepotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("business_logic.Entities.Driver", "Driver")
+                        .WithMany("Trips")
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("business_logic.Entities.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Depot");
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Route");
+                });
+
             modelBuilder.Entity("business_logic.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
@@ -1119,6 +1249,8 @@ namespace data_access.Migrations
             modelBuilder.Entity("business_logic.Entities.Driver", b =>
                 {
                     b.Navigation("Routes");
+
+                    b.Navigation("Trips");
                 });
 
             modelBuilder.Entity("business_logic.Entities.Location", b =>

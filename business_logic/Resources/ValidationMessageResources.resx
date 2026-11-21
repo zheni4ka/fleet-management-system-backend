@@ -31,4 +31,5 @@
   <data name="AutoNumberFormatInvalid" xml:space="preserve"><value>Номерний знак має формат АА1234АА (великі українські літери та 4 цифри).</value></data>
   <data name="DriverLicenseNumberFormatInvalid" xml:space="preserve"><value>Посвідчення водія має формат ABC 123456.</value></data>
   <data name="DriverNameFormatInvalid" xml:space="preserve"><value>Ім&apos;я, прізвище та по батькові мають починатися з великої української літери й містити лише українські літери, апостроф або дефіс.</value></data>
+  <data name="PhoneNumberFormatInvalid" xml:space="preserve"><value>Поле «{PropertyName}» має бути номером у міжнародному форматі, наприклад +380671234567.</value></data>
 </root>

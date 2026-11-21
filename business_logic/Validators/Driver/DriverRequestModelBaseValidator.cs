@@ -34,6 +34,19 @@ namespace business_logic.Validators
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .Matches(DriverLicenseNumberFormat.Pattern).WithMessage(_ => ValidationMessages.DriverLicenseNumberFormatInvalid)
                 .WithName(_ => FieldDisplayNames.DriverLicenseNumber);
+
+            RuleFor(x => x.PhoneNumber!.Trim())
+                .Matches(DriverConstraints.PhoneNumberPattern).WithMessage(_ => ValidationMessages.PhoneNumberFormatInvalid)
+                .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber))
+                .OverridePropertyName(nameof(DriverRequestModelBase.PhoneNumber))
+                .WithName(_ => FieldDisplayNames.PhoneNumber);
+
+            RuleFor(x => x.Email!.Trim())
+                .EmailAddress().WithMessage(_ => ValidationMessages.EmailAddressInvalid)
+                .MaximumLength(AccountConstraints.EmailMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
+                .When(x => !string.IsNullOrWhiteSpace(x.Email))
+                .OverridePropertyName(nameof(DriverRequestModelBase.Email))
+                .WithName(_ => FieldDisplayNames.Email);
         }
     }
 }

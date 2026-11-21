@@ -9,6 +9,10 @@ namespace business_logic
     {
         public ApplicationProfile()
         {
+            CreateMap<DriverRequestModelBase, Driver>()
+                .ForMember(driver => driver.PhoneNumber, mappingOptions => mappingOptions.MapFrom(model => NormalizeOptionalText(model.PhoneNumber)))
+                .ForMember(driver => driver.Email, mappingOptions => mappingOptions.MapFrom(model => NormalizeOptionalText(model.Email)))
+                .IncludeAllDerived();
             CreateMap<CreateDriverRequestModel, Driver>();
             CreateMap<UpdateDriverRequestModel, Driver>()
                 .ForMember(driver => driver.RowVersion, mappingOptions => mappingOptions.Ignore());
@@ -33,6 +37,11 @@ namespace business_logic
             CreateMap<IdentityUser, GetDispatcherResponseModel>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+        }
+
+        private static string? NormalizeOptionalText(string? optionalText)
+        {
+            return string.IsNullOrWhiteSpace(optionalText) ? null : optionalText.Trim();
         }
     }
 }

@@ -32,12 +32,14 @@ namespace business_logic
             services.AddScoped<IValidator<GetPagedListRequestModel<DispatcherSortField>>, GetPagedListRequestModelValidator<DispatcherSortField>>();
             services.AddScoped<IValidator<GetPagedListRequestModel<RouteSortField>>, GetPagedListRequestModelValidator<RouteSortField>>();
             services.AddScoped<IValidator<GetPagedListRequestModel<AuditLogSortField>>, GetPagedListRequestModelValidator<AuditLogSortField>>();
+            services.AddScoped<IValidator<GetPagedListRequestModel<DriverTripSortField>>, GetPagedListRequestModelValidator<DriverTripSortField>>();
         }
 
         private static void AddCustomServices(this IServiceCollection services)
         {
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IDriverService, DriverService>();
+            services.AddScoped<IDriverTripService, DriverTripService>();
             services.AddScoped<IAutoService, AutoService>();
             services.AddScoped<IRouteService, RouteService>();
             services.AddScoped<ILocationService, LocationService>();

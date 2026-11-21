@@ -24,6 +24,12 @@ namespace data_access.Configs
             builder.Property(d => d.Patronymic)
                 .HasMaxLength(DriverConstraints.PatronymicMaxLength);
 
+            builder.Property(d => d.PhoneNumber)
+                .HasMaxLength(DriverConstraints.PhoneNumberMaxLength);
+
+            builder.Property(d => d.Email)
+                .HasMaxLength(AccountConstraints.EmailMaxLength);
+
             builder.HasIndex(d => d.LicenseNumber)
                 .IsUnique()
                 .HasDatabaseName(UniqueIndexNames.DriverLicenseNumber);

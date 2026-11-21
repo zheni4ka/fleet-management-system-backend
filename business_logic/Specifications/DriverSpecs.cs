@@ -15,11 +15,30 @@ namespace business_logic.Specifications
             Surname = d.Surname,
             Patronymic = d.Patronymic,
             LicenseNumber = d.LicenseNumber,
+            PhoneNumber = d.PhoneNumber,
+            Email = d.Email,
             DepotId = d.DepotId,
             DepotName = d.Depot!.Name,
             IsArchived = d.IsArchived,
             RowVersion = d.RowVersion
         };
+
+        public class TripSummaryById : Specification<Driver, GetDriverTripSummaryResponseModel>
+        {
+            public TripSummaryById(int driverId)
+            {
+                Query.Where(d => d.Id == driverId);
+                Query.Select(d => new GetDriverTripSummaryResponseModel
+                {
+                    DriverId = d.Id,
+                    TripsCount = d.Trips.Count(),
+                    CompletedTripsCount = d.Trips.Count(t => t.FinalStatus == RouteStatus.Completed),
+                    CancelledTripsCount = d.Trips.Count(t => t.FinalStatus == RouteStatus.Cancelled),
+                    DrivingMinutes = d.Trips.Sum(t => (int?)t.DrivingMinutes) ?? 0,
+                    LastTripEndedAtUtc = d.Trips.Max(t => (DateTime?)t.EndedAtUtc)
+                });
+            }
+        }
 
         public class ResponseModelById : Specification<Driver, GetDriverResponseModel>
         {
@@ -108,7 +127,9 @@ namespace business_logic.Specifications
                         || d.Name.Contains(trimmedSearch)
                         || d.Surname.Contains(trimmedSearch)
                         || d.Patronymic.Contains(trimmedSearch)
-                        || d.LicenseNumber.Contains(trimmedSearch));
+                        || d.LicenseNumber.Contains(trimmedSearch)
+                        || (d.PhoneNumber != null && d.PhoneNumber.Contains(trimmedSearch))
+                        || (d.Email != null && d.Email.Contains(trimmedSearch)));
                 }
 
                 var sortField = pagedListRequest.Sort ?? DriverSortField.Id;

@@ -5,6 +5,8 @@ namespace data_access.data
         public const int RandomSeed = 2026;
         public const int HistoryDaysCount = 60;
         public const int PlanningHorizonDaysCount = 7;
+        public const string DriverPhoneNumberTemplate = "+3806710000{0:00}";
+        public const string DriverEmailTemplate = "{0}@fleet.example";
 
         public static readonly IReadOnlyList<(string Name, int HomeLocationId)> Depots =
         [

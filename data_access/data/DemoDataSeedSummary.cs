@@ -7,6 +7,7 @@ namespace data_access.data
         int DispatchersCount,
         int LocationsCount,
         int RoutesCount,
+        int DriverTripsCount,
         int MaintenancesCount,
         int AuditLogsCount);
 }

@@ -48,4 +48,5 @@
   <data name="SortDirection" xml:space="preserve"><value>Sort direction</value></data>
   <data name="SearchQuery" xml:space="preserve"><value>Search query</value></data>
   <data name="Country" xml:space="preserve"><value>Country</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>Phone number</value></data>
 </root>

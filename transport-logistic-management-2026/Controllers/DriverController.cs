@@ -15,10 +15,12 @@ namespace transport_logistic_management_2026.Controllers
     public class DriverController : ControllerBase
     {
         private readonly IDriverService _driverService;
+        private readonly IDriverTripService _driverTripService;
 
-        public DriverController(IDriverService driverService)
+        public DriverController(IDriverService driverService, IDriverTripService driverTripService)
         {
             _driverService = driverService;
+            _driverTripService = driverTripService;
         }
 
         [HttpGet("getDriversPagedList")]
@@ -39,6 +41,22 @@ namespace transport_logistic_management_2026.Controllers
         public async Task<ActionResult<GetDriverResponseModel>> GetDriverById([FromRoute] int id)
         {
             return Ok(await _driverService.GetAsync(id));
+        }
+
+        [HttpGet("getDriverTripsPagedList")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<GetPagedListResponseModel<GetDriverTripResponseModel>>> GetDriverTripsPagedList(
+            [FromQuery] GetDriverTripsRequestModel driverTripsRequest,
+            [FromQuery] GetPagedListRequestModel<DriverTripSortField> pagedListRequest)
+        {
+            return Ok(await _driverTripService.GetPagedListAsync(driverTripsRequest, pagedListRequest));
+        }
+
+        [HttpGet("getDriverTripSummary/{driverId:int}")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<GetDriverTripSummaryResponseModel>> GetDriverTripSummary([FromRoute] int driverId)
+        {
+            return Ok(await _driverTripService.GetSummaryAsync(driverId));
         }
 
         [HttpPost("createDriver")]

@@ -31,4 +31,5 @@
   <data name="AutoNumberFormatInvalid" xml:space="preserve"><value>The license plate must have the format АА1234АА (uppercase Ukrainian letters and 4 digits).</value></data>
   <data name="DriverLicenseNumberFormatInvalid" xml:space="preserve"><value>The driver&apos;s license number must have the format ABC 123456.</value></data>
   <data name="DriverNameFormatInvalid" xml:space="preserve"><value>The first name, last name and patronymic must start with an uppercase Ukrainian letter and contain only Ukrainian letters, an apostrophe or a hyphen.</value></data>
+  <data name="PhoneNumberFormatInvalid" xml:space="preserve"><value>The field "{PropertyName}" must be a phone number in international format, for example +380671234567.</value></data>
 </root>

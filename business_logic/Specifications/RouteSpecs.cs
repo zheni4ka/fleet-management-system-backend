@@ -35,6 +35,7 @@ namespace business_logic.Specifications
             DriverId = r.DriverId,
             DriverName = r.Driver.Name,
             DriverSurname = r.Driver.Surname,
+            DriverPhoneNumber = r.Driver.PhoneNumber,
             Status = r.Status,
             DepotId = r.DepotId,
             DepotName = r.Depot!.Name,

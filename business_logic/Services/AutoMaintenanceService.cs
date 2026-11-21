@@ -16,6 +16,7 @@ namespace business_logic.Services
         private readonly IRepository<Route> _routeRepository;
         private readonly IAuditLogService _auditLogService;
         private readonly IAutoStatusSyncService _autoStatusSyncService;
+        private readonly IDriverTripService _driverTripService;
         private readonly IDatabaseApplicationLockService _databaseApplicationLockService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -28,6 +29,7 @@ namespace business_logic.Services
             IRepository<Route> routeRepository,
             IAuditLogService auditLogService,
             IAutoStatusSyncService autoStatusSyncService,
+            IDriverTripService driverTripService,
             IDatabaseApplicationLockService databaseApplicationLockService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
@@ -39,6 +41,7 @@ namespace business_logic.Services
             _routeRepository = routeRepository;
             _auditLogService = auditLogService;
             _autoStatusSyncService = autoStatusSyncService;
+            _driverTripService = driverTripService;
             _databaseApplicationLockService = databaseApplicationLockService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -77,6 +80,7 @@ namespace business_logic.Services
             foreach (var route in affectedRoutes)
             {
                 route.Status = RouteStatus.Cancelled;
+                await _driverTripService.RecordFinishedTripAsync(route, auto);
             }
 
             var maintenance = _mapper.Map<AutoMaintenance>(model);

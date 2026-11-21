@@ -34,5 +34,6 @@ namespace business_logic.Constants
         public static string AutoNumberFormatInvalid => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(AutoNumberFormatInvalid));
         public static string DriverLicenseNumberFormatInvalid => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(DriverLicenseNumberFormatInvalid));
         public static string DriverNameFormatInvalid => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(DriverNameFormatInvalid));
+        public static string PhoneNumberFormatInvalid => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(PhoneNumberFormatInvalid));
     }
 }

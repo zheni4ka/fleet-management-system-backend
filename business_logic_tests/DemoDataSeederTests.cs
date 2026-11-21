@@ -34,6 +34,8 @@ namespace business_logic_tests
             Assert.Equal(4, demoDataSeedSummary.MaintenancesCount);
             Assert.InRange(demoDataSeedSummary.RoutesCount, 120, 190);
             Assert.True(demoDataSeedSummary.AuditLogsCount > demoDataSeedSummary.RoutesCount * 2);
+            var completedRoutesCount = await ReadAsync(dbContext => dbContext.Set<Route>().CountAsync(route => route.Status == RouteStatus.Completed));
+            Assert.Equal(completedRoutesCount, demoDataSeedSummary.DriverTripsCount);
         }
 
         [Fact]
@@ -109,6 +111,8 @@ namespace business_logic_tests
                 Surname = driver.Surname,
                 Patronymic = driver.Patronymic,
                 LicenseNumber = driver.LicenseNumber,
+                PhoneNumber = driver.PhoneNumber,
+                Email = driver.Email,
                 DepotId = driver.DepotId
             }).IsValid, driver.LicenseNumber));
         }

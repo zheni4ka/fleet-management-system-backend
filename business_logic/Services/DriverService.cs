@@ -14,6 +14,7 @@ namespace business_logic.Services
     {
         private readonly IRepository<Driver> _driverRepository;
         private readonly IRepository<Route> _routeRepository;
+        private readonly IRepository<DriverTrip> _driverTripRepository;
         private readonly IDepotService _depotService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUnitOfWork _unitOfWork;
@@ -25,6 +26,7 @@ namespace business_logic.Services
         public DriverService(
             IRepository<Driver> driverRepository,
             IRepository<Route> routeRepository,
+            IRepository<DriverTrip> driverTripRepository,
             IDepotService depotService,
             IAuditLogService auditLogService,
             IUnitOfWork unitOfWork,
@@ -35,6 +37,7 @@ namespace business_logic.Services
         {
             _driverRepository = driverRepository;
             _routeRepository = routeRepository;
+            _driverTripRepository = driverTripRepository;
             _depotService = depotService;
             _auditLogService = auditLogService;
             _unitOfWork = unitOfWork;
@@ -115,7 +118,8 @@ namespace business_logic.Services
                 throw new BusinessRuleException(string.Format(ExceptionMessages.DriverHasActiveRoutesTemplate, id));
             }
 
-            var isDriverReferencedByRoutes = await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByDriverId(id));
+            var isDriverReferencedByRoutes = await _routeRepository.AnyBySpecAsync(new RouteSpecs.ByDriverId(id))
+                || await _driverTripRepository.AnyBySpecAsync(new DriverTripSpecs.ByDriverId(id));
             if (isDriverReferencedByRoutes)
             {
                 ArchivingHelper.ArchiveEntity(driver);

@@ -51,5 +51,6 @@ namespace business_logic.Constants
         public static string SortDirection => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(SortDirection));
         public static string SearchQuery => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(SearchQuery));
         public static string Country => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(Country));
+        public static string PhoneNumber => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(PhoneNumber));
     }
 }

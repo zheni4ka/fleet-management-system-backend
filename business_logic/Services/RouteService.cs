@@ -19,6 +19,7 @@ namespace business_logic.Services
         private readonly IRepository<AutoMaintenance> _maintenanceRepository;
         private readonly IAuditLogService _auditLogService;
         private readonly IAutoStatusSyncService _autoStatusSyncService;
+        private readonly IDriverTripService _driverTripService;
         private readonly IDatabaseApplicationLockService _databaseApplicationLockService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -36,6 +37,7 @@ namespace business_logic.Services
             IRepository<AutoMaintenance> maintenanceRepository,
             IAuditLogService auditLogService,
             IAutoStatusSyncService autoStatusSyncService,
+            IDriverTripService driverTripService,
             IDatabaseApplicationLockService databaseApplicationLockService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
@@ -52,6 +54,7 @@ namespace business_logic.Services
             _maintenanceRepository = maintenanceRepository;
             _auditLogService = auditLogService;
             _autoStatusSyncService = autoStatusSyncService;
+            _driverTripService = driverTripService;
             _databaseApplicationLockService = databaseApplicationLockService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -191,6 +194,10 @@ namespace business_logic.Services
             route.ArrivalTimeUtc = arrivalTimeUtc;
             RecordActualRouteTimesOnStatusEntry(route, previousRouteStatus);
             route.DepotId = assignedAuto.DepotId;
+            if (previousRouteStatus != route.Status)
+            {
+                await _driverTripService.RecordFinishedTripAsync(route, assignedAuto);
+            }
             await _auditLogService.LogActionAsync(AuditAction.RouteUpdated, route.Id);
             await _unitOfWork.SaveChangesAsync();
 

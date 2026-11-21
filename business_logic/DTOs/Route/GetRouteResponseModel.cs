@@ -28,6 +28,7 @@ namespace business_logic.DTOs
         public int DriverId { get; init; }
         public string DriverName { get; init; }
         public string DriverSurname { get; init; }
+        public string? DriverPhoneNumber { get; init; }
         public RouteStatus Status { get; init; }
         public int DepotId { get; init; }
         public string DepotName { get; init; } = string.Empty;

@@ -34,6 +34,7 @@ namespace data_access.data
             ApplyDepotScopeFilter<Auto>(modelBuilder);
             ApplyDepotScopeFilter<Driver>(modelBuilder);
             ApplyDepotScopeFilter<Route>(modelBuilder);
+            ApplyDepotScopeFilter<DriverTrip>(modelBuilder);
             modelBuilder.Entity<AutoMaintenance>().HasQueryFilter(
                 QueryFilterNames.DepotScope,
                 autoMaintenance => IsDepotScopeUnrestricted || AccessibleDepotIds.Contains(autoMaintenance.Auto.DepotId));
