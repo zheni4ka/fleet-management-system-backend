@@ -5,6 +5,7 @@ namespace business_logic.DTOs
         public string Name { get; init; }
         public string Description { get; init; }
         public DateTime ServiceDate { get; init; }
+        public DateTime? PlannedEndDate { get; init; }
         public int AutoId { get; init; }
     }
 }

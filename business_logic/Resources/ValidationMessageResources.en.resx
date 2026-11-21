@@ -17,4 +17,5 @@
   <data name="AdminDepotsForbidden" xml:space="preserve"><value>An administrator has access to all depots, so no depots are assigned.</value></data>
   <data name="UnknownTimeZoneId" xml:space="preserve"><value>The field "{PropertyName}" must be an IANA time zone id, for example Europe/Kyiv.</value></data>
   <data name="UtcTimeRequired" xml:space="preserve"><value>The field "{PropertyName}" must be a UTC time (with the Z suffix).</value></data>
+  <data name="MaintenancePlannedEndMustFollowStart" xml:space="preserve"><value>The planned end of maintenance must be later than its start.</value></data>
 </root>

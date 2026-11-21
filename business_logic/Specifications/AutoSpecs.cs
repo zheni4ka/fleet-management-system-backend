@@ -135,11 +135,12 @@ namespace business_logic.Specifications
             }
         }
 
-        public class WithRoutesDepartingInPeriod : Specification<Auto>
+        public class WithRoutesOverlappingPeriod : Specification<Auto>
         {
-            public WithRoutesDepartingInPeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
+            public WithRoutesOverlappingPeriod(DateTime periodStartUtc, DateTime periodEndExclusiveUtc)
             {
-                Query.Where(a => a.Routes.Any(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime));
+                var routeOverlapsPeriodCriteria = RouteSpecs.CreateOverlappingPeriodCriteria(periodStartUtc, periodEndExclusiveUtc);
+                Query.Where(a => a.Routes.AsQueryable().Any(routeOverlapsPeriodCriteria));
             }
         }
 

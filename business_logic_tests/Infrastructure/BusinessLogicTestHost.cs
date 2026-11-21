@@ -142,9 +142,17 @@ namespace business_logic_tests.Infrastructure
             };
         }
 
-        public static AutoMaintenance CreateMaintenance(Auto auto, DateTime serviceDate, bool isCompleted = false)
+        public static AutoMaintenance CreateMaintenance(Auto auto, DateTime serviceDate, bool isCompleted = false, DateTime? plannedEndDate = null)
         {
-            return new AutoMaintenance { Auto = auto, Name = "ТО-1", Description = "Заміна мастила", ServiceDate = serviceDate, IsCompleted = isCompleted };
+            return new AutoMaintenance
+            {
+                Auto = auto,
+                Name = "ТО-1",
+                Description = "Заміна мастила",
+                ServiceDate = serviceDate,
+                PlannedEndDate = plannedEndDate,
+                IsCompleted = isCompleted
+            };
         }
 
         public void Dispose()

@@ -12,6 +12,8 @@ namespace business_logic.Entities
         public Location DestinationLocation { get; set; }
         public DateTime DepartureTimeUtc { get; set; }
         public DateTime ArrivalTimeUtc { get; set; }
+        public DateTime? ActualDepartureTimeUtc { get; set; }
+        public DateTime? ActualArrivalTimeUtc { get; set; }
         public RouteStatus Status { get; set; } = RouteStatus.Planned;
         public Auto Auto { get; set; }
         public int AutoId { get; set; }

@@ -19,6 +19,8 @@ namespace business_logic.DTOs
         public double? DestinationLocationLongitude { get; init; }
         public DateTime DepartureTimeUtc { get; init; }
         public DateTime ArrivalTimeUtc { get; init; }
+        public DateTime? ActualDepartureTimeUtc { get; init; }
+        public DateTime? ActualArrivalTimeUtc { get; init; }
         public int AutoId { get; init; }
         public string AutoMark { get; init; }
         public string AutoModel { get; init; }

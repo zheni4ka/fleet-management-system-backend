@@ -14,5 +14,9 @@ namespace business_logic.Constants
         public static string AutoMaintenance => LocalizedResourceReader.GetRequiredLocalizedResource(EntityDisplayNamesResourceManager, nameof(AutoMaintenance));
         public static string User => LocalizedResourceReader.GetRequiredLocalizedResource(EntityDisplayNamesResourceManager, nameof(User));
         public static string Depot => LocalizedResourceReader.GetRequiredLocalizedResource(EntityDisplayNamesResourceManager, nameof(Depot));
+        public static string RouteStatusPlanned => LocalizedResourceReader.GetRequiredLocalizedResource(EntityDisplayNamesResourceManager, nameof(RouteStatusPlanned));
+        public static string RouteStatusInProgress => LocalizedResourceReader.GetRequiredLocalizedResource(EntityDisplayNamesResourceManager, nameof(RouteStatusInProgress));
+        public static string RouteStatusCompleted => LocalizedResourceReader.GetRequiredLocalizedResource(EntityDisplayNamesResourceManager, nameof(RouteStatusCompleted));
+        public static string RouteStatusCancelled => LocalizedResourceReader.GetRequiredLocalizedResource(EntityDisplayNamesResourceManager, nameof(RouteStatusCancelled));
     }
 }

@@ -26,6 +26,8 @@ namespace business_logic.Specifications
             DestinationLocationLongitude = r.DestinationLocation.Longitude,
             DepartureTimeUtc = r.DepartureTimeUtc,
             ArrivalTimeUtc = r.ArrivalTimeUtc,
+            ActualDepartureTimeUtc = r.ActualDepartureTimeUtc,
+            ActualArrivalTimeUtc = r.ActualArrivalTimeUtc,
             AutoId = r.AutoId,
             AutoMark = r.Auto.Mark,
             AutoModel = r.Auto.Model,
@@ -129,13 +131,19 @@ namespace business_logic.Specifications
             }
         }
 
-        public class ActiveByAutoFrom : Specification<Route>
+        public class ActiveByAutoOverlappingMaintenanceInterval : Specification<Route>
         {
-            public ActiveByAutoFrom(int autoId, DateTime from)
+            public ActiveByAutoOverlappingMaintenanceInterval(int autoId, DateTime maintenanceStartUtc, DateTime? maintenancePlannedEndUtc)
             {
                 Query.Where(r => r.AutoId == autoId
                     && RouteStatusGroups.Active.Contains(r.Status)
-                    && r.DepartureTimeUtc >= from);
+                    && r.ArrivalTimeUtc > maintenanceStartUtc);
+
+                if (maintenancePlannedEndUtc.HasValue)
+                {
+                    var maintenancePlannedEndUtcValue = maintenancePlannedEndUtc.Value;
+                    Query.Where(r => r.DepartureTimeUtc < maintenancePlannedEndUtcValue);
+                }
             }
         }
 
@@ -182,11 +190,17 @@ namespace business_logic.Specifications
             }
         }
 
-        public class ByDeparturePeriod : Specification<Route, GetRouteResponseModel>
+        public static Expression<Func<Route, bool>> CreateOverlappingPeriodCriteria(DateTime periodStartUtc, DateTime periodEndExclusiveUtc)
         {
-            public ByDeparturePeriod(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
+            return r => (r.ActualDepartureTimeUtc ?? r.DepartureTimeUtc) < periodEndExclusiveUtc
+                && (r.ActualArrivalTimeUtc ?? r.ArrivalTimeUtc) > periodStartUtc;
+        }
+
+        public class OverlappingPeriod : Specification<Route, GetRouteResponseModel>
+        {
+            public OverlappingPeriod(DateTime periodStartUtc, DateTime periodEndExclusiveUtc)
             {
-                Query.Where(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime)
+                Query.Where(CreateOverlappingPeriodCriteria(periodStartUtc, periodEndExclusiveUtc))
                     .OrderBy(r => r.DepartureTimeUtc)
                     .ThenBy(r => r.Id);
                 Query.Select(GetRouteResponseModelSelector);

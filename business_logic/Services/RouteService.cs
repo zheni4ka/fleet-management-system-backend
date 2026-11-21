@@ -88,21 +88,23 @@ namespace business_logic.Services
         {
             await _periodReportValidator.ValidateAndThrowAsync(periodReportRequest);
 
-            var periodStartDateTime = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(periodReportRequest.PeriodStartDate);
-            var periodEndExclusiveDateTime = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(periodReportRequest.PeriodEndDate.AddDays(1));
-            var periodRoutesSpecification = new RouteSpecs.ByDeparturePeriod(periodStartDateTime, periodEndExclusiveDateTime);
+            var periodStartUtc = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(periodReportRequest.PeriodStartDate);
+            var periodEndExclusiveUtc = BusinessTimeZoneConverter.ConvertBusinessDateStartToUtc(periodReportRequest.PeriodEndDate.AddDays(1));
+            var periodRoutesSpecification = new RouteSpecs.OverlappingPeriod(periodStartUtc, periodEndExclusiveUtc);
 
             var periodRoutes = await _routeRepository.GetProjectedListBySpecAsync(periodRoutesSpecification);
             var periodRoutesCountsByStatus = await _routeRepository.GetCountsByGroupKeyBySpecAsync(periodRoutesSpecification, route => route.Status);
             var involvedAutosCount = await _autoRepository.CountBySpecAsync(
-                new AutoSpecs.WithRoutesDepartingInPeriod(periodStartDateTime, periodEndExclusiveDateTime));
+                new AutoSpecs.WithRoutesOverlappingPeriod(periodStartUtc, periodEndExclusiveUtc));
             var driverRoutesCountSummaries = await _driverRepository.GetProjectedListBySpecAsync(
-                new DriverSpecs.RoutesPeriodReportSummaries(periodStartDateTime, periodEndExclusiveDateTime));
+                new DriverSpecs.RoutesPeriodReportSummaries(periodStartUtc, periodEndExclusiveUtc));
 
             var completedPeriodRoutes = periodRoutes.Where(route => route.Status == RouteStatus.Completed).ToList();
             var completedRoutesDrivingHoursByDriverId = completedPeriodRoutes
                 .GroupBy(route => route.DriverId)
-                .ToDictionary(driverCompletedRoutes => driverCompletedRoutes.Key, GetDrivingHours);
+                .ToDictionary(
+                    driverCompletedRoutes => driverCompletedRoutes.Key,
+                    driverCompletedRoutes => GetDrivingHoursWithinPeriod(driverCompletedRoutes, periodStartUtc, periodEndExclusiveUtc));
             var driverSummaries = driverRoutesCountSummaries
                 .Select(driverSummary => driverSummary with
                 {
@@ -118,7 +120,7 @@ namespace business_logic.Services
                 InProgressRoutesCount: periodRoutesCountsByStatus.GetValueOrDefault(RouteStatus.InProgress),
                 CompletedRoutesCount: periodRoutesCountsByStatus.GetValueOrDefault(RouteStatus.Completed),
                 CancelledRoutesCount: periodRoutesCountsByStatus.GetValueOrDefault(RouteStatus.Cancelled),
-                CompletedRoutesDrivingHours: GetDrivingHours(completedPeriodRoutes),
+                CompletedRoutesDrivingHours: GetDrivingHoursWithinPeriod(completedPeriodRoutes, periodStartUtc, periodEndExclusiveUtc),
                 InvolvedAutosCount: involvedAutosCount,
                 InvolvedDriversCount: driverSummaries.Count,
                 DriverSummaries: driverSummaries,
@@ -130,6 +132,7 @@ namespace business_logic.Services
             await _createValidator.ValidateAndThrowAsync(model);
 
             var route = _mapper.Map<Route>(model);
+            RecordActualRouteTimesOnStatusEntry(route, RouteStatus.Planned);
             await using (var routeCreationTransaction = await _unitOfWork.BeginTransactionAsync())
             {
                 await AcquireAssignmentLocksAsync(model.AutoId, model.DriverId);
@@ -162,7 +165,10 @@ namespace business_logic.Services
             await AcquireAssignmentLocksAsync(model.AutoId, model.DriverId);
             var route = await GetRouteOrThrowAsync(model.Id);
             _routeRepository.SetExpectedRowVersion(route, model.RowVersion);
+            EnsureRouteStatusTransitionIsAllowed(route, model.Status);
+            EnsureFinalRouteAssignmentIsUnchanged(route, model.AutoId, model.DriverId);
             var previousAutoId = route.AutoId;
+            var previousRouteStatus = route.Status;
 
             var assignedAuto = previousAutoId == model.AutoId
                 ? await GetAutoOrThrowAsync(model.AutoId)
@@ -178,6 +184,7 @@ namespace business_logic.Services
             }
 
             _mapper.Map(model, route);
+            RecordActualRouteTimesOnStatusEntry(route, previousRouteStatus);
             route.DepotId = assignedAuto.DepotId;
             await _auditLogService.LogActionAsync(AuditAction.RouteUpdated, route.Id);
             await _unitOfWork.SaveChangesAsync();
@@ -206,10 +213,62 @@ namespace business_logic.Services
             await routeDeletionTransaction.CommitAsync();
         }
 
-        private static double GetDrivingHours(IEnumerable<GetRouteResponseModel> routes)
+        private static double GetDrivingHoursWithinPeriod(IEnumerable<GetRouteResponseModel> routes, DateTime periodStartUtc, DateTime periodEndExclusiveUtc)
         {
-            var drivingHours = routes.Sum(route => (route.ArrivalTimeUtc - route.DepartureTimeUtc).TotalHours);
+            var drivingHours = routes.Sum(route =>
+            {
+                var effectiveDepartureTimeUtc = route.ActualDepartureTimeUtc ?? route.DepartureTimeUtc;
+                var effectiveArrivalTimeUtc = route.ActualArrivalTimeUtc ?? route.ArrivalTimeUtc;
+                var drivingStartWithinPeriodUtc = effectiveDepartureTimeUtc > periodStartUtc ? effectiveDepartureTimeUtc : periodStartUtc;
+                var drivingEndWithinPeriodUtc = effectiveArrivalTimeUtc < periodEndExclusiveUtc ? effectiveArrivalTimeUtc : periodEndExclusiveUtc;
+                return Math.Max(0, (drivingEndWithinPeriodUtc - drivingStartWithinPeriodUtc).TotalHours);
+            });
             return Math.Round(drivingHours, 1);
+        }
+
+        private static void RecordActualRouteTimesOnStatusEntry(Route route, RouteStatus previousRouteStatus)
+        {
+            if (route.Status == previousRouteStatus)
+            {
+                return;
+            }
+
+            if (route.Status == RouteStatus.InProgress)
+            {
+                route.ActualDepartureTimeUtc = DateTime.UtcNow;
+            }
+
+            if (route.Status == RouteStatus.Completed)
+            {
+                route.ActualArrivalTimeUtc = DateTime.UtcNow;
+            }
+        }
+
+        private static void EnsureRouteStatusTransitionIsAllowed(Route route, RouteStatus targetRouteStatus)
+        {
+            var isRouteStatusUnchanged = route.Status == targetRouteStatus;
+            if (isRouteStatusUnchanged || RouteStatusTransitions.AllowedTargetStatusesBySourceStatus[route.Status].Contains(targetRouteStatus))
+            {
+                return;
+            }
+
+            throw new BusinessRuleException(string.Format(
+                ExceptionMessages.RouteStatusTransitionForbiddenTemplate,
+                route.Id,
+                RouteStatusDisplayNameResolver.GetRouteStatusDisplayName(route.Status),
+                RouteStatusDisplayNameResolver.GetRouteStatusDisplayName(targetRouteStatus)));
+        }
+
+        private static void EnsureFinalRouteAssignmentIsUnchanged(Route route, int requestedAutoId, int requestedDriverId)
+        {
+            var isRouteAssignmentChanged = route.AutoId != requestedAutoId || route.DriverId != requestedDriverId;
+            if (isRouteAssignmentChanged && RouteStatusGroups.Final.Contains(route.Status))
+            {
+                throw new BusinessRuleException(string.Format(
+                    ExceptionMessages.FinalRouteAssignmentChangeForbiddenTemplate,
+                    route.Id,
+                    RouteStatusDisplayNameResolver.GetRouteStatusDisplayName(route.Status)));
+            }
         }
 
         private Task AcquireAssignmentLocksAsync(int autoId, int driverId)

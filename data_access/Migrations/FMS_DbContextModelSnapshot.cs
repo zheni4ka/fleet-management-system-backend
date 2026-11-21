@@ -342,6 +342,9 @@ namespace data_access.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<DateTime?>("PlannedEndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -868,6 +871,12 @@ namespace data_access.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ActualArrivalTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ActualDepartureTimeUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ArrivalTimeUtc")
                         .HasColumnType("datetime2");

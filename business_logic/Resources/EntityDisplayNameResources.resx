@@ -11,4 +11,8 @@
   <data name="AutoMaintenance" xml:space="preserve"><value>Техобслуговування</value></data>
   <data name="User" xml:space="preserve"><value>Користувача</value></data>
   <data name="Depot" xml:space="preserve"><value>Депо</value></data>
+  <data name="RouteStatusPlanned" xml:space="preserve"><value>Заплановано</value></data>
+  <data name="RouteStatusInProgress" xml:space="preserve"><value>В процесі</value></data>
+  <data name="RouteStatusCompleted" xml:space="preserve"><value>Виконано</value></data>
+  <data name="RouteStatusCancelled" xml:space="preserve"><value>Скасовано</value></data>
 </root>

@@ -53,4 +53,6 @@
   <data name="CityGeocodingServiceUnavailable" xml:space="preserve"><value>Сервіс пошуку міст тимчасово недоступний. Спробуйте пізніше.</value></data>
   <data name="CityGeocodingCandidateNotFoundTemplate" xml:space="preserve"><value>Місто з ідентифікатором GeoNames &apos;{0}&apos; не знайдено в сервісі пошуку міст.</value></data>
   <data name="CityGeocodingTimeZoneUnsupportedTemplate" xml:space="preserve"><value>Часовий пояс &apos;{1}&apos; міста &apos;{0}&apos; не підтримується сервером.</value></data>
+  <data name="RouteStatusTransitionForbiddenTemplate" xml:space="preserve"><value>Маршрут з ідентифікатором &apos;{0}&apos; не можна перевести зі статусу &apos;{1}&apos; у статус &apos;{2}&apos;.</value></data>
+  <data name="FinalRouteAssignmentChangeForbiddenTemplate" xml:space="preserve"><value>Маршрут з ідентифікатором &apos;{0}&apos; має статус &apos;{1}&apos;, тому змінити його автомобіль або водія не можна.</value></data>
 </root>

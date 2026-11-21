@@ -18,6 +18,12 @@ namespace data_access.Configs
             builder.Property(r => r.ArrivalTimeUtc).HasConversion(
                 utcTime => utcTime,
                 persistedUtcTime => DateTime.SpecifyKind(persistedUtcTime, DateTimeKind.Utc));
+            builder.Property(r => r.ActualDepartureTimeUtc).HasConversion(
+                utcTime => utcTime,
+                persistedUtcTime => persistedUtcTime.HasValue ? DateTime.SpecifyKind(persistedUtcTime.Value, DateTimeKind.Utc) : persistedUtcTime);
+            builder.Property(r => r.ActualArrivalTimeUtc).HasConversion(
+                utcTime => utcTime,
+                persistedUtcTime => persistedUtcTime.HasValue ? DateTime.SpecifyKind(persistedUtcTime.Value, DateTimeKind.Utc) : persistedUtcTime);
             builder.ToTable("Routes");
 
             builder.HasIndex(r => r.DepartureTimeUtc);

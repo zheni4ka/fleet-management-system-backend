@@ -20,5 +20,6 @@ namespace business_logic.Constants
         public static string AdminDepotsForbidden => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(AdminDepotsForbidden));
         public static string UnknownTimeZoneId => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(UnknownTimeZoneId));
         public static string UtcTimeRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(UtcTimeRequired));
+        public static string MaintenancePlannedEndMustFollowStart => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(MaintenancePlannedEndMustFollowStart));
     }
 }

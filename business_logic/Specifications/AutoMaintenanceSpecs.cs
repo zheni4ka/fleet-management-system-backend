@@ -35,11 +35,10 @@ namespace business_logic.Specifications
         {
             public IncompleteIdOverlappingRouteIntervalForAuto(int autoId, DateTime departureBusinessDateTime, DateTime arrivalBusinessDateTime)
             {
-                var departureBusinessDayStartDateTime = departureBusinessDateTime.Date;
                 Query.Where(am => am.AutoId == autoId
                     && !am.IsCompleted
-                    && am.ServiceDate >= departureBusinessDayStartDateTime
-                    && am.ServiceDate < arrivalBusinessDateTime)
+                    && am.ServiceDate < arrivalBusinessDateTime
+                    && (am.PlannedEndDate == null || am.PlannedEndDate > departureBusinessDateTime))
                     .OrderBy(am => am.ServiceDate);
                 Query.Select(am => (int?)am.Id);
             }

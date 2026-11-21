@@ -130,20 +130,19 @@ namespace business_logic.Specifications
 
         public class RoutesPeriodReportSummaries : Specification<Driver, GetRoutesPeriodReportDriverSummaryResponseModel>
         {
-            public RoutesPeriodReportSummaries(DateTime periodStartDateTime, DateTime periodEndExclusiveDateTime)
+            public RoutesPeriodReportSummaries(DateTime periodStartUtc, DateTime periodEndExclusiveUtc)
             {
-                Query.Where(d => d.Routes.Any(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime))
-                    .OrderByDescending(d => d.Routes.Count(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime))
+                var routeOverlapsPeriodCriteria = RouteSpecs.CreateOverlappingPeriodCriteria(periodStartUtc, periodEndExclusiveUtc);
+                Query.Where(d => d.Routes.AsQueryable().Any(routeOverlapsPeriodCriteria))
+                    .OrderByDescending(d => d.Routes.AsQueryable().Count(routeOverlapsPeriodCriteria))
                     .ThenBy(d => d.Id);
                 Query.Select(d => new GetRoutesPeriodReportDriverSummaryResponseModel
                 {
                     DriverId = d.Id,
                     DriverName = d.Name,
                     DriverSurname = d.Surname,
-                    RoutesCount = d.Routes.Count(r => r.DepartureTimeUtc >= periodStartDateTime && r.DepartureTimeUtc < periodEndExclusiveDateTime),
-                    CompletedRoutesCount = d.Routes.Count(r => r.DepartureTimeUtc >= periodStartDateTime
-                        && r.DepartureTimeUtc < periodEndExclusiveDateTime
-                        && r.Status == RouteStatus.Completed)
+                    RoutesCount = d.Routes.AsQueryable().Count(routeOverlapsPeriodCriteria),
+                    CompletedRoutesCount = d.Routes.AsQueryable().Where(routeOverlapsPeriodCriteria).Count(r => r.Status == RouteStatus.Completed)
                 });
             }
         }

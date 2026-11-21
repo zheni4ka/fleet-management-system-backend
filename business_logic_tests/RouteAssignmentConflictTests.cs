@@ -104,16 +104,17 @@ namespace business_logic_tests
         }
 
         [Fact]
-        public async Task UpdateAsync_ReactivateCancelledRouteThatOverlapsActiveRoute_ThrowsAssignmentConflict()
+        public async Task UpdateAsync_StartPlannedRouteThatOverlapsInProgressRoute_ThrowsAssignmentConflict()
         {
             var auto = BusinessLogicTestHost.CreateAuto("АА1111АА");
             var driver = BusinessLogicTestHost.CreateDriver("ABC 111111");
-            var activeRoute = BusinessLogicTestHost.CreateRoute(auto, driver, ExistingRouteDeparture, ExistingRouteArrival);
-            var cancelledRoute = BusinessLogicTestHost.CreateRoute(auto, driver, ExistingRouteDeparture, ExistingRouteArrival, RouteStatus.Cancelled);
-            await _testHost.SeedAsync(auto, driver, activeRoute, cancelledRoute);
+            var otherDriver = BusinessLogicTestHost.CreateDriver("ABC 222222");
+            var inProgressRoute = BusinessLogicTestHost.CreateRoute(auto, otherDriver, ExistingRouteDeparture, ExistingRouteArrival, RouteStatus.InProgress);
+            var plannedRoute = BusinessLogicTestHost.CreateRoute(auto, driver, ExistingRouteDeparture.AddHours(1), ExistingRouteArrival.AddHours(1));
+            await _testHost.SeedAsync(auto, driver, otherDriver, inProgressRoute, plannedRoute);
 
             await Assert.ThrowsAsync<AssignmentConflictException>(() => _testHost.RunInNewScopeAsync<IRouteService>(
-                routeService => routeService.UpdateAsync(RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(cancelledRoute, auto.Id, driver.Id, RouteStatus.Planned))));
+                routeService => routeService.UpdateAsync(RouteRequestModelFactory.CreateUpdateRouteRequestModelFor(plannedRoute, auto.Id, driver.Id, RouteStatus.InProgress))));
         }
 
         public void Dispose()

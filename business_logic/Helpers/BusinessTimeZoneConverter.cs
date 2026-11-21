@@ -12,6 +12,12 @@ namespace business_logic.Helpers
             return TimeZoneInfo.ConvertTimeToUtc(businessDateStartDateTime, BusinessTimeZoneInfo);
         }
 
+        public static DateTime ConvertBusinessDateTimeToUtc(DateTime businessDateTime)
+        {
+            var unspecifiedKindBusinessDateTime = DateTime.SpecifyKind(businessDateTime, DateTimeKind.Unspecified);
+            return TimeZoneInfo.ConvertTimeToUtc(unspecifiedKindBusinessDateTime, BusinessTimeZoneInfo);
+        }
+
         public static DateTime ConvertUtcToBusinessDateTime(DateTime utcDateTime)
         {
             if (utcDateTime.Kind != DateTimeKind.Utc)

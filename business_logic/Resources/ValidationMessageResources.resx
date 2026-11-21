@@ -17,4 +17,5 @@
   <data name="AdminDepotsForbidden" xml:space="preserve"><value>Адміністратор має доступ до всіх депо, тому депо йому не призначаються.</value></data>
   <data name="UnknownTimeZoneId" xml:space="preserve"><value>Поле «{PropertyName}» має бути ідентифікатором часового поясу IANA, наприклад Europe/Kyiv.</value></data>
   <data name="UtcTimeRequired" xml:space="preserve"><value>Поле «{PropertyName}» має бути часом UTC (із суфіксом Z).</value></data>
+  <data name="MaintenancePlannedEndMustFollowStart" xml:space="preserve"><value>Запланований кінець техобслуговування має бути пізніше за його початок.</value></data>
 </root>

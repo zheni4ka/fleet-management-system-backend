@@ -21,6 +21,10 @@ namespace business_logic.Validators.AM
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .MaximumLength(AutoMaintenanceConstraints.DescriptionMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
                 .WithName("Опис проблеми");
+
+            RuleFor(x => x.PlannedEndDate)
+                .GreaterThan(x => x.ServiceDate).WithMessage(_ => ValidationMessages.MaintenancePlannedEndMustFollowStart)
+                .When(x => x.PlannedEndDate.HasValue);
         }
     }
 }
