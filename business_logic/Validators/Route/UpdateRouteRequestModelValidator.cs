@@ -10,31 +10,31 @@ namespace business_logic.Validators.Route
         {
             RuleFor(x => x.Id)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Ідентифікатор");
+                .WithName(_ => FieldDisplayNames.Id);
 
             RuleFor(x => x.RowVersion)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .WithName("Версія запису");
+                .WithName(_ => FieldDisplayNames.RowVersion);
 
             RuleFor(x => x.StartLocationId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Початкова локація");
+                .WithName(_ => FieldDisplayNames.StartLocation);
 
             RuleFor(x => x.DestinationLocationId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Кінцева локація");
+                .WithName(_ => FieldDisplayNames.DestinationLocation);
 
             RuleFor(x => x.AutoId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Автомобіль");
+                .WithName(_ => FieldDisplayNames.Auto);
 
             RuleFor(x => x.DriverId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Водій");
+                .WithName(_ => FieldDisplayNames.Driver);
 
             RuleFor(x => x.Status)
                 .IsInEnum().WithMessage(_ => ValidationMessages.UnsupportedValue)
-                .WithName("Статус");
+                .WithName(_ => FieldDisplayNames.Status);
 
             RuleFor(x => x)
                 .Must(model => model.DepartureTimeUtc.HasValue == model.ArrivalTimeUtc.HasValue)
@@ -45,11 +45,13 @@ namespace business_logic.Validators.Route
                 RuleFor(x => x.DepartureTimeUtc!.Value)
                     .Must(departureTimeUtc => departureTimeUtc.Kind == DateTimeKind.Utc).WithMessage(_ => ValidationMessages.UtcTimeRequired)
                     .LessThan(x => x.ArrivalTimeUtc!.Value).WithMessage(_ => ValidationMessages.DepartureMustPrecedeArrival)
-                    .OverridePropertyName(nameof(UpdateRouteRequestModel.DepartureTimeUtc));
+                    .OverridePropertyName(nameof(UpdateRouteRequestModel.DepartureTimeUtc))
+                    .WithName(_ => FieldDisplayNames.DepartureTime);
 
                 RuleFor(x => x.ArrivalTimeUtc!.Value)
                     .Must(arrivalTimeUtc => arrivalTimeUtc.Kind == DateTimeKind.Utc).WithMessage(_ => ValidationMessages.UtcTimeRequired)
-                    .OverridePropertyName(nameof(UpdateRouteRequestModel.ArrivalTimeUtc));
+                    .OverridePropertyName(nameof(UpdateRouteRequestModel.ArrivalTimeUtc))
+                    .WithName(_ => FieldDisplayNames.ArrivalTime);
             });
         }
     }

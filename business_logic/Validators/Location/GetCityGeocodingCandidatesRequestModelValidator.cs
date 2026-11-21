@@ -13,7 +13,7 @@ namespace business_logic.Validators
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .MinimumLength(CityGeocodingConstraints.SearchTextMinLength).WithMessage(_ => ValidationMessages.MinimumLengthRequired)
                 .MaximumLength(CityGeocodingConstraints.SearchTextMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
-                .WithName("Місто");
+                .WithName(_ => FieldDisplayNames.City);
         }
     }
 }

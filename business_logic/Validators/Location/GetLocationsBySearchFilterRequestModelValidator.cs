@@ -10,7 +10,8 @@ namespace business_logic.Validators
         {
             RuleFor(x => x.Country)
                 .MaximumLength(PagedListConstraints.SearchMaxLength)
-                .WithMessage($"Країна у фільтрі не може перевищувати {PagedListConstraints.SearchMaxLength} символів.");
+                .WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
+                .WithName(_ => FieldDisplayNames.Country);
         }
     }
 }

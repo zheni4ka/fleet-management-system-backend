@@ -20,4 +20,15 @@
   <data name="MaintenancePlannedEndMustFollowStart" xml:space="preserve"><value>Запланований кінець техобслуговування має бути пізніше за його початок.</value></data>
   <data name="RouteTimesMustBeProvidedTogether" xml:space="preserve"><value>Час відправлення та час прибуття потрібно передавати разом.</value></data>
   <data name="DepartureMustPrecedeArrival" xml:space="preserve"><value>Час відправлення має бути раніше за час прибуття.</value></data>
+  <data name="MaintenanceStartMustNotBeInPast" xml:space="preserve"><value>Дата початку робіт не може бути в минулому.</value></data>
+  <data name="EmailAddressInvalid" xml:space="preserve"><value>Поле «{PropertyName}» має бути коректною адресою електронної пошти.</value></data>
+  <data name="StartAndDestinationLocationsMustDiffer" xml:space="preserve"><value>Початкова та кінцева локації мають відрізнятися.</value></data>
+  <data name="DateRangeEndBeforeStart" xml:space="preserve"><value>Кінцева дата не може бути раніше за початкову.</value></data>
+  <data name="PeriodEndBeforeStart" xml:space="preserve"><value>Кінець періоду не може бути раніше за його початок.</value></data>
+  <data name="PeriodLengthExceededTemplate" xml:space="preserve"><value>Період звіту не може перевищувати {0} днів.</value></data>
+  <data name="NumberOutOfRange" xml:space="preserve"><value>Поле «{PropertyName}» має бути від {From} до {To}.</value></data>
+  <data name="UnsupportedRoleTemplate" xml:space="preserve"><value>Роль має бути однією з: {0}.</value></data>
+  <data name="AutoNumberFormatInvalid" xml:space="preserve"><value>Номерний знак має формат АА1234АА (великі українські літери та 4 цифри).</value></data>
+  <data name="DriverLicenseNumberFormatInvalid" xml:space="preserve"><value>Посвідчення водія має формат ABC 123456.</value></data>
+  <data name="DriverNameFormatInvalid" xml:space="preserve"><value>Ім&apos;я, прізвище та по батькові мають починатися з великої української літери й містити лише українські літери, апостроф або дефіс.</value></data>
 </root>

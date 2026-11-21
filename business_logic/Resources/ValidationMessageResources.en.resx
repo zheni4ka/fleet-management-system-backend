@@ -20,4 +20,15 @@
   <data name="MaintenancePlannedEndMustFollowStart" xml:space="preserve"><value>The planned end of maintenance must be later than its start.</value></data>
   <data name="RouteTimesMustBeProvidedTogether" xml:space="preserve"><value>The departure and arrival times must be sent together.</value></data>
   <data name="DepartureMustPrecedeArrival" xml:space="preserve"><value>The departure time must be earlier than the arrival time.</value></data>
+  <data name="MaintenanceStartMustNotBeInPast" xml:space="preserve"><value>The work start date cannot be in the past.</value></data>
+  <data name="EmailAddressInvalid" xml:space="preserve"><value>The field "{PropertyName}" must be a valid email address.</value></data>
+  <data name="StartAndDestinationLocationsMustDiffer" xml:space="preserve"><value>The start and destination locations must differ.</value></data>
+  <data name="DateRangeEndBeforeStart" xml:space="preserve"><value>The end date cannot be earlier than the start date.</value></data>
+  <data name="PeriodEndBeforeStart" xml:space="preserve"><value>The end of the period cannot be earlier than its start.</value></data>
+  <data name="PeriodLengthExceededTemplate" xml:space="preserve"><value>The report period cannot exceed {0} days.</value></data>
+  <data name="NumberOutOfRange" xml:space="preserve"><value>The field "{PropertyName}" must be between {From} and {To}.</value></data>
+  <data name="UnsupportedRoleTemplate" xml:space="preserve"><value>The role must be one of: {0}.</value></data>
+  <data name="AutoNumberFormatInvalid" xml:space="preserve"><value>The license plate must have the format АА1234АА (uppercase Ukrainian letters and 4 digits).</value></data>
+  <data name="DriverLicenseNumberFormatInvalid" xml:space="preserve"><value>The driver&apos;s license number must have the format ABC 123456.</value></data>
+  <data name="DriverNameFormatInvalid" xml:space="preserve"><value>The first name, last name and patronymic must start with an uppercase Ukrainian letter and contain only Ukrainian letters, an apostrophe or a hyphen.</value></data>
 </root>

@@ -10,7 +10,7 @@ namespace business_logic.Validators
         {
             RuleFor(x => x.GeoNamesId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Місто");
+                .WithName(_ => FieldDisplayNames.City);
         }
     }
 }

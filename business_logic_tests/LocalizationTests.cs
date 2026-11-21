@@ -1,6 +1,7 @@
 using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Interfaces;
+using business_logic.Validators;
 using business_logic_tests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using System.Globalization;
@@ -15,7 +16,7 @@ namespace business_logic_tests
         public static TheoryData<Type, string> LocalizedMessageProperties()
         {
             var localizedMessageProperties = new TheoryData<Type, string>();
-            foreach (var localizedMessagesType in new[] { typeof(ExceptionMessages), typeof(ValidationMessages), typeof(EntityDisplayNames) })
+            foreach (var localizedMessagesType in new[] { typeof(ExceptionMessages), typeof(ValidationMessages), typeof(EntityDisplayNames), typeof(FieldDisplayNames) })
             {
                 foreach (var localizedMessageProperty in localizedMessagesType.GetProperties(BindingFlags.Public | BindingFlags.Static))
                 {
@@ -38,6 +39,28 @@ namespace business_logic_tests
             Assert.NotEqual(ukrainianText, englishText);
         }
 
+        [Theory]
+        [InlineData(SupportedLanguages.English, "The field \"Start location\" must be greater than 0.", "The start and destination locations must differ.")]
+        [InlineData(SupportedLanguages.Ukrainian, "Поле «Початкова локація» має бути більшим за 0.", "Початкова та кінцева локації мають відрізнятися.")]
+        public void CreateRouteRequestModelValidator_InvalidLocations_ReturnsMessagesInRequestLanguage(
+            string cultureName, string expectedStartLocationMessage, string expectedSameLocationsMessage)
+        {
+            var routeRequestModel = new CreateRouteRequestModel
+            {
+                StartLocationId = 0,
+                DestinationLocationId = 0,
+                AutoId = 1,
+                DriverId = 1,
+                DepartureTimeUtc = new DateTime(2030, 1, 1, 8, 0, 0, DateTimeKind.Utc),
+                ArrivalTimeUtc = new DateTime(2030, 1, 1, 18, 0, 0, DateTimeKind.Utc)
+            };
+
+            var validationErrorMessages = ValidateInCulture(routeRequestModel, cultureName);
+
+            Assert.Contains(expectedStartLocationMessage, validationErrorMessages);
+            Assert.Contains(expectedSameLocationsMessage, validationErrorMessages);
+        }
+
         [Fact]
         public async Task UpdatePreferredLanguageAsync_EnglishChosen_IsReturnedWithNextSession()
         {
@@ -58,6 +81,22 @@ namespace business_logic_tests
         public void Dispose()
         {
             _testHost.Dispose();
+        }
+
+        private static IReadOnlyList<string> ValidateInCulture(CreateRouteRequestModel routeRequestModel, string cultureName)
+        {
+            var previousUiCulture = CultureInfo.CurrentUICulture;
+            CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+            try
+            {
+                return new CreateRouteRequestModelValidator().Validate(routeRequestModel).Errors
+                    .Select(validationFailure => validationFailure.ErrorMessage)
+                    .ToList();
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = previousUiCulture;
+            }
         }
 
         private static string ReadLocalizedMessage(Type localizedMessagesType, string localizedMessageKey, string cultureName)

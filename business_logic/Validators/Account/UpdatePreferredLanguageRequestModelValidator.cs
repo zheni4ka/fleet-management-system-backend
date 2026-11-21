@@ -12,7 +12,7 @@ namespace business_logic.Validators.Account
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .Must(language => SupportedLanguages.All.Contains(language!)).WithMessage(_ => ValidationMessages.UnsupportedValue)
-                .WithName("Мова");
+                .WithName(_ => FieldDisplayNames.Language);
         }
     }
 }

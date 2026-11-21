@@ -11,11 +11,13 @@ namespace business_logic.Validators.Auto
             RuleFor(x => x.Status)
                 .IsInEnum()
                 .When(x => x.Status.HasValue)
-                .WithMessage(x => $"Статус автомобіля '{x.Status}' не підтримується.");
+                .WithMessage(_ => ValidationMessages.UnsupportedValue)
+                .WithName(_ => FieldDisplayNames.AutoStatus);
 
             RuleFor(x => x.Color)
                 .MaximumLength(PagedListConstraints.SearchMaxLength)
-                .WithMessage($"Колір у фільтрі не може перевищувати {PagedListConstraints.SearchMaxLength} символів.");
+                .WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
+                .WithName(_ => FieldDisplayNames.Color);
         }
     }
 }

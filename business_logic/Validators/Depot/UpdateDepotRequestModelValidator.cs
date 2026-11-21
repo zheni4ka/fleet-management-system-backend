@@ -10,7 +10,7 @@ namespace business_logic.Validators.Depot
         {
             RuleFor(x => x.Id)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Ідентифікатор");
+                .WithName(_ => FieldDisplayNames.Id);
 
             Include(new DepotRequestModelBaseValidator());
         }

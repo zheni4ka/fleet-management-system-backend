@@ -10,7 +10,7 @@ namespace business_logic.Validators.Account
         {
             RuleFor(x => x.RefreshToken)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .WithName("Токен оновлення");
+                .WithName(_ => FieldDisplayNames.RefreshToken);
         }
     }
 }

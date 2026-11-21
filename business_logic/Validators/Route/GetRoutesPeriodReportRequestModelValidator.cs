@@ -10,12 +10,12 @@ namespace business_logic.Validators.Route
         {
             RuleFor(x => x.PeriodEndDate)
                 .GreaterThanOrEqualTo(x => x.PeriodStartDate)
-                .WithMessage("Кінець періоду не може бути раніше за його початок.");
+                .WithMessage(_ => ValidationMessages.PeriodEndBeforeStart);
 
             RuleFor(x => x.PeriodEndDate)
                 .Must((requestModel, periodEndDate) =>
                     periodEndDate.DayNumber - requestModel.PeriodStartDate.DayNumber < RouteReportConstraints.PeriodReportMaxDaysCount)
-                .WithMessage($"Період звіту не може перевищувати {RouteReportConstraints.PeriodReportMaxDaysCount} днів.");
+                .WithMessage(_ => string.Format(ValidationMessages.PeriodLengthExceededTemplate, RouteReportConstraints.PeriodReportMaxDaysCount));
         }
     }
 }

@@ -10,7 +10,7 @@ namespace business_logic.Validators.Account
         {
             RuleFor(x => x.UserId)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .WithName("Ідентифікатор користувача");
+                .WithName(_ => FieldDisplayNames.UserId);
         }
     }
 }

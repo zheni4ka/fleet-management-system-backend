@@ -10,33 +10,33 @@ namespace business_logic.Validators
         {
             RuleFor(x => x.StartLocationId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Початкова локація");
+                .WithName(_ => FieldDisplayNames.StartLocation);
 
             RuleFor(x => x.DestinationLocationId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .NotEqual(x => x.StartLocationId).WithMessage("Початкова та кінцева локації мають відрізнятися.")
-                .WithName("Кінцева локація");
+                .NotEqual(x => x.StartLocationId).WithMessage(_ => ValidationMessages.StartAndDestinationLocationsMustDiffer)
+                .WithName(_ => FieldDisplayNames.DestinationLocation);
 
             RuleFor(x => x.AutoId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Автомобіль");
+                .WithName(_ => FieldDisplayNames.Auto);
 
             RuleFor(x => x.DriverId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Водій");
+                .WithName(_ => FieldDisplayNames.Driver);
 
             RuleFor(x => x.DepartureTimeUtc)
                 .Must(departureTimeUtc => departureTimeUtc.Kind == DateTimeKind.Utc).WithMessage(_ => ValidationMessages.UtcTimeRequired)
-                .LessThan(x => x.ArrivalTimeUtc).WithMessage("Час відправлення має бути раніше за час прибуття.")
-                .WithName("Час відправлення");
+                .LessThan(x => x.ArrivalTimeUtc).WithMessage(_ => ValidationMessages.DepartureMustPrecedeArrival)
+                .WithName(_ => FieldDisplayNames.DepartureTime);
 
             RuleFor(x => x.ArrivalTimeUtc)
                 .Must(arrivalTimeUtc => arrivalTimeUtc.Kind == DateTimeKind.Utc).WithMessage(_ => ValidationMessages.UtcTimeRequired)
-                .WithName("Час прибуття");
+                .WithName(_ => FieldDisplayNames.ArrivalTime);
 
             RuleFor(x => x.Status)
                 .IsInEnum().WithMessage(_ => ValidationMessages.UnsupportedValue)
-                .WithName("Статус");
+                .WithName(_ => FieldDisplayNames.Status);
         }
     }
 }

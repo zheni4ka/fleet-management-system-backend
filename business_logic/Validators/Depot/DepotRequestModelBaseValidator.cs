@@ -11,7 +11,7 @@ namespace business_logic.Validators.Depot
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .MaximumLength(DepotConstraints.NameMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
-                .WithName("Назва депо");
+                .WithName(_ => FieldDisplayNames.DepotName);
         }
     }
 }

@@ -10,11 +10,11 @@ namespace business_logic.Validators.Account
         {
             RuleFor(x => x.IdToken)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .WithName("Токен ідентифікації");
+                .WithName(_ => FieldDisplayNames.IdentityToken);
 
             RuleFor(x => x.Nonce)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .WithName("Одноразове значення");
+                .WithName(_ => FieldDisplayNames.Nonce);
         }
     }
 }

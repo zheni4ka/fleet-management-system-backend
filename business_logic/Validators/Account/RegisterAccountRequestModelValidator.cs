@@ -11,32 +11,32 @@ namespace business_logic.Validators.Account
             RuleFor(x => x.Username)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .MaximumLength(AccountConstraints.UsernameMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
-                .WithName("Логін");
+                .WithName(_ => FieldDisplayNames.Username);
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .EmailAddress().WithMessage("Електронна пошта має некоректний формат.")
+                .EmailAddress().WithMessage(_ => ValidationMessages.EmailAddressInvalid)
                 .MaximumLength(AccountConstraints.EmailMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
-                .WithName("Електронна пошта");
+                .WithName(_ => FieldDisplayNames.Email);
 
             RuleFor(x => x.Password)
                 .MustSatisfyPasswordPolicy()
-                .WithName("Пароль");
+                .WithName(_ => FieldDisplayNames.Password);
 
             RuleFor(x => x.DepotIds)
                 .NotEmpty().When(x => x.Role == UserRoles.Dispatcher).WithMessage(_ => ValidationMessages.DispatcherDepotsRequired)
                 .Empty().When(x => x.Role == UserRoles.Admin).WithMessage(_ => ValidationMessages.AdminDepotsForbidden)
-                .WithName("Депо");
+                .WithName(_ => FieldDisplayNames.Depot);
 
             RuleForEach(x => x.DepotIds)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Депо");
+                .WithName(_ => FieldDisplayNames.Depot);
 
             RuleFor(x => x.Role)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
                 .Must(role => UserRoles.All.Contains(role))
-                .WithMessage($"Роль має бути однією з: {string.Join(", ", UserRoles.All)}.")
-                .WithName("Роль");
+                .WithMessage(_ => string.Format(ValidationMessages.UnsupportedRoleTemplate, string.Join(", ", UserRoles.All)))
+                .WithName(_ => FieldDisplayNames.Role);
         }
     }
 }

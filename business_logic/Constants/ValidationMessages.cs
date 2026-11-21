@@ -23,5 +23,16 @@ namespace business_logic.Constants
         public static string MaintenancePlannedEndMustFollowStart => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(MaintenancePlannedEndMustFollowStart));
         public static string RouteTimesMustBeProvidedTogether => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(RouteTimesMustBeProvidedTogether));
         public static string DepartureMustPrecedeArrival => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(DepartureMustPrecedeArrival));
+        public static string MaintenanceStartMustNotBeInPast => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(MaintenanceStartMustNotBeInPast));
+        public static string EmailAddressInvalid => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(EmailAddressInvalid));
+        public static string StartAndDestinationLocationsMustDiffer => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(StartAndDestinationLocationsMustDiffer));
+        public static string DateRangeEndBeforeStart => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(DateRangeEndBeforeStart));
+        public static string PeriodEndBeforeStart => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(PeriodEndBeforeStart));
+        public static string PeriodLengthExceededTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(PeriodLengthExceededTemplate));
+        public static string NumberOutOfRange => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(NumberOutOfRange));
+        public static string UnsupportedRoleTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(UnsupportedRoleTemplate));
+        public static string AutoNumberFormatInvalid => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(AutoNumberFormatInvalid));
+        public static string DriverLicenseNumberFormatInvalid => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(DriverLicenseNumberFormatInvalid));
+        public static string DriverNameFormatInvalid => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(DriverNameFormatInvalid));
     }
 }

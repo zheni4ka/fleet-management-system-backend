@@ -10,15 +10,15 @@ namespace business_logic.Validators.Account
         {
             RuleFor(x => x.UserId)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .WithName("Ідентифікатор користувача");
+                .WithName(_ => FieldDisplayNames.UserId);
 
             RuleFor(x => x.DepotIds)
                 .NotEmpty().WithMessage(_ => ValidationMessages.DispatcherDepotsRequired)
-                .WithName("Депо");
+                .WithName(_ => FieldDisplayNames.Depot);
 
             RuleForEach(x => x.DepotIds)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
-                .WithName("Депо");
+                .WithName(_ => FieldDisplayNames.Depot);
         }
     }
 }

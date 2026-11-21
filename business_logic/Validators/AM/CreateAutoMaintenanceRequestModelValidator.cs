@@ -1,3 +1,4 @@
+using business_logic.Constants;
 using business_logic.DTOs;
 using business_logic.Helpers;
 using business_logic.Validators.AM;
@@ -13,7 +14,7 @@ namespace business_logic.Validators
 
             RuleFor(x => x.ServiceDate)
                 .GreaterThanOrEqualTo(_ => BusinessTimeZoneConverter.GetBusinessNowDateTime())
-                .WithMessage("Дата початку робіт не може бути в минулому.");
+                .WithMessage(_ => ValidationMessages.MaintenanceStartMustNotBeInPast);
         }
     }
 }

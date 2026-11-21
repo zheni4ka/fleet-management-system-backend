@@ -10,16 +10,16 @@ namespace business_logic.Validators.Account
         {
             RuleFor(x => x.Username)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .WithName("Логін або email");
+                .WithName(_ => FieldDisplayNames.LoginOrEmail);
 
             RuleFor(x => x.CurrentPassword)
                 .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .WithName("Поточний пароль");
+                .WithName(_ => FieldDisplayNames.CurrentPassword);
 
             RuleFor(x => x.NewPassword)
                 .MustSatisfyPasswordPolicy()
                 .NotEqual(x => x.CurrentPassword).WithMessage(_ => ValidationMessages.NewPasswordMustDifferFromCurrent)
-                .WithName("Новий пароль");
+                .WithName(_ => FieldDisplayNames.NewPassword);
         }
     }
 }

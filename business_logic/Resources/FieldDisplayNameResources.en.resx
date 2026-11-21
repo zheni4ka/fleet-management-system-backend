@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Depot" xml:space="preserve"><value>Depot</value></data>
+  <data name="Id" xml:space="preserve"><value>Identifier</value></data>
+  <data name="RowVersion" xml:space="preserve"><value>Record version</value></data>
+  <data name="Auto" xml:space="preserve"><value>Vehicle</value></data>
+  <data name="RefreshToken" xml:space="preserve"><value>Refresh token</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="StartLocation" xml:space="preserve"><value>Start location</value></data>
+  <data name="DestinationLocation" xml:space="preserve"><value>Destination location</value></data>
+  <data name="Password" xml:space="preserve"><value>Password</value></data>
+  <data name="City" xml:space="preserve"><value>City</value></data>
+  <data name="LoginOrEmail" xml:space="preserve"><value>Login or email</value></data>
+  <data name="Driver" xml:space="preserve"><value>Driver</value></data>
+  <data name="UserId" xml:space="preserve"><value>User identifier</value></data>
+  <data name="DepartureTime" xml:space="preserve"><value>Departure time</value></data>
+  <data name="ArrivalTime" xml:space="preserve"><value>Arrival time</value></data>
+  <data name="IdentityToken" xml:space="preserve"><value>Identity token</value></data>
+  <data name="Nonce" xml:space="preserve"><value>Nonce</value></data>
+  <data name="MaintenanceWorkType" xml:space="preserve"><value>Type of work</value></data>
+  <data name="MaintenanceProblemDescription" xml:space="preserve"><value>Problem description</value></data>
+  <data name="Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Name" xml:space="preserve"><value>First name</value></data>
+  <data name="Surname" xml:space="preserve"><value>Last name</value></data>
+  <data name="Patronymic" xml:space="preserve"><value>Patronymic</value></data>
+  <data name="DriverLicenseNumber" xml:space="preserve"><value>Driver&apos;s license number</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Current password</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>New password</value></data>
+  <data name="AutoNumber" xml:space="preserve"><value>License plate</value></data>
+  <data name="DepotName" xml:space="preserve"><value>Depot name</value></data>
+  <data name="Capacity" xml:space="preserve"><value>Capacity</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Mark" xml:space="preserve"><value>Make</value></data>
+  <data name="Model" xml:space="preserve"><value>Model</value></data>
+  <data name="Color" xml:space="preserve"><value>Color</value></data>
+  <data name="Username" xml:space="preserve"><value>Login</value></data>
+  <data name="Email" xml:space="preserve"><value>Email</value></data>
+  <data name="AuditAction" xml:space="preserve"><value>Audit action</value></data>
+  <data name="AutoStatus" xml:space="preserve"><value>Vehicle status</value></data>
+  <data name="RouteStatus" xml:space="preserve"><value>Route status</value></data>
+  <data name="Page" xml:space="preserve"><value>Page number</value></data>
+  <data name="PageSize" xml:space="preserve"><value>Page size</value></data>
+  <data name="SortField" xml:space="preserve"><value>Sort field</value></data>
+  <data name="SortDirection" xml:space="preserve"><value>Sort direction</value></data>
+  <data name="SearchQuery" xml:space="preserve"><value>Search query</value></data>
+  <data name="Country" xml:space="preserve"><value>Country</value></data>
+</root>

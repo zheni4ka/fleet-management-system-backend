@@ -11,25 +11,30 @@ namespace business_logic.Validators.Common
         {
             RuleFor(x => x.Page)
                 .GreaterThan(0)
-                .WithMessage(x => $"Номер сторінки має бути більшим за 0, отримано {x.Page}.");
+                .WithMessage(_ => ValidationMessages.PositiveNumberRequired)
+                .WithName(_ => FieldDisplayNames.Page);
 
             RuleFor(x => x.PageSize)
                 .InclusiveBetween(1, PagedListConstraints.MaxPageSize)
-                .WithMessage(x => $"Розмір сторінки має бути від 1 до {PagedListConstraints.MaxPageSize}, отримано {x.PageSize}.");
+                .WithMessage(_ => ValidationMessages.NumberOutOfRange)
+                .WithName(_ => FieldDisplayNames.PageSize);
 
             RuleFor(x => x.Sort)
                 .IsInEnum()
                 .When(x => x.Sort.HasValue)
-                .WithMessage(x => $"Поле сортування '{x.Sort}' не підтримується.");
+                .WithMessage(_ => ValidationMessages.UnsupportedValue)
+                .WithName(_ => FieldDisplayNames.SortField);
 
             RuleFor(x => x.SortDirection)
                 .IsInEnum()
                 .When(x => x.SortDirection.HasValue)
-                .WithMessage(x => $"Напрям сортування '{x.SortDirection}' не підтримується.");
+                .WithMessage(_ => ValidationMessages.UnsupportedValue)
+                .WithName(_ => FieldDisplayNames.SortDirection);
 
             RuleFor(x => x.Search)
                 .MaximumLength(PagedListConstraints.SearchMaxLength)
-                .WithMessage($"Пошуковий запит не може перевищувати {PagedListConstraints.SearchMaxLength} символів.");
+                .WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
+                .WithName(_ => FieldDisplayNames.SearchQuery);
         }
     }
 }
