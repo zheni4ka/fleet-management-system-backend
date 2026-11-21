@@ -19,7 +19,9 @@ namespace business_logic
 
             CreateMap<CreateRouteRequestModel, Route>();
             CreateMap<UpdateRouteRequestModel, Route>()
-                .ForMember(route => route.RowVersion, mappingOptions => mappingOptions.Ignore());
+                .ForMember(route => route.RowVersion, mappingOptions => mappingOptions.Ignore())
+                .ForMember(route => route.DepartureTimeUtc, mappingOptions => mappingOptions.Ignore())
+                .ForMember(route => route.ArrivalTimeUtc, mappingOptions => mappingOptions.Ignore());
 
             CreateMap<Location, GetLocationResponseModel>();
 

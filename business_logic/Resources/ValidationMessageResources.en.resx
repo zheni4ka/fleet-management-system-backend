@@ -18,4 +18,6 @@
   <data name="UnknownTimeZoneId" xml:space="preserve"><value>The field "{PropertyName}" must be an IANA time zone id, for example Europe/Kyiv.</value></data>
   <data name="UtcTimeRequired" xml:space="preserve"><value>The field "{PropertyName}" must be a UTC time (with the Z suffix).</value></data>
   <data name="MaintenancePlannedEndMustFollowStart" xml:space="preserve"><value>The planned end of maintenance must be later than its start.</value></data>
+  <data name="RouteTimesMustBeProvidedTogether" xml:space="preserve"><value>The departure and arrival times must be sent together.</value></data>
+  <data name="DepartureMustPrecedeArrival" xml:space="preserve"><value>The departure time must be earlier than the arrival time.</value></data>
 </root>

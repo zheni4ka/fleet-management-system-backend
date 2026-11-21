@@ -21,5 +21,7 @@ namespace business_logic.Constants
         public static string UnknownTimeZoneId => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(UnknownTimeZoneId));
         public static string UtcTimeRequired => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(UtcTimeRequired));
         public static string MaintenancePlannedEndMustFollowStart => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(MaintenancePlannedEndMustFollowStart));
+        public static string RouteTimesMustBeProvidedTogether => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(RouteTimesMustBeProvidedTogether));
+        public static string DepartureMustPrecedeArrival => LocalizedResourceReader.GetRequiredLocalizedResource(ValidationMessagesResourceManager, nameof(DepartureMustPrecedeArrival));
     }
 }

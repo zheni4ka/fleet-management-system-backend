@@ -18,4 +18,6 @@
   <data name="UnknownTimeZoneId" xml:space="preserve"><value>Поле «{PropertyName}» має бути ідентифікатором часового поясу IANA, наприклад Europe/Kyiv.</value></data>
   <data name="UtcTimeRequired" xml:space="preserve"><value>Поле «{PropertyName}» має бути часом UTC (із суфіксом Z).</value></data>
   <data name="MaintenancePlannedEndMustFollowStart" xml:space="preserve"><value>Запланований кінець техобслуговування має бути пізніше за його початок.</value></data>
+  <data name="RouteTimesMustBeProvidedTogether" xml:space="preserve"><value>Час відправлення та час прибуття потрібно передавати разом.</value></data>
+  <data name="DepartureMustPrecedeArrival" xml:space="preserve"><value>Час відправлення має бути раніше за час прибуття.</value></data>
 </root>

@@ -169,6 +169,9 @@ namespace business_logic.Services
             EnsureFinalRouteAssignmentIsUnchanged(route, model.AutoId, model.DriverId);
             var previousAutoId = route.AutoId;
             var previousRouteStatus = route.Status;
+            var departureTimeUtc = model.DepartureTimeUtc ?? route.DepartureTimeUtc;
+            var arrivalTimeUtc = model.ArrivalTimeUtc ?? route.ArrivalTimeUtc;
+            EnsureRouteRescheduleIsAllowed(route, departureTimeUtc, arrivalTimeUtc);
 
             var assignedAuto = previousAutoId == model.AutoId
                 ? await GetAutoOrThrowAsync(model.AutoId)
@@ -180,10 +183,12 @@ namespace business_logic.Services
 
             if (RouteStatusGroups.Active.Contains(model.Status))
             {
-                await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, route.DepartureTimeUtc, route.ArrivalTimeUtc, route.Id);
+                await EnsureAssignmentHasNoConflictsAsync(model.AutoId, model.DriverId, departureTimeUtc, arrivalTimeUtc, route.Id);
             }
 
             _mapper.Map(model, route);
+            route.DepartureTimeUtc = departureTimeUtc;
+            route.ArrivalTimeUtc = arrivalTimeUtc;
             RecordActualRouteTimesOnStatusEntry(route, previousRouteStatus);
             route.DepotId = assignedAuto.DepotId;
             await _auditLogService.LogActionAsync(AuditAction.RouteUpdated, route.Id);
@@ -257,6 +262,18 @@ namespace business_logic.Services
                 route.Id,
                 RouteStatusDisplayNameResolver.GetRouteStatusDisplayName(route.Status),
                 RouteStatusDisplayNameResolver.GetRouteStatusDisplayName(targetRouteStatus)));
+        }
+
+        private static void EnsureRouteRescheduleIsAllowed(Route route, DateTime departureTimeUtc, DateTime arrivalTimeUtc)
+        {
+            var isRouteRescheduled = route.DepartureTimeUtc != departureTimeUtc || route.ArrivalTimeUtc != arrivalTimeUtc;
+            if (isRouteRescheduled && route.Status != RouteStatus.Planned)
+            {
+                throw new BusinessRuleException(string.Format(
+                    ExceptionMessages.RouteRescheduleRequiresPlannedStatusTemplate,
+                    route.Id,
+                    RouteStatusDisplayNameResolver.GetRouteStatusDisplayName(route.Status)));
+            }
         }
 
         private static void EnsureFinalRouteAssignmentIsUnchanged(Route route, int requestedAutoId, int requestedDriverId)

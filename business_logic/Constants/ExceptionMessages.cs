@@ -58,5 +58,6 @@ namespace business_logic.Constants
         public static string CityGeocodingTimeZoneUnsupportedTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(CityGeocodingTimeZoneUnsupportedTemplate));
         public static string RouteStatusTransitionForbiddenTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(RouteStatusTransitionForbiddenTemplate));
         public static string FinalRouteAssignmentChangeForbiddenTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(FinalRouteAssignmentChangeForbiddenTemplate));
+        public static string RouteRescheduleRequiresPlannedStatusTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(RouteRescheduleRequiresPlannedStatusTemplate));
     }
 }

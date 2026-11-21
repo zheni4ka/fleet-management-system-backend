@@ -35,6 +35,22 @@ namespace business_logic.Validators.Route
             RuleFor(x => x.Status)
                 .IsInEnum().WithMessage(_ => ValidationMessages.UnsupportedValue)
                 .WithName("Статус");
+
+            RuleFor(x => x)
+                .Must(model => model.DepartureTimeUtc.HasValue == model.ArrivalTimeUtc.HasValue)
+                .WithMessage(_ => ValidationMessages.RouteTimesMustBeProvidedTogether);
+
+            When(x => x.DepartureTimeUtc.HasValue && x.ArrivalTimeUtc.HasValue, () =>
+            {
+                RuleFor(x => x.DepartureTimeUtc!.Value)
+                    .Must(departureTimeUtc => departureTimeUtc.Kind == DateTimeKind.Utc).WithMessage(_ => ValidationMessages.UtcTimeRequired)
+                    .LessThan(x => x.ArrivalTimeUtc!.Value).WithMessage(_ => ValidationMessages.DepartureMustPrecedeArrival)
+                    .OverridePropertyName(nameof(UpdateRouteRequestModel.DepartureTimeUtc));
+
+                RuleFor(x => x.ArrivalTimeUtc!.Value)
+                    .Must(arrivalTimeUtc => arrivalTimeUtc.Kind == DateTimeKind.Utc).WithMessage(_ => ValidationMessages.UtcTimeRequired)
+                    .OverridePropertyName(nameof(UpdateRouteRequestModel.ArrivalTimeUtc));
+            });
         }
     }
 }
