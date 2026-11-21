@@ -1,4 +1,5 @@
-﻿using business_logic.Entities;
+﻿using business_logic.Constants;
+using business_logic.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,6 +25,8 @@ namespace data_access.Configs
             builder.Property(r => r.ActualArrivalTimeUtc).HasConversion(
                 utcTime => utcTime,
                 persistedUtcTime => persistedUtcTime.HasValue ? DateTime.SpecifyKind(persistedUtcTime.Value, DateTimeKind.Utc) : persistedUtcTime);
+            builder.Property(r => r.StartAddressLine).HasMaxLength(AddressGeocodingConstraints.AddressLineMaxLength);
+            builder.Property(r => r.DestinationAddressLine).HasMaxLength(AddressGeocodingConstraints.AddressLineMaxLength);
             builder.ToTable("Routes");
 
             builder.HasIndex(r => r.DepartureTimeUtc);

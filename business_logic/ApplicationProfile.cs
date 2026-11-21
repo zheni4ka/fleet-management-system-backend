@@ -21,11 +21,19 @@ namespace business_logic
             CreateMap<UpdateAutoRequestModel, Auto>()
                 .ForMember(auto => auto.RowVersion, mappingOptions => mappingOptions.Ignore());
 
-            CreateMap<CreateRouteRequestModel, Route>();
+            CreateMap<CreateRouteRequestModel, Route>()
+                .ForMember(route => route.StartAddressLine, mappingOptions => mappingOptions.MapFrom(model => NormalizeOptionalText(model.StartAddressLine)))
+                .ForMember(route => route.DestinationAddressLine, mappingOptions => mappingOptions.MapFrom(model => NormalizeOptionalText(model.DestinationAddressLine)));
             CreateMap<UpdateRouteRequestModel, Route>()
                 .ForMember(route => route.RowVersion, mappingOptions => mappingOptions.Ignore())
                 .ForMember(route => route.DepartureTimeUtc, mappingOptions => mappingOptions.Ignore())
-                .ForMember(route => route.ArrivalTimeUtc, mappingOptions => mappingOptions.Ignore());
+                .ForMember(route => route.ArrivalTimeUtc, mappingOptions => mappingOptions.Ignore())
+                .ForMember(route => route.StartAddressLine, mappingOptions => mappingOptions.Ignore())
+                .ForMember(route => route.StartAddressLatitude, mappingOptions => mappingOptions.Ignore())
+                .ForMember(route => route.StartAddressLongitude, mappingOptions => mappingOptions.Ignore())
+                .ForMember(route => route.DestinationAddressLine, mappingOptions => mappingOptions.Ignore())
+                .ForMember(route => route.DestinationAddressLatitude, mappingOptions => mappingOptions.Ignore())
+                .ForMember(route => route.DestinationAddressLongitude, mappingOptions => mappingOptions.Ignore());
 
             CreateMap<Location, GetLocationResponseModel>();
 

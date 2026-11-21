@@ -1,6 +1,7 @@
 ﻿using business_logic.Constants;
 using business_logic.DTOs;
 using FluentValidation;
+using business_logic.Validators.Route;
 
 namespace business_logic.Validators
 {
@@ -8,6 +9,8 @@ namespace business_logic.Validators
     {
         public CreateRouteRequestModelValidator()
         {
+            Include(new RouteAddressesRequestModelValidator(areAddressesRequired: true));
+
             RuleFor(x => x.StartLocationId)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
                 .WithName(_ => FieldDisplayNames.StartLocation);

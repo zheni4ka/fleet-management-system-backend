@@ -23,6 +23,8 @@ namespace business_logic.Specifications
             DestinationLocationCity = t.DestinationLocationCity,
             DestinationLocationCountry = t.DestinationLocationCountry,
             DestinationLocationTimeZoneId = t.DestinationLocationTimeZoneId,
+            StartAddressLine = t.StartAddressLine,
+            DestinationAddressLine = t.DestinationAddressLine,
             PlannedDepartureTimeUtc = t.PlannedDepartureTimeUtc,
             PlannedArrivalTimeUtc = t.PlannedArrivalTimeUtc,
             StartedAtUtc = t.StartedAtUtc,

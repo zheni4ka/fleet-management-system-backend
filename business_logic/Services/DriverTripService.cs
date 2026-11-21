@@ -85,6 +85,8 @@ namespace business_logic.Services
                 DestinationLocationCity = destinationLocation.City,
                 DestinationLocationCountry = destinationLocation.Country,
                 DestinationLocationTimeZoneId = destinationLocation.TimeZoneId,
+                StartAddressLine = finishedRoute.StartAddressLine,
+                DestinationAddressLine = finishedRoute.DestinationAddressLine,
                 PlannedDepartureTimeUtc = finishedRoute.DepartureTimeUtc,
                 PlannedArrivalTimeUtc = finishedRoute.ArrivalTimeUtc,
                 StartedAtUtc = tripStartedAtUtc,

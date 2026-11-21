@@ -115,6 +115,12 @@ export function setup() {
     createRouteRequestBody: JSON.stringify({
       startLocationId: startLocation.id,
       destinationLocationId: destinationLocation.id,
+      startAddressLine: "Load test departure address, 1",
+      startAddressLatitude: 50.4501,
+      startAddressLongitude: 30.5234,
+      destinationAddressLine: "Load test destination address, 1",
+      destinationAddressLatitude: 49.8397,
+      destinationAddressLongitude: 24.0297,
       autoId: availableAuto.id,
       driverId: depotDriver.id,
       departureTimeUtc: departureTimeUtc.toISOString(),

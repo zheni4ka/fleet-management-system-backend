@@ -59,5 +59,6 @@ namespace business_logic.Constants
         public static string RouteStatusTransitionForbiddenTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(RouteStatusTransitionForbiddenTemplate));
         public static string FinalRouteAssignmentChangeForbiddenTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(FinalRouteAssignmentChangeForbiddenTemplate));
         public static string RouteRescheduleRequiresPlannedStatusTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(RouteRescheduleRequiresPlannedStatusTemplate));
+        public static string AddressGeocodingServiceUnavailable => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(AddressGeocodingServiceUnavailable));
     }
 }

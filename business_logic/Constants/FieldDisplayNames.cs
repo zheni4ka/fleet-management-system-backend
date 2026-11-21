@@ -52,5 +52,10 @@ namespace business_logic.Constants
         public static string SearchQuery => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(SearchQuery));
         public static string Country => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(Country));
         public static string PhoneNumber => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(PhoneNumber));
+        public static string Address => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(Address));
+        public static string StartAddress => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(StartAddress));
+        public static string DestinationAddress => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(DestinationAddress));
+        public static string Latitude => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(Latitude));
+        public static string Longitude => LocalizedResourceReader.GetRequiredLocalizedResource(FieldDisplayNamesResourceManager, nameof(Longitude));
     }
 }

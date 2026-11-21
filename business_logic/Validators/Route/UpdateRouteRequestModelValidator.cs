@@ -8,6 +8,8 @@ namespace business_logic.Validators.Route
     {
         public UpdateRouteRequestModelValidator()
         {
+            Include(new RouteAddressesRequestModelValidator(areAddressesRequired: false));
+
             RuleFor(x => x.Id)
                 .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
                 .WithName(_ => FieldDisplayNames.Id);

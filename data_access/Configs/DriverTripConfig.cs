@@ -37,6 +37,8 @@ namespace data_access.Configs
             builder.Property(driverTrip => driverTrip.DestinationLocationCity).HasMaxLength(LocationConstraints.CityMaxLength);
             builder.Property(driverTrip => driverTrip.DestinationLocationCountry).HasMaxLength(LocationConstraints.CountryMaxLength);
             builder.Property(driverTrip => driverTrip.DestinationLocationTimeZoneId).HasMaxLength(LocationConstraints.TimeZoneIdMaxLength);
+            builder.Property(driverTrip => driverTrip.StartAddressLine).HasMaxLength(AddressGeocodingConstraints.AddressLineMaxLength);
+            builder.Property(driverTrip => driverTrip.DestinationAddressLine).HasMaxLength(AddressGeocodingConstraints.AddressLineMaxLength);
 
             builder.Property(driverTrip => driverTrip.PlannedDepartureTimeUtc).HasConversion(
                 utcTime => utcTime,

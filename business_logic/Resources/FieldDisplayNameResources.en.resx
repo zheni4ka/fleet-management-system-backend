@@ -49,4 +49,9 @@
   <data name="SearchQuery" xml:space="preserve"><value>Search query</value></data>
   <data name="Country" xml:space="preserve"><value>Country</value></data>
   <data name="PhoneNumber" xml:space="preserve"><value>Phone number</value></data>
+  <data name="Address" xml:space="preserve"><value>Address</value></data>
+  <data name="StartAddress" xml:space="preserve"><value>Departure address</value></data>
+  <data name="DestinationAddress" xml:space="preserve"><value>Destination address</value></data>
+  <data name="Latitude" xml:space="preserve"><value>Latitude</value></data>
+  <data name="Longitude" xml:space="preserve"><value>Longitude</value></data>
 </root>

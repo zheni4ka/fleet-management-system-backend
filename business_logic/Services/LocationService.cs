@@ -21,9 +21,11 @@ namespace business_logic.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICityGeocodingClient _cityGeocodingClient;
+        private readonly IAddressGeocodingClient _addressGeocodingClient;
         private readonly CityGeocodingSettings _cityGeocodingSettings;
         private readonly IValidator<CreateLocationRequestModel> _createValidator;
         private readonly IValidator<GetCityGeocodingCandidatesRequestModel> _cityGeocodingCandidatesRequestValidator;
+        private readonly IValidator<GetAddressCandidatesRequestModel> _addressCandidatesRequestValidator;
         private readonly IValidator<GetPagedListRequestModel<LocationSortField>> _pagedListRequestValidator;
         private readonly IValidator<GetLocationsBySearchFilterRequestModel> _searchFilterValidator;
 
@@ -35,9 +37,11 @@ namespace business_logic.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ICityGeocodingClient cityGeocodingClient,
+            IAddressGeocodingClient addressGeocodingClient,
             IOptions<CityGeocodingSettings> cityGeocodingSettingsOptions,
             IValidator<CreateLocationRequestModel> createValidator,
             IValidator<GetCityGeocodingCandidatesRequestModel> cityGeocodingCandidatesRequestValidator,
+            IValidator<GetAddressCandidatesRequestModel> addressCandidatesRequestValidator,
             IValidator<GetPagedListRequestModel<LocationSortField>> pagedListRequestValidator,
             IValidator<GetLocationsBySearchFilterRequestModel> searchFilterValidator)
         {
@@ -48,9 +52,11 @@ namespace business_logic.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cityGeocodingClient = cityGeocodingClient;
+            _addressGeocodingClient = addressGeocodingClient;
             _cityGeocodingSettings = cityGeocodingSettingsOptions.Value;
             _createValidator = createValidator;
             _cityGeocodingCandidatesRequestValidator = cityGeocodingCandidatesRequestValidator;
+            _addressCandidatesRequestValidator = addressCandidatesRequestValidator;
             _pagedListRequestValidator = pagedListRequestValidator;
             _searchFilterValidator = searchFilterValidator;
         }
@@ -64,6 +70,19 @@ namespace business_logic.Services
                 cityGeocodingCandidatesRequest.SearchText!.Trim(),
                 CurrentUiLanguageResolver.GetCurrentSupportedLanguageCode(),
                 CityGeocodingConstraints.SearchResultsMaxCount);
+        }
+
+        public async Task<IReadOnlyList<GetAddressCandidateResponseModel>> SearchAddressCandidatesAsync(
+            GetAddressCandidatesRequestModel addressCandidatesRequest)
+        {
+            await _addressCandidatesRequestValidator.ValidateAndThrowAsync(addressCandidatesRequest);
+
+            return await _addressGeocodingClient.SearchAddressesAsync(
+                addressCandidatesRequest.SearchText!.Trim(),
+                addressCandidatesRequest.Latitude!.Value,
+                addressCandidatesRequest.Longitude!.Value,
+                CurrentUiLanguageResolver.GetCurrentSupportedLanguageCode(),
+                AddressGeocodingConstraints.SearchResultsMaxCount);
         }
 
         public async Task<FillMissingLocationCoordinatesResponseModel> FillMissingCoordinatesAsync()

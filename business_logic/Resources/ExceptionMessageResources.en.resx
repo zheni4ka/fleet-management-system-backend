@@ -56,4 +56,5 @@
   <data name="RouteStatusTransitionForbiddenTemplate" xml:space="preserve"><value>The route with id &apos;{0}&apos; cannot be moved from status &apos;{1}&apos; to status &apos;{2}&apos;.</value></data>
   <data name="FinalRouteAssignmentChangeForbiddenTemplate" xml:space="preserve"><value>The route with id &apos;{0}&apos; has status &apos;{1}&apos;, so its vehicle and driver cannot be changed.</value></data>
   <data name="RouteRescheduleRequiresPlannedStatusTemplate" xml:space="preserve"><value>The route with id &apos;{0}&apos; has status &apos;{1}&apos;; only a planned route can be rescheduled.</value></data>
+  <data name="AddressGeocodingServiceUnavailable" xml:space="preserve"><value>The address search service is temporarily unavailable. Try again later.</value></data>
 </root>

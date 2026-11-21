@@ -76,6 +76,8 @@ namespace business_logic_tests.Infrastructure
             });
             services.AddSingleton<TestCityGeocodingClient>();
             services.AddSingleton<ICityGeocodingClient>(serviceProvider => serviceProvider.GetRequiredService<TestCityGeocodingClient>());
+            services.AddSingleton<TestAddressGeocodingClient>();
+            services.AddSingleton<IAddressGeocodingClient>(serviceProvider => serviceProvider.GetRequiredService<TestAddressGeocodingClient>());
 
             _serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 

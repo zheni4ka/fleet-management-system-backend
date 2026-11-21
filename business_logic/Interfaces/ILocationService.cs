@@ -11,6 +11,8 @@ namespace business_logic.Interfaces
         Task<GetLocationResponseModel> GetAsync(int id);
         Task<IReadOnlyList<GetCityGeocodingCandidateResponseModel>> SearchCityGeocodingCandidatesAsync(
             GetCityGeocodingCandidatesRequestModel cityGeocodingCandidatesRequest);
+        Task<IReadOnlyList<GetAddressCandidateResponseModel>> SearchAddressCandidatesAsync(
+            GetAddressCandidatesRequestModel addressCandidatesRequest);
         Task<GetLocationResponseModel> EnsureCityLocationAsync(CreateLocationRequestModel model);
         Task<FillMissingLocationCoordinatesResponseModel> FillMissingCoordinatesAsync();
         Task<DeleteLocationResponseModel> DeleteAsync(int id);

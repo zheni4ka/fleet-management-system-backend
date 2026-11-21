@@ -10,6 +10,12 @@ namespace business_logic.Entities
         public Location StartLocation { get; set; }
         public int DestinationLocationId { get; set; }
         public Location DestinationLocation { get; set; }
+        public string? StartAddressLine { get; set; }
+        public double? StartAddressLatitude { get; set; }
+        public double? StartAddressLongitude { get; set; }
+        public string? DestinationAddressLine { get; set; }
+        public double? DestinationAddressLatitude { get; set; }
+        public double? DestinationAddressLongitude { get; set; }
         public DateTime DepartureTimeUtc { get; set; }
         public DateTime ArrivalTimeUtc { get; set; }
         public DateTime? ActualDepartureTimeUtc { get; set; }

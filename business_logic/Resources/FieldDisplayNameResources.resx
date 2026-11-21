@@ -49,4 +49,9 @@
   <data name="SearchQuery" xml:space="preserve"><value>Пошуковий запит</value></data>
   <data name="Country" xml:space="preserve"><value>Країна</value></data>
   <data name="PhoneNumber" xml:space="preserve"><value>Номер телефону</value></data>
+  <data name="Address" xml:space="preserve"><value>Адреса</value></data>
+  <data name="StartAddress" xml:space="preserve"><value>Адреса відправлення</value></data>
+  <data name="DestinationAddress" xml:space="preserve"><value>Адреса призначення</value></data>
+  <data name="Latitude" xml:space="preserve"><value>Широта</value></data>
+  <data name="Longitude" xml:space="preserve"><value>Довгота</value></data>
 </root>

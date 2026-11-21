@@ -17,6 +17,8 @@ namespace business_logic.DTOs
         public string DestinationLocationCity { get; init; } = string.Empty;
         public string DestinationLocationCountry { get; init; } = string.Empty;
         public string DestinationLocationTimeZoneId { get; init; } = string.Empty;
+        public string? StartAddressLine { get; init; }
+        public string? DestinationAddressLine { get; init; }
         public DateTime PlannedDepartureTimeUtc { get; init; }
         public DateTime PlannedArrivalTimeUtc { get; init; }
         public DateTime StartedAtUtc { get; init; }

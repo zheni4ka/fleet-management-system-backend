@@ -53,6 +53,7 @@
 |---|---|---|---|
 | `GetAllAsync` / `GetAsync` | `GET /api/Location/all`, `/{id}` | усі автентифіковані | Перегляд довідника |
 | `SearchCityGeocodingCandidatesAsync` | `GET /api/v1/Location/searchCityGeocodingCandidates` | Admin, Dispatcher | Пошук міст через Open-Meteo Geocoding API мовою інтерфейсу |
+| `SearchAddressCandidatesAsync` | `GET /api/v1/Location/searchAddressCandidates?searchText=…&latitude=…&longitude=…` | Admin, Dispatcher | Пошук вулиць і будинків через Photon (OpenStreetMap) у прямокутнику ±0,25° широти й ±0,35° довготи навколо обраного міста; дублікати однієї адреси прибираються |
 | `EnsureCityLocationAsync` | `POST /api/v1/Location/ensureCityLocation` | Admin, Dispatcher | Повертає наявну локацію за GeoNames ID або створює нову з координатами й часовим поясом |
 | `FillMissingCoordinatesAsync` | `POST /api/v1/Location/fillMissingLocationCoordinates` | Admin | Дозаповнює координати старих локацій і повертає ті, що не вдалося визначити |
 | `DeleteAsync` | `DELETE /api/Location/{id}` | Admin | Забороняє видаляти локацію, що використовується в маршрутах |
@@ -92,7 +93,7 @@
 6. Записати `RouteCreated` у журнал.
 
 ### 2.2. Редагування маршруту й зміна статусу (`RouteService.UpdateAsync`)
-1. Перевірити модель, узяти блокування авто й водія (`sp_getapplock`) і знайти маршрут.
+1. Перевірити модель, узяти блокування авто й водія (`sp_getapplock`) і знайти маршрут. Адреси відправлення й призначення під час редагування необов'язкові (під час створення — обов'язкові), але передана адреса має містити і рядок, і координати; непередана адреса не змінюється.
 2. Перевірити перехід статусу за матрицею `RouteStatusTransitions`: `Planned → InProgress | Cancelled`, `InProgress → Completed | Cancelled`; статуси `Completed` і `Cancelled` кінцеві. Інакше — 400.
 3. Для маршруту в кінцевому статусі заборонити зміну авто чи водія (400).
 4. Якщо передано новий `departureTimeUtc`/`arrivalTimeUtc` (тільки разом), дозволити це лише для `Planned` (інакше 400).

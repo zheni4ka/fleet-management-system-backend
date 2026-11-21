@@ -49,6 +49,14 @@ namespace transport_logistic_management_2026.Controllers
             return Ok(await _locationService.SearchCityGeocodingCandidatesAsync(cityGeocodingCandidatesRequest));
         }
 
+        [HttpGet("searchAddressCandidates")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<IReadOnlyList<GetAddressCandidateResponseModel>>> SearchAddressCandidates(
+            [FromQuery] GetAddressCandidatesRequestModel addressCandidatesRequest)
+        {
+            return Ok(await _locationService.SearchAddressCandidatesAsync(addressCandidatesRequest));
+        }
+
         [HttpPost("ensureCityLocation")]
         [Authorize(Roles = UserRoles.AdminOrDispatcher)]
         public async Task<ActionResult<GetLocationResponseModel>> EnsureCityLocation([FromBody] CreateLocationRequestModel model)

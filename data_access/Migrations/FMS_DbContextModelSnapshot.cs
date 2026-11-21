@@ -482,6 +482,10 @@ namespace data_access.Migrations
                     b.Property<int>("DepotId")
                         .HasColumnType("int");
 
+                    b.Property<string>("DestinationAddressLine")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<string>("DestinationLocationCity")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -517,6 +521,10 @@ namespace data_access.Migrations
 
                     b.Property<int?>("RouteId")
                         .HasColumnType("int");
+
+                    b.Property<string>("StartAddressLine")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("StartLocationCity")
                         .IsRequired()
@@ -994,6 +1002,16 @@ namespace data_access.Migrations
                     b.Property<int>("DepotId")
                         .HasColumnType("int");
 
+                    b.Property<double?>("DestinationAddressLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("DestinationAddressLine")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<double?>("DestinationAddressLongitude")
+                        .HasColumnType("float");
+
                     b.Property<int>("DestinationLocationId")
                         .HasColumnType("int");
 
@@ -1005,6 +1023,16 @@ namespace data_access.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
+
+                    b.Property<double?>("StartAddressLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("StartAddressLine")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<double?>("StartAddressLongitude")
+                        .HasColumnType("float");
 
                     b.Property<int>("StartLocationId")
                         .HasColumnType("int");

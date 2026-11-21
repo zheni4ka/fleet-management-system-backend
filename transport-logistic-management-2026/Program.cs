@@ -63,6 +63,13 @@ namespace transport_logistic_management_2026
                 cityGeocodingHttpClient.BaseAddress = new Uri(cityGeocodingSettings.BaseUrl);
                 cityGeocodingHttpClient.Timeout = TimeSpan.FromSeconds(cityGeocodingSettings.RequestTimeoutInSeconds);
             });
+            builder.Services.AddValidatedSettings<AddressGeocodingSettings, AddressGeocodingSettingsValidator>(builder.Configuration, AddressGeocodingSettings.SectionName);
+            builder.Services.AddHttpClient<IAddressGeocodingClient, PhotonAddressGeocodingClient>((serviceProvider, addressGeocodingHttpClient) =>
+            {
+                var addressGeocodingSettings = serviceProvider.GetRequiredService<IOptions<AddressGeocodingSettings>>().Value;
+                addressGeocodingHttpClient.BaseAddress = new Uri(addressGeocodingSettings.BaseUrl);
+                addressGeocodingHttpClient.Timeout = TimeSpan.FromSeconds(addressGeocodingSettings.RequestTimeoutInSeconds);
+            });
             builder.Services.AddDataAccessServices(connectionString);
 
             builder.Services.AddHttpContextAccessor();

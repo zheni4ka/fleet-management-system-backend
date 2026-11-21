@@ -192,6 +192,7 @@ namespace business_logic.Services
             _mapper.Map(model, route);
             route.DepartureTimeUtc = departureTimeUtc;
             route.ArrivalTimeUtc = arrivalTimeUtc;
+            ApplySentRouteAddresses(route, model);
             RecordActualRouteTimesOnStatusEntry(route, previousRouteStatus);
             route.DepotId = assignedAuto.DepotId;
             if (previousRouteStatus != route.Status)
@@ -236,6 +237,23 @@ namespace business_logic.Services
                 return Math.Max(0, (drivingEndWithinPeriodUtc - drivingStartWithinPeriodUtc).TotalHours);
             });
             return Math.Round(drivingHours, 1);
+        }
+
+        private static void ApplySentRouteAddresses(Route route, UpdateRouteRequestModel model)
+        {
+            if (!string.IsNullOrWhiteSpace(model.StartAddressLine))
+            {
+                route.StartAddressLine = model.StartAddressLine.Trim();
+                route.StartAddressLatitude = model.StartAddressLatitude;
+                route.StartAddressLongitude = model.StartAddressLongitude;
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.DestinationAddressLine))
+            {
+                route.DestinationAddressLine = model.DestinationAddressLine.Trim();
+                route.DestinationAddressLatitude = model.DestinationAddressLatitude;
+                route.DestinationAddressLongitude = model.DestinationAddressLongitude;
+            }
         }
 
         private static void RecordActualRouteTimesOnStatusEntry(Route route, RouteStatus previousRouteStatus)

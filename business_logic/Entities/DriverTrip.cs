@@ -19,6 +19,8 @@ namespace business_logic.Entities
         public string DestinationLocationCity { get; set; } = string.Empty;
         public string DestinationLocationCountry { get; set; } = string.Empty;
         public string DestinationLocationTimeZoneId { get; set; } = string.Empty;
+        public string? StartAddressLine { get; set; }
+        public string? DestinationAddressLine { get; set; }
         public DateTime PlannedDepartureTimeUtc { get; set; }
         public DateTime PlannedArrivalTimeUtc { get; set; }
         public DateTime StartedAtUtc { get; set; }

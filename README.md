@@ -96,6 +96,7 @@ docker compose up --build
 | `CorsSettings:AllowedOrigins:N` | так | дозволені джерела (у Development — `http://localhost:3000`) |
 | `ForwardedHeadersSettings:KnownProxyAddresses:N` | так, якщо API за BFF/проксі | IP-адреси довірених проксі для `X-Forwarded-For` |
 | `ExternalIdentitySettings:Authority`, `ClientId`, `GroupRoleMappings:<groupId>` | лише для SSO | порожні — SSO вимкнено; часткове налаштування зупиняє старт |
+| `AddressGeocodingSettings:BaseUrl`, `AddressGeocodingSettings:RequestTimeoutInSeconds` | так (`https://photon.komoot.io/`, 10) | пошук вулиць і будинків для адрес маршруту через Photon (OpenStreetMap); публічний сервер без гарантій доступності, для продакшну — власний екземпляр Photon |
 | `AuditLogRetentionSettings:RetentionPeriodInDays` | так (365) | старіші записи журналу дій видаляє фонове завдання |
 | `ObservabilitySettings:ServiceName` | так | ім'я сервісу в журналах і трасах |
 | `ObservabilitySettings:OtlpEndpoint` | ні | порожнє — OpenTelemetry вимкнено |
