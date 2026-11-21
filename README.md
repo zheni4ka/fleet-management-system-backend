@@ -113,9 +113,11 @@ dotnet test
 - `business_logic_tests` — швидкі тести бізнес-логіки на SQLite in-memory.
 - `api_tests` — інтеграційні тести через `WebApplicationFactory` (обмеження частоти, health checks, перевірка конфігурації).
 - `sql_server_integration_tests` — тести на справжньому SQL Server (паралельні призначення, глобальний фільтр депо, міграції). Запускають SQL Server у Docker через Testcontainers; без Docker тести пропускаються з поясненням. Замість Docker можна задати `SQL_SERVER_INTEGRATION_TESTS_CONNECTION_STRING` (наприклад, `Server=(localdb)\mssqllocaldb;Trusted_Connection=True`) — тести створять і видалять окрему тестову БД.
+- `load-tests/conflicting-route-creation.js` — сценарій k6: N одночасних запитів на той самий інтервал авто й водія, пороги вимагають рівно одного створеного рейсу (запуск — у [docs/demo-script.md](docs/demo-script.md#результат-дослідження-одночасні-запити)).
 
 ## Документація
 
 - [docs/01-client-and-roles.md](docs/01-client-and-roles.md) — клієнтська частина, ролі та права доступу
 - [docs/02-procedures.md](docs/02-procedures.md) — процедури й алгоритми бекенду
 - [docs/03-test-cases.md](docs/03-test-cases.md) — тест-кейси й звіт про дефекти
+- [docs/demo-script.md](docs/demo-script.md) — 5-хвилинний сценарій демонстрації
