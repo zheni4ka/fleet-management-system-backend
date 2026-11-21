@@ -9,10 +9,14 @@ namespace business_logic.DTOs
         public string StartLocationCity { get; init; }
         public string StartLocationCountry { get; init; }
         public string StartLocationTimeZoneId { get; init; } = string.Empty;
+        public double? StartLocationLatitude { get; init; }
+        public double? StartLocationLongitude { get; init; }
         public int DestinationLocationId { get; init; }
         public string DestinationLocationCity { get; init; }
         public string DestinationLocationCountry { get; init; }
         public string DestinationLocationTimeZoneId { get; init; } = string.Empty;
+        public double? DestinationLocationLatitude { get; init; }
+        public double? DestinationLocationLongitude { get; init; }
         public DateTime DepartureTimeUtc { get; init; }
         public DateTime ArrivalTimeUtc { get; init; }
         public int AutoId { get; init; }

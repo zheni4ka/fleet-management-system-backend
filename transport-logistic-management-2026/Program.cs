@@ -7,6 +7,7 @@ using data_access;
 using data_access.Identity;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
 using System.Text.Json.Serialization;
@@ -52,6 +53,13 @@ namespace transport_logistic_management_2026
             builder.Services.AddValidatedSettings<ExternalIdentitySettings>(builder.Configuration, ExternalIdentitySettings.SectionName);
             builder.Services.AddValidatedSettings<AuditLogRetentionSettings>(builder.Configuration, AuditLogRetentionSettings.SectionName);
             builder.Services.AddSingleton<IExternalIdentityTokenValidator, EntraIdTokenValidator>();
+            builder.Services.AddValidatedSettings<CityGeocodingSettings, CityGeocodingSettingsValidator>(builder.Configuration, CityGeocodingSettings.SectionName);
+            builder.Services.AddHttpClient<ICityGeocodingClient, OpenMeteoCityGeocodingClient>((serviceProvider, cityGeocodingHttpClient) =>
+            {
+                var cityGeocodingSettings = serviceProvider.GetRequiredService<IOptions<CityGeocodingSettings>>().Value;
+                cityGeocodingHttpClient.BaseAddress = new Uri(cityGeocodingSettings.BaseUrl);
+                cityGeocodingHttpClient.Timeout = TimeSpan.FromSeconds(cityGeocodingSettings.RequestTimeoutInSeconds);
+            });
             builder.Services.AddDataAccessServices(connectionString);
 
             builder.Services.AddHttpContextAccessor();

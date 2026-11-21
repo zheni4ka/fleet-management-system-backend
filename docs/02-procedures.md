@@ -41,7 +41,9 @@
 | Процедура | Ендпоінт | Роль | Опис |
 |---|---|---|---|
 | `GetAllAsync` / `GetAsync` | `GET /api/Location/all`, `/{id}` | усі автентифіковані | Перегляд довідника |
-| `CreateAsync` | `POST /api/Location` | Admin | Місто й країна обов'язкові (до 200 символів) |
+| `SearchCityGeocodingCandidatesAsync` | `GET /api/v1/Location/searchCityGeocodingCandidates` | Admin, Dispatcher | Пошук міст через Open-Meteo Geocoding API мовою інтерфейсу |
+| `EnsureCityLocationAsync` | `POST /api/v1/Location/ensureCityLocation` | Admin, Dispatcher | Повертає наявну локацію за GeoNames ID або створює нову з координатами й часовим поясом |
+| `FillMissingCoordinatesAsync` | `POST /api/v1/Location/fillMissingLocationCoordinates` | Admin | Дозаповнює координати старих локацій і повертає ті, що не вдалося визначити |
 | `DeleteAsync` | `DELETE /api/Location/{id}` | Admin | Забороняє видаляти локацію, що використовується в маршрутах |
 
 ### Маршрути — `RouteService`

@@ -9,7 +9,10 @@ namespace business_logic.Interfaces
             GetPagedListRequestModel<LocationSortField> pagedListRequest);
         Task<IReadOnlyList<GetLocationLookupOptionResponseModel>> GetLookupOptionsAsync();
         Task<GetLocationResponseModel> GetAsync(int id);
-        Task<GetLocationResponseModel> CreateAsync(CreateLocationRequestModel model);
+        Task<IReadOnlyList<GetCityGeocodingCandidateResponseModel>> SearchCityGeocodingCandidatesAsync(
+            GetCityGeocodingCandidatesRequestModel cityGeocodingCandidatesRequest);
+        Task<GetLocationResponseModel> EnsureCityLocationAsync(CreateLocationRequestModel model);
+        Task<FillMissingLocationCoordinatesResponseModel> FillMissingCoordinatesAsync();
         Task<DeleteLocationResponseModel> DeleteAsync(int id);
         Task RestoreAsync(int id);
     }

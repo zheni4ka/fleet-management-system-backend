@@ -22,7 +22,6 @@ namespace business_logic
                 .ForMember(route => route.RowVersion, mappingOptions => mappingOptions.Ignore());
 
             CreateMap<Location, GetLocationResponseModel>();
-            CreateMap<CreateLocationRequestModel, Location>();
 
             CreateMap<AutoMaintenance, GetAutoMaintenanceResponseModel>();
             CreateMap<CreateAutoMaintenanceRequestModel, AutoMaintenance>();

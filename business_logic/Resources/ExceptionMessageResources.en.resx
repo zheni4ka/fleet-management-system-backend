@@ -49,4 +49,8 @@
   <data name="TooManyRequests" xml:space="preserve"><value>Too many requests. Wait a moment and try again.</value></data>
   <data name="UnexpectedError" xml:space="preserve"><value>An unexpected error occurred.</value></data>
   <data name="ValidationFailed" xml:space="preserve"><value>One or more validation checks failed.</value></data>
+  <data name="LocationGeoNamesIdAlreadyExistsTemplate" xml:space="preserve"><value>A location with GeoNames id &apos;{0}&apos; already exists.</value></data>
+  <data name="CityGeocodingServiceUnavailable" xml:space="preserve"><value>The city search service is temporarily unavailable. Try again later.</value></data>
+  <data name="CityGeocodingCandidateNotFoundTemplate" xml:space="preserve"><value>No city with GeoNames id &apos;{0}&apos; was found by the city search service.</value></data>
+  <data name="CityGeocodingTimeZoneUnsupportedTemplate" xml:space="preserve"><value>Time zone &apos;{1}&apos; of city &apos;{0}&apos; is not supported by the server.</value></data>
 </root>

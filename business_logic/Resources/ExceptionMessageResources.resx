@@ -49,4 +49,8 @@
   <data name="TooManyRequests" xml:space="preserve"><value>Забагато запитів. Зачекайте трохи та спробуйте знову.</value></data>
   <data name="UnexpectedError" xml:space="preserve"><value>Сталася неочікувана помилка.</value></data>
   <data name="ValidationFailed" xml:space="preserve"><value>Одна або кілька перевірок даних не пройдені.</value></data>
+  <data name="LocationGeoNamesIdAlreadyExistsTemplate" xml:space="preserve"><value>Локація з ідентифікатором GeoNames &apos;{0}&apos; вже існує.</value></data>
+  <data name="CityGeocodingServiceUnavailable" xml:space="preserve"><value>Сервіс пошуку міст тимчасово недоступний. Спробуйте пізніше.</value></data>
+  <data name="CityGeocodingCandidateNotFoundTemplate" xml:space="preserve"><value>Місто з ідентифікатором GeoNames &apos;{0}&apos; не знайдено в сервісі пошуку міст.</value></data>
+  <data name="CityGeocodingTimeZoneUnsupportedTemplate" xml:space="preserve"><value>Часовий пояс &apos;{1}&apos; міста &apos;{0}&apos; не підтримується сервером.</value></data>
 </root>

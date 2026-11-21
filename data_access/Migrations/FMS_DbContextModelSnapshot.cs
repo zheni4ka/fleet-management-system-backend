@@ -463,8 +463,17 @@ namespace data_access.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("GeoNamesId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsArchived")
                         .HasColumnType("bit");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<string>("TimeZoneId")
                         .IsRequired()
@@ -472,6 +481,11 @@ namespace data_access.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GeoNamesId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Locations_GeoNamesId")
+                        .HasFilter("[GeoNamesId] IS NOT NULL");
 
                     b.HasIndex("IsArchived");
 

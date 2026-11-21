@@ -22,7 +22,8 @@ namespace data_access.Repository
         {
             [UniqueIndexNames.AutoNumber] = ExceptionMessages.AutoNumberAlreadyExistsTemplate,
             [UniqueIndexNames.DriverLicenseNumber] = ExceptionMessages.DriverLicenseNumberAlreadyExistsTemplate,
-            [UniqueIndexNames.DepotName] = ExceptionMessages.DepotNameAlreadyExistsTemplate
+            [UniqueIndexNames.DepotName] = ExceptionMessages.DepotNameAlreadyExistsTemplate,
+            [UniqueIndexNames.LocationGeoNamesId] = ExceptionMessages.LocationGeoNamesIdAlreadyExistsTemplate
         };
 
         private readonly FMS_DbContext _context;

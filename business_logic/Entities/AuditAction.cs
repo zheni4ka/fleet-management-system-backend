@@ -40,6 +40,7 @@ namespace business_logic.Entities
         DriverArchived,
         DriverRestored,
         LocationArchived,
-        LocationRestored
+        LocationRestored,
+        LocationCoordinatesFilled
     }
 }

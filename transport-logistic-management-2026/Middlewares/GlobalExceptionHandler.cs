@@ -31,6 +31,7 @@ namespace transport_logistic_management_2026.Middlewares
                 UnauthorizedAccessException => CreateProblem(StatusCodes.Status401Unauthorized, "Unauthorized", exception.Message),
                 PasswordChangeRequiredException => CreateForbiddenProblem(ProblemTypes.PasswordChangeRequired, exception.Message),
                 ExternalIdentityAccessDeniedException => CreateForbiddenProblem(ProblemTypes.ExternalIdentityAccessDenied, exception.Message),
+                ExternalServiceUnavailableException => CreateProblem(StatusCodes.Status503ServiceUnavailable, "Service Unavailable", exception.Message),
                 _ => CreateProblem(StatusCodes.Status500InternalServerError, "Internal Server Error", ExceptionMessages.UnexpectedError)
             };
 

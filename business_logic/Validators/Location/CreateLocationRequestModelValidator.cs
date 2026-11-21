@@ -8,22 +8,9 @@ namespace business_logic.Validators
     {
         public CreateLocationRequestModelValidator()
         {
-            RuleFor(x => x.City)
-                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .MaximumLength(LocationConstraints.CityMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
+            RuleFor(x => x.GeoNamesId)
+                .GreaterThan(0).WithMessage(_ => ValidationMessages.PositiveNumberRequired)
                 .WithName("Місто");
-
-            RuleFor(x => x.Country)
-                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .MaximumLength(LocationConstraints.CountryMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
-                .WithName("Країна");
-
-            RuleFor(x => x.TimeZoneId)
-                .Cascade(CascadeMode.Stop)
-                .NotEmpty().WithMessage(_ => ValidationMessages.RequiredField)
-                .MaximumLength(LocationConstraints.TimeZoneIdMaxLength).WithMessage(_ => ValidationMessages.MaximumLengthExceeded)
-                .Must(timeZoneId => TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId!, out _)).WithMessage(_ => ValidationMessages.UnknownTimeZoneId)
-                .WithName("Часовий пояс");
         }
     }
 }

@@ -52,5 +52,9 @@ namespace business_logic.Constants
         public static string TooManyRequests => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(TooManyRequests));
         public static string UnexpectedError => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(UnexpectedError));
         public static string ValidationFailed => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(ValidationFailed));
+        public static string LocationGeoNamesIdAlreadyExistsTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(LocationGeoNamesIdAlreadyExistsTemplate));
+        public static string CityGeocodingServiceUnavailable => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(CityGeocodingServiceUnavailable));
+        public static string CityGeocodingCandidateNotFoundTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(CityGeocodingCandidateNotFoundTemplate));
+        public static string CityGeocodingTimeZoneUnsupportedTemplate => LocalizedResourceReader.GetRequiredLocalizedResource(ExceptionMessagesResourceManager, nameof(CityGeocodingTimeZoneUnsupportedTemplate));
     }
 }

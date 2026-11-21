@@ -68,6 +68,14 @@ namespace business_logic_tests.Infrastructure
             });
             services.AddSingleton<TestExternalIdentityTokenValidator>();
             services.AddSingleton<IExternalIdentityTokenValidator>(serviceProvider => serviceProvider.GetRequiredService<TestExternalIdentityTokenValidator>());
+            services.AddOptions<CityGeocodingSettings>().Configure(cityGeocodingSettings =>
+            {
+                cityGeocodingSettings.BaseUrl = "https://geocoding.test/v1/";
+                cityGeocodingSettings.StoredNamesLanguageCode = SupportedLanguages.English;
+                cityGeocodingSettings.RequestTimeoutInSeconds = 10;
+            });
+            services.AddSingleton<TestCityGeocodingClient>();
+            services.AddSingleton<ICityGeocodingClient>(serviceProvider => serviceProvider.GetRequiredService<TestCityGeocodingClient>());
 
             _serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
 
@@ -76,6 +84,11 @@ namespace business_logic_tests.Infrastructure
         }
 
         public TestCurrentUserScope CurrentUserScope => _serviceProvider.GetRequiredService<TestCurrentUserScope>();
+
+        public TSingletonService GetRequiredSingletonService<TSingletonService>() where TSingletonService : notnull
+        {
+            return _serviceProvider.GetRequiredService<TSingletonService>();
+        }
 
         public async Task RunInNewScopeAsync<TService>(Func<TService, Task> serviceCall) where TService : notnull
         {

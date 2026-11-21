@@ -15,6 +15,10 @@ namespace data_access.Configs
             builder.Property(x => x.City).IsRequired().HasMaxLength(LocationConstraints.CityMaxLength);
             builder.Property(x => x.Country).IsRequired().HasMaxLength(LocationConstraints.CountryMaxLength);
             builder.Property(x => x.TimeZoneId).IsRequired().HasMaxLength(LocationConstraints.TimeZoneIdMaxLength);
+            builder.HasIndex(x => x.GeoNamesId)
+                .IsUnique()
+                .HasFilter("[GeoNamesId] IS NOT NULL")
+                .HasDatabaseName(UniqueIndexNames.LocationGeoNamesId);
         }
     }
 }

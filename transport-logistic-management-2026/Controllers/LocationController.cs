@@ -41,12 +41,26 @@ namespace transport_logistic_management_2026.Controllers
             return Ok(await _locationService.GetAsync(id));
         }
 
-        [HttpPost("createLocation")]
-        [Authorize(Roles = UserRoles.Admin)]
-        public async Task<ActionResult<GetLocationResponseModel>> CreateLocation([FromBody] CreateLocationRequestModel model)
+        [HttpGet("searchCityGeocodingCandidates")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<IReadOnlyList<GetCityGeocodingCandidateResponseModel>>> SearchCityGeocodingCandidates(
+            [FromQuery] GetCityGeocodingCandidatesRequestModel cityGeocodingCandidatesRequest)
         {
-            var location = await _locationService.CreateAsync(model);
-            return CreatedAtAction(nameof(GetLocationById), new { id = location.Id }, location);
+            return Ok(await _locationService.SearchCityGeocodingCandidatesAsync(cityGeocodingCandidatesRequest));
+        }
+
+        [HttpPost("ensureCityLocation")]
+        [Authorize(Roles = UserRoles.AdminOrDispatcher)]
+        public async Task<ActionResult<GetLocationResponseModel>> EnsureCityLocation([FromBody] CreateLocationRequestModel model)
+        {
+            return Ok(await _locationService.EnsureCityLocationAsync(model));
+        }
+
+        [HttpPost("fillMissingLocationCoordinates")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<ActionResult<FillMissingLocationCoordinatesResponseModel>> FillMissingLocationCoordinates()
+        {
+            return Ok(await _locationService.FillMissingCoordinatesAsync());
         }
 
         [HttpDelete("deleteLocation/{id:int}")]

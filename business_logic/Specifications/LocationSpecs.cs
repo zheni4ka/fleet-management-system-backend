@@ -84,8 +84,47 @@ namespace business_logic.Specifications
                     City = l.City,
                     Country = l.Country,
                     TimeZoneId = l.TimeZoneId,
+                    GeoNamesId = l.GeoNamesId,
+                    Latitude = l.Latitude,
+                    Longitude = l.Longitude,
                     IsArchived = l.IsArchived
                 });
+            }
+        }
+
+        public class ByGeoNamesId : Specification<Location>
+        {
+            public ByGeoNamesId(int geoNamesId)
+            {
+                Query.Where(l => l.GeoNamesId == geoNamesId);
+            }
+        }
+
+        public class WithoutGeoNamesIdByCityAndCountry : Specification<Location>
+        {
+            public WithoutGeoNamesIdByCityAndCountry(string city, string country)
+            {
+                Query.Where(l => l.GeoNamesId == null && l.City == city && l.Country == country)
+                    .OrderBy(l => l.IsArchived)
+                    .ThenBy(l => l.Id);
+            }
+        }
+
+        public class UsedGeoNamesIds : Specification<Location, int>
+        {
+            public UsedGeoNamesIds()
+            {
+                Query.Where(l => l.GeoNamesId != null);
+                Query.Select(l => l.GeoNamesId!.Value);
+            }
+        }
+
+        public class MissingCoordinates : Specification<Location>
+        {
+            public MissingCoordinates()
+            {
+                Query.Where(l => l.Latitude == null || l.Longitude == null)
+                    .OrderBy(l => l.Id);
             }
         }
     }

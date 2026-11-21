@@ -24,6 +24,7 @@ namespace data_access.Interceptors
             [AuditAction.DriverRestored] = typeof(Driver),
             [AuditAction.LocationArchived] = typeof(Location),
             [AuditAction.LocationRestored] = typeof(Location),
+            [AuditAction.LocationCoordinatesFilled] = typeof(Location),
             [AuditAction.MaintenanceUpdated] = typeof(AutoMaintenance),
             [AuditAction.DepotUpdated] = typeof(Depot),
             [AuditAction.UserDeactivated] = typeof(IdentityUser),

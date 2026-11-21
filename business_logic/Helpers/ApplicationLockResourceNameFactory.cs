@@ -14,5 +14,10 @@ namespace business_logic.Helpers
         {
             return string.Format(CultureInfo.InvariantCulture, ApplicationLockResourceNames.DriverAssignmentTemplate, driverId);
         }
+
+        public static string CreateCityLocationLockResourceName(int geoNamesId)
+        {
+            return string.Format(CultureInfo.InvariantCulture, ApplicationLockResourceNames.CityLocationTemplate, geoNamesId);
+        }
     }
 }
